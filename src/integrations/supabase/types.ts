@@ -14,16 +14,253 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      devices: {
+        Row: {
+          battery: number
+          created_at: string
+          firmware: string | null
+          id: string
+          last_seen: string | null
+          mac: string | null
+          name: string
+          paired: boolean
+          signal: number
+          user_id: string
+        }
+        Insert: {
+          battery?: number
+          created_at?: string
+          firmware?: string | null
+          id?: string
+          last_seen?: string | null
+          mac?: string | null
+          name?: string
+          paired?: boolean
+          signal?: number
+          user_id: string
+        }
+        Update: {
+          battery?: number
+          created_at?: string
+          firmware?: string | null
+          id?: string
+          last_seen?: string | null
+          mac?: string | null
+          name?: string
+          paired?: boolean
+          signal?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      emergency_alerts: {
+        Row: {
+          ended_at: string | null
+          id: string
+          lat: number | null
+          lng: number | null
+          notes: string | null
+          started_at: string
+          status: Database["public"]["Enums"]["alert_status"]
+          type: Database["public"]["Enums"]["alert_type"]
+          user_id: string
+        }
+        Insert: {
+          ended_at?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          notes?: string | null
+          started_at?: string
+          status?: Database["public"]["Enums"]["alert_status"]
+          type?: Database["public"]["Enums"]["alert_type"]
+          user_id: string
+        }
+        Update: {
+          ended_at?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          notes?: string | null
+          started_at?: string
+          status?: Database["public"]["Enums"]["alert_status"]
+          type?: Database["public"]["Enums"]["alert_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      emergency_contacts: {
+        Row: {
+          created_at: string
+          id: string
+          is_primary: boolean
+          name: string
+          phone: string
+          relation: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          name: string
+          phone: string
+          relation?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          name?: string
+          phone?: string
+          relation?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      guardian_links: {
+        Row: {
+          created_at: string
+          guardian_id: string
+          id: string
+          label: string | null
+          status: Database["public"]["Enums"]["link_status"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          guardian_id: string
+          id?: string
+          label?: string | null
+          status?: Database["public"]["Enums"]["link_status"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          guardian_id?: string
+          id?: string
+          label?: string | null
+          status?: Database["public"]["Enums"]["link_status"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      live_locations: {
+        Row: {
+          battery: number | null
+          id: string
+          lat: number
+          lng: number
+          recorded_at: string
+          user_id: string
+        }
+        Insert: {
+          battery?: number | null
+          id?: string
+          lat: number
+          lng: number
+          recorded_at?: string
+          user_id: string
+        }
+        Update: {
+          battery?: number | null
+          id?: string
+          lat?: number
+          lng?: number
+          recorded_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          safety_score: number
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          safety_score?: number
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          safety_score?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      safe_zones: {
+        Row: {
+          created_at: string
+          id: string
+          lat: number
+          lng: number
+          name: string
+          notify_enter: boolean
+          notify_exit: boolean
+          radius_m: number
+          type: Database["public"]["Enums"]["zone_type"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lat: number
+          lng: number
+          name: string
+          notify_enter?: boolean
+          notify_exit?: boolean
+          radius_m?: number
+          type?: Database["public"]["Enums"]["zone_type"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lat?: number
+          lng?: number
+          name?: string
+          notify_enter?: boolean
+          notify_exit?: boolean
+          radius_m?: number
+          type?: Database["public"]["Enums"]["zone_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_guardian_of: {
+        Args: { _guardian: string; _user: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      alert_status: "active" | "resolved" | "cancelled"
+      alert_type: "sos" | "fall" | "voice" | "deadman" | "manual"
+      app_role: "user" | "guardian"
+      link_status: "pending" | "active" | "revoked"
+      zone_type: "home" | "school" | "work" | "custom"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +387,12 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      alert_status: ["active", "resolved", "cancelled"],
+      alert_type: ["sos", "fall", "voice", "deadman", "manual"],
+      app_role: ["user", "guardian"],
+      link_status: ["pending", "active", "revoked"],
+      zone_type: ["home", "school", "work", "custom"],
+    },
   },
 } as const
