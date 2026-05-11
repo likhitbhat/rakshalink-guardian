@@ -9,38 +9,254 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as GuardianRouteImport } from './routes/guardian'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GuardianIndexRouteImport } from './routes/guardian.index'
+import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as GuardianMapRouteImport } from './routes/guardian.map'
+import { Route as GuardianAlertsRouteImport } from './routes/guardian.alerts'
+import { Route as AuthRegisterRouteImport } from './routes/auth.register'
+import { Route as AuthLoginRouteImport } from './routes/auth.login'
+import { Route as AppZonesRouteImport } from './routes/app.zones'
+import { Route as AppSosRouteImport } from './routes/app.sos'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as AppMapRouteImport } from './routes/app.map'
+import { Route as AppHistoryRouteImport } from './routes/app.history'
+import { Route as AppDeviceRouteImport } from './routes/app.device'
+import { Route as AppContactsRouteImport } from './routes/app.contacts'
 
+const GuardianRoute = GuardianRouteImport.update({
+  id: '/guardian',
+  path: '/guardian',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GuardianIndexRoute = GuardianIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => GuardianRoute,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const GuardianMapRoute = GuardianMapRouteImport.update({
+  id: '/map',
+  path: '/map',
+  getParentRoute: () => GuardianRoute,
+} as any)
+const GuardianAlertsRoute = GuardianAlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
+  getParentRoute: () => GuardianRoute,
+} as any)
+const AuthRegisterRoute = AuthRegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AppZonesRoute = AppZonesRouteImport.update({
+  id: '/zones',
+  path: '/zones',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSosRoute = AppSosRouteImport.update({
+  id: '/sos',
+  path: '/sos',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMapRoute = AppMapRouteImport.update({
+  id: '/map',
+  path: '/map',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHistoryRoute = AppHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDeviceRoute = AppDeviceRouteImport.update({
+  id: '/device',
+  path: '/device',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppContactsRoute = AppContactsRouteImport.update({
+  id: '/contacts',
+  path: '/contacts',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/auth': typeof AuthRouteWithChildren
+  '/guardian': typeof GuardianRouteWithChildren
+  '/app/contacts': typeof AppContactsRoute
+  '/app/device': typeof AppDeviceRoute
+  '/app/history': typeof AppHistoryRoute
+  '/app/map': typeof AppMapRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/sos': typeof AppSosRoute
+  '/app/zones': typeof AppZonesRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/guardian/alerts': typeof GuardianAlertsRoute
+  '/guardian/map': typeof GuardianMapRoute
+  '/app/': typeof AppIndexRoute
+  '/guardian/': typeof GuardianIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRouteWithChildren
+  '/app/contacts': typeof AppContactsRoute
+  '/app/device': typeof AppDeviceRoute
+  '/app/history': typeof AppHistoryRoute
+  '/app/map': typeof AppMapRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/sos': typeof AppSosRoute
+  '/app/zones': typeof AppZonesRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/guardian/alerts': typeof GuardianAlertsRoute
+  '/guardian/map': typeof GuardianMapRoute
+  '/app': typeof AppIndexRoute
+  '/guardian': typeof GuardianIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/auth': typeof AuthRouteWithChildren
+  '/guardian': typeof GuardianRouteWithChildren
+  '/app/contacts': typeof AppContactsRoute
+  '/app/device': typeof AppDeviceRoute
+  '/app/history': typeof AppHistoryRoute
+  '/app/map': typeof AppMapRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/sos': typeof AppSosRoute
+  '/app/zones': typeof AppZonesRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/guardian/alerts': typeof GuardianAlertsRoute
+  '/guardian/map': typeof GuardianMapRoute
+  '/app/': typeof AppIndexRoute
+  '/guardian/': typeof GuardianIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/auth'
+    | '/guardian'
+    | '/app/contacts'
+    | '/app/device'
+    | '/app/history'
+    | '/app/map'
+    | '/app/settings'
+    | '/app/sos'
+    | '/app/zones'
+    | '/auth/login'
+    | '/auth/register'
+    | '/guardian/alerts'
+    | '/guardian/map'
+    | '/app/'
+    | '/guardian/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/app/contacts'
+    | '/app/device'
+    | '/app/history'
+    | '/app/map'
+    | '/app/settings'
+    | '/app/sos'
+    | '/app/zones'
+    | '/auth/login'
+    | '/auth/register'
+    | '/guardian/alerts'
+    | '/guardian/map'
+    | '/app'
+    | '/guardian'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/auth'
+    | '/guardian'
+    | '/app/contacts'
+    | '/app/device'
+    | '/app/history'
+    | '/app/map'
+    | '/app/settings'
+    | '/app/sos'
+    | '/app/zones'
+    | '/auth/login'
+    | '/auth/register'
+    | '/guardian/alerts'
+    | '/guardian/map'
+    | '/app/'
+    | '/guardian/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  AuthRoute: typeof AuthRouteWithChildren
+  GuardianRoute: typeof GuardianRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/guardian': {
+      id: '/guardian'
+      path: '/guardian'
+      fullPath: '/guardian'
+      preLoaderRoute: typeof GuardianRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +264,158 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/guardian/': {
+      id: '/guardian/'
+      path: '/'
+      fullPath: '/guardian/'
+      preLoaderRoute: typeof GuardianIndexRouteImport
+      parentRoute: typeof GuardianRoute
+    }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/guardian/map': {
+      id: '/guardian/map'
+      path: '/map'
+      fullPath: '/guardian/map'
+      preLoaderRoute: typeof GuardianMapRouteImport
+      parentRoute: typeof GuardianRoute
+    }
+    '/guardian/alerts': {
+      id: '/guardian/alerts'
+      path: '/alerts'
+      fullPath: '/guardian/alerts'
+      preLoaderRoute: typeof GuardianAlertsRouteImport
+      parentRoute: typeof GuardianRoute
+    }
+    '/auth/register': {
+      id: '/auth/register'
+      path: '/register'
+      fullPath: '/auth/register'
+      preLoaderRoute: typeof AuthRegisterRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/app/zones': {
+      id: '/app/zones'
+      path: '/zones'
+      fullPath: '/app/zones'
+      preLoaderRoute: typeof AppZonesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/sos': {
+      id: '/app/sos'
+      path: '/sos'
+      fullPath: '/app/sos'
+      preLoaderRoute: typeof AppSosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/map': {
+      id: '/app/map'
+      path: '/map'
+      fullPath: '/app/map'
+      preLoaderRoute: typeof AppMapRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/history': {
+      id: '/app/history'
+      path: '/history'
+      fullPath: '/app/history'
+      preLoaderRoute: typeof AppHistoryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/device': {
+      id: '/app/device'
+      path: '/device'
+      fullPath: '/app/device'
+      preLoaderRoute: typeof AppDeviceRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/contacts': {
+      id: '/app/contacts'
+      path: '/contacts'
+      fullPath: '/app/contacts'
+      preLoaderRoute: typeof AppContactsRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppContactsRoute: typeof AppContactsRoute
+  AppDeviceRoute: typeof AppDeviceRoute
+  AppHistoryRoute: typeof AppHistoryRoute
+  AppMapRoute: typeof AppMapRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppSosRoute: typeof AppSosRoute
+  AppZonesRoute: typeof AppZonesRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppContactsRoute: AppContactsRoute,
+  AppDeviceRoute: AppDeviceRoute,
+  AppHistoryRoute: AppHistoryRoute,
+  AppMapRoute: AppMapRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppSosRoute: AppSosRoute,
+  AppZonesRoute: AppZonesRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
+interface AuthRouteChildren {
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthRegisterRoute: typeof AuthRegisterRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthLoginRoute: AuthLoginRoute,
+  AuthRegisterRoute: AuthRegisterRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
+interface GuardianRouteChildren {
+  GuardianAlertsRoute: typeof GuardianAlertsRoute
+  GuardianMapRoute: typeof GuardianMapRoute
+  GuardianIndexRoute: typeof GuardianIndexRoute
+}
+
+const GuardianRouteChildren: GuardianRouteChildren = {
+  GuardianAlertsRoute: GuardianAlertsRoute,
+  GuardianMapRoute: GuardianMapRoute,
+  GuardianIndexRoute: GuardianIndexRoute,
+}
+
+const GuardianRouteWithChildren = GuardianRoute._addFileChildren(
+  GuardianRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  AuthRoute: AuthRouteWithChildren,
+  GuardianRoute: GuardianRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
