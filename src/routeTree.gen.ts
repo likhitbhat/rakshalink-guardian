@@ -9,10 +9,14 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as GuardianRouteImport } from './routes/guardian'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GuardianIndexRouteImport } from './routes/guardian.index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as GuardianMapRouteImport } from './routes/guardian.map'
+import { Route as GuardianAlertsRouteImport } from './routes/guardian.alerts'
 import { Route as AuthRegisterRouteImport } from './routes/auth.register'
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
 import { Route as AppZonesRouteImport } from './routes/app.zones'
@@ -23,6 +27,11 @@ import { Route as AppHistoryRouteImport } from './routes/app.history'
 import { Route as AppDeviceRouteImport } from './routes/app.device'
 import { Route as AppContactsRouteImport } from './routes/app.contacts'
 
+const GuardianRoute = GuardianRouteImport.update({
+  id: '/guardian',
+  path: '/guardian',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -38,10 +47,25 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GuardianIndexRoute = GuardianIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => GuardianRoute,
+} as any)
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
+} as any)
+const GuardianMapRoute = GuardianMapRouteImport.update({
+  id: '/map',
+  path: '/map',
+  getParentRoute: () => GuardianRoute,
+} as any)
+const GuardianAlertsRoute = GuardianAlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
+  getParentRoute: () => GuardianRoute,
 } as any)
 const AuthRegisterRoute = AuthRegisterRouteImport.update({
   id: '/register',
@@ -93,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
+  '/guardian': typeof GuardianRouteWithChildren
   '/app/contacts': typeof AppContactsRoute
   '/app/device': typeof AppDeviceRoute
   '/app/history': typeof AppHistoryRoute
@@ -102,7 +127,10 @@ export interface FileRoutesByFullPath {
   '/app/zones': typeof AppZonesRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/guardian/alerts': typeof GuardianAlertsRoute
+  '/guardian/map': typeof GuardianMapRoute
   '/app/': typeof AppIndexRoute
+  '/guardian/': typeof GuardianIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -116,13 +144,17 @@ export interface FileRoutesByTo {
   '/app/zones': typeof AppZonesRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/guardian/alerts': typeof GuardianAlertsRoute
+  '/guardian/map': typeof GuardianMapRoute
   '/app': typeof AppIndexRoute
+  '/guardian': typeof GuardianIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
+  '/guardian': typeof GuardianRouteWithChildren
   '/app/contacts': typeof AppContactsRoute
   '/app/device': typeof AppDeviceRoute
   '/app/history': typeof AppHistoryRoute
@@ -132,7 +164,10 @@ export interface FileRoutesById {
   '/app/zones': typeof AppZonesRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/guardian/alerts': typeof GuardianAlertsRoute
+  '/guardian/map': typeof GuardianMapRoute
   '/app/': typeof AppIndexRoute
+  '/guardian/': typeof GuardianIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -140,6 +175,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
+    | '/guardian'
     | '/app/contacts'
     | '/app/device'
     | '/app/history'
@@ -149,7 +185,10 @@ export interface FileRouteTypes {
     | '/app/zones'
     | '/auth/login'
     | '/auth/register'
+    | '/guardian/alerts'
+    | '/guardian/map'
     | '/app/'
+    | '/guardian/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -163,12 +202,16 @@ export interface FileRouteTypes {
     | '/app/zones'
     | '/auth/login'
     | '/auth/register'
+    | '/guardian/alerts'
+    | '/guardian/map'
     | '/app'
+    | '/guardian'
   id:
     | '__root__'
     | '/'
     | '/app'
     | '/auth'
+    | '/guardian'
     | '/app/contacts'
     | '/app/device'
     | '/app/history'
@@ -178,17 +221,28 @@ export interface FileRouteTypes {
     | '/app/zones'
     | '/auth/login'
     | '/auth/register'
+    | '/guardian/alerts'
+    | '/guardian/map'
     | '/app/'
+    | '/guardian/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
+  GuardianRoute: typeof GuardianRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/guardian': {
+      id: '/guardian'
+      path: '/guardian'
+      fullPath: '/guardian'
+      preLoaderRoute: typeof GuardianRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -210,12 +264,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/guardian/': {
+      id: '/guardian/'
+      path: '/'
+      fullPath: '/guardian/'
+      preLoaderRoute: typeof GuardianIndexRouteImport
+      parentRoute: typeof GuardianRoute
+    }
     '/app/': {
       id: '/app/'
       path: '/'
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/guardian/map': {
+      id: '/guardian/map'
+      path: '/map'
+      fullPath: '/guardian/map'
+      preLoaderRoute: typeof GuardianMapRouteImport
+      parentRoute: typeof GuardianRoute
+    }
+    '/guardian/alerts': {
+      id: '/guardian/alerts'
+      path: '/alerts'
+      fullPath: '/guardian/alerts'
+      preLoaderRoute: typeof GuardianAlertsRouteImport
+      parentRoute: typeof GuardianRoute
     }
     '/auth/register': {
       id: '/auth/register'
@@ -319,10 +394,27 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
+interface GuardianRouteChildren {
+  GuardianAlertsRoute: typeof GuardianAlertsRoute
+  GuardianMapRoute: typeof GuardianMapRoute
+  GuardianIndexRoute: typeof GuardianIndexRoute
+}
+
+const GuardianRouteChildren: GuardianRouteChildren = {
+  GuardianAlertsRoute: GuardianAlertsRoute,
+  GuardianMapRoute: GuardianMapRoute,
+  GuardianIndexRoute: GuardianIndexRoute,
+}
+
+const GuardianRouteWithChildren = GuardianRoute._addFileChildren(
+  GuardianRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
+  GuardianRoute: GuardianRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
