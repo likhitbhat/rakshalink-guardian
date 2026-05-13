@@ -2,6 +2,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { Home, MapPin, Shield, Bell, Settings, Bluetooth, Users } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/lib/theme";
 
 const userNav = [
   { to: "/app", label: "Home", icon: Home },
