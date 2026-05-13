@@ -1,6 +1,7 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { Shield, MapPin, Bell, Bluetooth, Zap, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { ThemeToggle } from "@/lib/theme";
 
 export const Route = createFileRoute("/")({
   beforeLoad: async () => {
