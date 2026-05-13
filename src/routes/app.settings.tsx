@@ -1,14 +1,26 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
-import { User, Bell, Shield, Phone, History, MapPin, LogOut, ChevronRight, Moon, Globe } from "lucide-react";
+import { User, Bell, Shield, Phone, History, MapPin, LogOut, ChevronRight, Moon, Globe, Copy } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/settings")({
   component: SettingsPage,
 });
 
 function SettingsPage() {
-  const { profile, signOut } = useAuth();
+  const { profile, user, signOut } = useAuth();
   const nav = useNavigate();
+  const accountId = user?.id ?? profile?.id ?? "";
+
+  const copyId = async () => {
+    if (!accountId) return;
+    try {
+      await navigator.clipboard.writeText(accountId);
+      toast.success("Account ID copied", { description: "Share it with your Guardian to link." });
+    } catch {
+      toast.error("Couldn't copy. Select and copy manually.");
+    }
+  };
 
   const groups = [
     {
@@ -42,6 +54,26 @@ function SettingsPage() {
         </div>
         <span className="rounded-full bg-success/15 px-2 py-0.5 text-[11px] text-success">Active</span>
       </div>
+
+      {profile?.role === "user" && (
+        <div className="mt-6">
+          <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Guardian pairing</p>
+          <div className="glass overflow-hidden rounded-2xl p-4">
+            <p className="text-sm font-medium">Your Account ID</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">Share this with your Guardian so they can link and monitor you.</p>
+            <div className="mt-3 flex items-center gap-2 rounded-xl border border-border/50 bg-background/40 p-2.5">
+              <code className="flex-1 break-all font-mono text-[11px] leading-relaxed">{accountId || "—"}</code>
+              <button
+                onClick={copyId}
+                className="shrink-0 rounded-lg bg-accent/15 p-2 text-accent hover:bg-accent/25"
+                aria-label="Copy account ID"
+              >
+                <Copy className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {groups.map((g) => (
         <div key={g.title} className="mt-6">
