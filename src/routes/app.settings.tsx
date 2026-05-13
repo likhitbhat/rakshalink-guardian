@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
-import { User, Bell, Shield, Phone, History, MapPin, LogOut, ChevronRight, Moon, Globe } from "lucide-react";
+import { User, Bell, Shield, Phone, History, MapPin, LogOut, ChevronRight, Moon, Globe, Copy } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/settings")({
   component: SettingsPage,
