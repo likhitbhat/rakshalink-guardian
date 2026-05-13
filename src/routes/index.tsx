@@ -1,6 +1,7 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { Shield, MapPin, Bell, Bluetooth, Zap, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { ThemeToggle } from "@/lib/theme";
 
 export const Route = createFileRoute("/")({
   beforeLoad: async () => {
@@ -14,6 +15,7 @@ export const Route = createFileRoute("/")({
 function Landing() {
   return (
     <div className="mx-auto min-h-screen w-full max-w-md px-6 pb-10 pt-12">
+      <div className="absolute right-4 top-4"><ThemeToggle /></div>
       {/* Hero pendant */}
       <div className="relative mx-auto mb-8 flex h-56 w-56 items-center justify-center">
         <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/40 to-accent/30 blur-3xl" />
