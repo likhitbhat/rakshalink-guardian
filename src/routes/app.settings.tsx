@@ -8,8 +8,19 @@ export const Route = createFileRoute("/app/settings")({
 });
 
 function SettingsPage() {
-  const { profile, signOut } = useAuth();
+  const { profile, user, signOut } = useAuth();
   const nav = useNavigate();
+  const accountId = user?.id ?? profile?.id ?? "";
+
+  const copyId = async () => {
+    if (!accountId) return;
+    try {
+      await navigator.clipboard.writeText(accountId);
+      toast.success("Account ID copied", { description: "Share it with your Guardian to link." });
+    } catch {
+      toast.error("Couldn't copy. Select and copy manually.");
+    }
+  };
 
   const groups = [
     {
