@@ -2,8 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { StatusBadge } from "@/components/StatusBadge";
+import { BatteryWidget } from "@/components/BatteryWidget";
 import { supabase } from "@/integrations/supabase/client";
-import { Battery, Bluetooth, MapPin, Phone, Shield, Bell, ChevronRight, Activity, Mic, Timer } from "lucide-react";
+import { Bluetooth, MapPin, Phone, Shield, Bell, ChevronRight, Activity, Mic, Timer } from "lucide-react";
 import { getMockLocation } from "@/lib/mock-location";
 
 export const Route = createFileRoute("/app/")({
@@ -11,9 +12,8 @@ export const Route = createFileRoute("/app/")({
 });
 
 function Dashboard() {
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const [loc, setLoc] = useState(getMockLocation());
-  const [battery] = useState(78);
   const [contactCount, setContactCount] = useState(0);
   const [recentAlerts, setRecentAlerts] = useState<{ id: string; type: string; status: string; started_at: string }[]>([]);
 
