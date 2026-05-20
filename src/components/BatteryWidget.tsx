@@ -77,9 +77,10 @@ export function BatteryWidget({ userId, isOwn = false, lowPower = false, compact
     };
   }, [userId]);
 
-  // Wearer: simulate gentle drain and persist every ~30s.
+  // Wearer: simulate gentle drain and persist. Slower in low-power mode (safe zone).
   useEffect(() => {
     if (!isOwn || !userId) return;
+    const intervalMs = lowPower ? 90000 : 30000;
     const t = setInterval(() => {
       const current = batteryRef.current ?? 92;
       const next = current <= 8 ? 100 : current - 1; // loop for demo
@@ -93,9 +94,9 @@ export function BatteryWidget({ userId, isOwn = false, lowPower = false, compact
             setUpdatedAt(new Date().toISOString());
           }
         });
-    }, 30000);
+    }, intervalMs);
     return () => clearInterval(t);
-  }, [isOwn, userId]);
+  }, [isOwn, userId, lowPower]);
 
   // Re-render "Xs ago" every 10s
   const [, force] = useState(0);
