@@ -124,19 +124,25 @@ function GuardianHome() {
           const p = profiles[l.user_id];
           const danger = activeAlerts[l.user_id];
           return (
-            <Link key={l.id} to="/guardian/map" className={`glass flex items-center gap-3 rounded-2xl p-4 ${danger ? "border-primary/60 bg-primary/10" : ""}`}>
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-accent/40 to-primary/30 font-display font-bold">
-                {(p?.full_name?.[0] ?? "?").toUpperCase()}
+            <Link key={l.id} to="/guardian/map" className={`glass block rounded-2xl p-4 ${danger ? "border-primary/60 bg-primary/10" : ""}`}>
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-accent/40 to-primary/30 font-display font-bold">
+                  {(p?.full_name?.[0] ?? "?").toUpperCase()}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold">{p?.full_name ?? "User"}</p>
+                  <p className="text-[11px] text-muted-foreground">{l.label ?? "Family"}</p>
+                </div>
+                {danger ? (
+                  <StatusBadge variant="danger" pulse>SOS</StatusBadge>
+                ) : (
+                  <StatusBadge variant="safe">Safe</StatusBadge>
+                )}
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-semibold">{p?.full_name ?? "User"}</p>
-                <p className="text-[11px] text-muted-foreground">{l.label ?? "Family"}</p>
+              <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-3">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Pendant</span>
+                <BatteryWidget userId={l.user_id} compact />
               </div>
-              {danger ? (
-                <StatusBadge variant="danger" pulse>SOS</StatusBadge>
-              ) : (
-                <StatusBadge variant="safe">Safe</StatusBadge>
-              )}
             </Link>
           );
         })}
