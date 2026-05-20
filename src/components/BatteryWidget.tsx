@@ -22,7 +22,7 @@ function timeAgo(iso: string | null) {
   return `${Math.round(m / 60)}h ago`;
 }
 
-export function BatteryWidget({ userId, isOwn = false, compact = false, className = "" }: Props) {
+export function BatteryWidget({ userId, isOwn = false, lowPower = false, compact = false, className = "" }: Props) {
   const [battery, setBattery] = useState<number | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const batteryRef = useRef<number | null>(null);
