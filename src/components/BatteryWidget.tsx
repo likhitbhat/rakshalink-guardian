@@ -7,6 +7,8 @@ type Props = {
   userId: string | undefined;
   /** When true, this widget owns the wearer's pendant and simulates drain + persists updates. */
   isOwn?: boolean;
+  /** When true, the wearer is inside a safe zone — slow drain to reflect low-power mode. */
+  lowPower?: boolean;
   compact?: boolean;
   className?: string;
 };
