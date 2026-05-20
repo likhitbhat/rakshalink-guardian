@@ -4,8 +4,9 @@ import { useAuth } from "@/lib/auth";
 import { StatusBadge } from "@/components/StatusBadge";
 import { BatteryWidget } from "@/components/BatteryWidget";
 import { supabase } from "@/integrations/supabase/client";
-import { Bluetooth, MapPin, Phone, Shield, Bell, ChevronRight, Activity, Mic, Timer } from "lucide-react";
+import { Bluetooth, MapPin, Phone, Shield, Bell, ChevronRight, Activity, Mic, Timer, Leaf } from "lucide-react";
 import { getMockLocation } from "@/lib/mock-location";
+import { useSafeZones, findContainingZone } from "@/lib/safe-zone";
 
 export const Route = createFileRoute("/app/")({
   component: Dashboard,
