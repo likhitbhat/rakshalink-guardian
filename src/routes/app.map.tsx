@@ -15,8 +15,11 @@ function MapPage() {
   const { user } = useAuth();
   const [loc, setLoc] = useState(getMockLocation());
   const [path, setPath] = useState<[number, number][]>([]);
-  const [zones, setZones] = useState<{ id: string; lat: number; lng: number; radius_m: number; name: string }[]>([]);
+  const zones = useSafeZones(user?.id);
   const [showNearby, setShowNearby] = useState(true);
+
+  const activeZone = useMemo(() => findContainingZone(loc, zones), [loc, zones]);
+  const lowPower = !!activeZone;
 
   useEffect(() => {
     let lastWrite = 0;
@@ -24,25 +27,17 @@ function MapPage() {
       const l = getMockLocation();
       setLoc(l);
       setPath((p) => [...p.slice(-30), [l.lat, l.lng]]);
-      // Persist to live_locations so linked guardians can see the same point.
-      // Throttle to ~10s to reduce writes.
+      // In a safe zone, the pendant goes into low-power mode: slow writes to ~30s.
+      // Outside any zone, write every ~10s for responsive guardian tracking.
+      const interval = findContainingZone(l, zones) ? 30000 : 10000;
       const now = Date.now();
-      if (user && now - lastWrite > 10000) {
+      if (user && now - lastWrite > interval) {
         lastWrite = now;
         supabase.from("live_locations").insert({ user_id: user.id, lat: l.lat, lng: l.lng }).then(() => {});
       }
     }, 3000);
     return () => clearInterval(t);
-  }, [user]);
-
-  useEffect(() => {
-    if (!user) return;
-    supabase
-      .from("safe_zones")
-      .select("id, lat, lng, radius_m, name")
-      .eq("user_id", user.id)
-      .then(({ data }) => setZones((data as any) ?? []));
-  }, [user]);
+  }, [user, zones]);
 
   const markers = [
     { id: "me", lat: loc.lat, lng: loc.lng, label: "You", color: "oklch(0.78 0.14 200)" },
