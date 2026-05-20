@@ -36,7 +36,7 @@ function GuardianMap() {
         .order("recorded_at", { ascending: false })
         .limit(1);
       const p = (profiles ?? []).find((x: any) => x.id === id);
-      const loc = locs?.[0] ?? getMockLocation(id.length);
+      const loc = locs?.[0] ?? getMockLocation(0);
       list.push({ id, name: p?.full_name ?? "User", lat: loc.lat, lng: loc.lng, emergency: danger.has(id) });
     }
     setUsers(list);
@@ -44,9 +44,27 @@ function GuardianMap() {
   }
 
   useEffect(() => {
+    if (!user) return;
     load();
     const t = setInterval(load, 6000);
-    return () => clearInterval(t);
+    // Realtime: update positions instantly when wearers write new rows.
+    const ch = supabase
+      .channel("guardian-locs")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "live_locations" },
+        (payload: any) => {
+          const row = payload.new;
+          setUsers((prev) =>
+            prev.map((u) => (u.id === row.user_id ? { ...u, lat: row.lat, lng: row.lng } : u)),
+          );
+        },
+      )
+      .subscribe();
+    return () => {
+      clearInterval(t);
+      supabase.removeChannel(ch);
+    };
   }, [user]);
 
   return (
