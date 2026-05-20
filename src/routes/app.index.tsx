@@ -73,11 +73,7 @@ function Dashboard() {
           <p className="text-xs text-muted-foreground">Pendant</p>
           <p className="text-sm font-semibold">Connected</p>
         </Link>
-        <div className="glass rounded-2xl p-4">
-          <Battery className="mb-2 h-5 w-5 text-success" />
-          <p className="text-xs text-muted-foreground">Battery</p>
-          <p className="text-sm font-semibold">{battery}%</p>
-        </div>
+        <BatteryWidget userId={user?.id} isOwn />
       </div>
 
       {/* Quick actions */}
