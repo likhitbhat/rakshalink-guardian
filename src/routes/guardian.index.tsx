@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Users, Plus, MapPin, Bell } from "lucide-react";
+import { BatteryWidget } from "@/components/BatteryWidget";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/guardian/")({
