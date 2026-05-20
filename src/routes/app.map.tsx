@@ -56,12 +56,19 @@ function MapPage() {
     <div className="px-5 pt-6">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl font-bold">Live tracking</h1>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-success/15 px-2.5 py-0.5 text-[11px] font-medium text-success">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" /> Live
-        </span>
+        {lowPower ? (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-2.5 py-0.5 text-[11px] font-medium text-accent">
+            <Leaf className="h-3 w-3" /> Low power
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-success/15 px-2.5 py-0.5 text-[11px] font-medium text-success">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" /> Live
+          </span>
+        )}
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
-        {loc.lat.toFixed(5)}, {loc.lng.toFixed(5)} · updated every 3s
+        {loc.lat.toFixed(5)}, {loc.lng.toFixed(5)} ·{" "}
+        {lowPower ? `in "${activeZone?.name}" — saving battery` : "updated every 3s"}
       </p>
 
       <div className="mt-4 overflow-hidden rounded-3xl border border-border">
