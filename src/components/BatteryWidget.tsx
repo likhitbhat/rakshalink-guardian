@@ -7,6 +7,8 @@ type Props = {
   userId: string | undefined;
   /** When true, this widget owns the wearer's pendant and simulates drain + persists updates. */
   isOwn?: boolean;
+  /** When true, the wearer is inside a safe zone — slow drain to reflect low-power mode. */
+  lowPower?: boolean;
   compact?: boolean;
   className?: string;
 };
@@ -20,7 +22,7 @@ function timeAgo(iso: string | null) {
   return `${Math.round(m / 60)}h ago`;
 }
 
-export function BatteryWidget({ userId, isOwn = false, compact = false, className = "" }: Props) {
+export function BatteryWidget({ userId, isOwn = false, lowPower = false, compact = false, className = "" }: Props) {
   const [battery, setBattery] = useState<number | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const batteryRef = useRef<number | null>(null);
@@ -75,9 +77,10 @@ export function BatteryWidget({ userId, isOwn = false, compact = false, classNam
     };
   }, [userId]);
 
-  // Wearer: simulate gentle drain and persist every ~30s.
+  // Wearer: simulate gentle drain and persist. Slower in low-power mode (safe zone).
   useEffect(() => {
     if (!isOwn || !userId) return;
+    const intervalMs = lowPower ? 90000 : 30000;
     const t = setInterval(() => {
       const current = batteryRef.current ?? 92;
       const next = current <= 8 ? 100 : current - 1; // loop for demo
@@ -91,9 +94,9 @@ export function BatteryWidget({ userId, isOwn = false, compact = false, classNam
             setUpdatedAt(new Date().toISOString());
           }
         });
-    }, 30000);
+    }, intervalMs);
     return () => clearInterval(t);
-  }, [isOwn, userId]);
+  }, [isOwn, userId, lowPower]);
 
   // Re-render "Xs ago" every 10s
   const [, force] = useState(0);

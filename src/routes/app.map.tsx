@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MapView } from "@/components/MapView";
 import { getMockLocation, NEARBY } from "@/lib/mock-location";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { Navigation, Hospital, Shield as ShieldIcon } from "lucide-react";
+import { Navigation, Hospital, Shield as ShieldIcon, Leaf } from "lucide-react";
+import { useSafeZones, findContainingZone } from "@/lib/safe-zone";
 
 export const Route = createFileRoute("/app/map")({
   component: MapPage,
@@ -14,8 +15,11 @@ function MapPage() {
   const { user } = useAuth();
   const [loc, setLoc] = useState(getMockLocation());
   const [path, setPath] = useState<[number, number][]>([]);
-  const [zones, setZones] = useState<{ id: string; lat: number; lng: number; radius_m: number; name: string }[]>([]);
+  const zones = useSafeZones(user?.id);
   const [showNearby, setShowNearby] = useState(true);
+
+  const activeZone = useMemo(() => findContainingZone(loc, zones), [loc, zones]);
+  const lowPower = !!activeZone;
 
   useEffect(() => {
     let lastWrite = 0;
@@ -23,25 +27,17 @@ function MapPage() {
       const l = getMockLocation();
       setLoc(l);
       setPath((p) => [...p.slice(-30), [l.lat, l.lng]]);
-      // Persist to live_locations so linked guardians can see the same point.
-      // Throttle to ~10s to reduce writes.
+      // In a safe zone, the pendant goes into low-power mode: slow writes to ~30s.
+      // Outside any zone, write every ~10s for responsive guardian tracking.
+      const interval = findContainingZone(l, zones) ? 30000 : 10000;
       const now = Date.now();
-      if (user && now - lastWrite > 10000) {
+      if (user && now - lastWrite > interval) {
         lastWrite = now;
         supabase.from("live_locations").insert({ user_id: user.id, lat: l.lat, lng: l.lng }).then(() => {});
       }
     }, 3000);
     return () => clearInterval(t);
-  }, [user]);
-
-  useEffect(() => {
-    if (!user) return;
-    supabase
-      .from("safe_zones")
-      .select("id, lat, lng, radius_m, name")
-      .eq("user_id", user.id)
-      .then(({ data }) => setZones((data as any) ?? []));
-  }, [user]);
+  }, [user, zones]);
 
   const markers = [
     { id: "me", lat: loc.lat, lng: loc.lng, label: "You", color: "oklch(0.78 0.14 200)" },
@@ -60,12 +56,19 @@ function MapPage() {
     <div className="px-5 pt-6">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl font-bold">Live tracking</h1>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-success/15 px-2.5 py-0.5 text-[11px] font-medium text-success">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" /> Live
-        </span>
+        {lowPower ? (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-2.5 py-0.5 text-[11px] font-medium text-accent">
+            <Leaf className="h-3 w-3" /> Low power
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-success/15 px-2.5 py-0.5 text-[11px] font-medium text-success">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" /> Live
+          </span>
+        )}
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
-        {loc.lat.toFixed(5)}, {loc.lng.toFixed(5)} · updated every 3s
+        {loc.lat.toFixed(5)}, {loc.lng.toFixed(5)} ·{" "}
+        {lowPower ? `in "${activeZone?.name}" — saving battery` : "updated every 3s"}
       </p>
 
       <div className="mt-4 overflow-hidden rounded-3xl border border-border">
