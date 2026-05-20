@@ -18,13 +18,21 @@ function MapPage() {
   const [showNearby, setShowNearby] = useState(true);
 
   useEffect(() => {
+    let lastWrite = 0;
     const t = setInterval(() => {
       const l = getMockLocation();
       setLoc(l);
       setPath((p) => [...p.slice(-30), [l.lat, l.lng]]);
+      // Persist to live_locations so linked guardians can see the same point.
+      // Throttle to ~10s to reduce writes.
+      const now = Date.now();
+      if (user && now - lastWrite > 10000) {
+        lastWrite = now;
+        supabase.from("live_locations").insert({ user_id: user.id, lat: l.lat, lng: l.lng }).then(() => {});
+      }
     }, 3000);
     return () => clearInterval(t);
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
