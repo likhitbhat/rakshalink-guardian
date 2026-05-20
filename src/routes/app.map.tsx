@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MapView } from "@/components/MapView";
 import { getMockLocation, NEARBY } from "@/lib/mock-location";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { Navigation, Hospital, Shield as ShieldIcon } from "lucide-react";
+import { Navigation, Hospital, Shield as ShieldIcon, Leaf } from "lucide-react";
+import { useSafeZones, findContainingZone } from "@/lib/safe-zone";
 
 export const Route = createFileRoute("/app/map")({
   component: MapPage,
