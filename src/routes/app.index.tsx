@@ -15,6 +15,8 @@ export const Route = createFileRoute("/app/")({
 function Dashboard() {
   const { user, profile } = useAuth();
   const [loc, setLoc] = useState(getMockLocation());
+  const zones = useSafeZones(user?.id);
+  const activeZone = findContainingZone(loc, zones);
   const [contactCount, setContactCount] = useState(0);
   const [recentAlerts, setRecentAlerts] = useState<{ id: string; type: string; status: string; started_at: string }[]>([]);
 
