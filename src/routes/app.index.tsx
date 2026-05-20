@@ -60,9 +60,14 @@ function Dashboard() {
             <span className="font-display text-5xl font-bold text-gradient-cyan">{profile?.safety_score ?? 85}</span>
             <span className="mb-2 text-xs text-muted-foreground">/ 100 Safety Score</span>
           </div>
-          <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <MapPin className="h-3.5 w-3.5 text-accent" />
             {loc.lat.toFixed(4)}, {loc.lng.toFixed(4)} · live
+            {activeZone && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-medium text-accent">
+                <Leaf className="h-3 w-3" /> Low power · {activeZone.name}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -72,9 +77,9 @@ function Dashboard() {
         <Link to="/app/device" className="glass rounded-2xl p-4">
           <Bluetooth className="mb-2 h-5 w-5 text-accent" />
           <p className="text-xs text-muted-foreground">Pendant</p>
-          <p className="text-sm font-semibold">Connected</p>
+          <p className="text-sm font-semibold">{activeZone ? "In safe zone" : "Connected"}</p>
         </Link>
-        <BatteryWidget userId={user?.id} isOwn />
+        <BatteryWidget userId={user?.id} isOwn lowPower={!!activeZone} />
       </div>
 
       {/* Quick actions */}
