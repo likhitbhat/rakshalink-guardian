@@ -49,6 +49,27 @@ function GuardianHome() {
       const m: Record<string, boolean> = {};
       (alerts ?? []).forEach((a: any) => (m[a.user_id] = true));
       setActiveAlerts(m);
+
+      const { data: zs } = await supabase
+        .from("safe_zones")
+        .select("id, name, lat, lng, radius_m, user_id")
+        .in("user_id", ids);
+      const zmap: Record<string, SafeZone[]> = {};
+      (zs ?? []).forEach((z: any) => {
+        (zmap[z.user_id] ||= []).push(z);
+      });
+      setZonesByUser(zmap);
+
+      const { data: locs } = await supabase
+        .from("live_locations")
+        .select("user_id, lat, lng, recorded_at")
+        .in("user_id", ids)
+        .order("recorded_at", { ascending: false });
+      const lmap: Record<string, LocPoint> = {};
+      (locs ?? []).forEach((l: any) => {
+        if (!lmap[l.user_id]) lmap[l.user_id] = { lat: l.lat, lng: l.lng };
+      });
+      setLastLocByUser(lmap);
     }
   }
 
