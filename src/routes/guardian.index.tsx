@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { StatusBadge } from "@/components/StatusBadge";
-import { Users, Plus, MapPin, Bell } from "lucide-react";
+import { Users, Plus, MapPin, Bell, ShieldCheck, Settings2 } from "lucide-react";
 import { BatteryWidget } from "@/components/BatteryWidget";
+import { findContainingZone, type SafeZone } from "@/lib/safe-zone";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/guardian/")({
@@ -13,6 +14,7 @@ export const Route = createFileRoute("/guardian/")({
 
 type Link = { id: string; user_id: string; label: string | null; status: string };
 type Profile = { id: string; full_name: string | null; safety_score: number };
+type LocPoint = { lat: number; lng: number };
 
 function GuardianHome() {
   const { user, profile } = useAuth();
