@@ -79,6 +79,11 @@ function GuardianHome() {
     const ch = supabase
       .channel("guardian-alerts")
       .on("postgres_changes", { event: "*", schema: "public", table: "emergency_alerts" }, () => load())
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "live_locations" }, (payload) => {
+        const row: any = payload.new;
+        setLastLocByUser((m) => ({ ...m, [row.user_id]: { lat: row.lat, lng: row.lng } }));
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "safe_zones" }, () => load())
       .subscribe();
     return () => {
       supabase.removeChannel(ch);
