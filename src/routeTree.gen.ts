@@ -26,6 +26,7 @@ import { Route as AppMapRouteImport } from './routes/app.map'
 import { Route as AppHistoryRouteImport } from './routes/app.history'
 import { Route as AppDeviceRouteImport } from './routes/app.device'
 import { Route as AppContactsRouteImport } from './routes/app.contacts'
+import { Route as GuardianZonesUserIdRouteImport } from './routes/guardian.zones.$userId'
 
 const GuardianRoute = GuardianRouteImport.update({
   id: '/guardian',
@@ -112,6 +113,11 @@ const AppContactsRoute = AppContactsRouteImport.update({
   path: '/contacts',
   getParentRoute: () => AppRoute,
 } as any)
+const GuardianZonesUserIdRoute = GuardianZonesUserIdRouteImport.update({
+  id: '/zones/$userId',
+  path: '/zones/$userId',
+  getParentRoute: () => GuardianRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/guardian/map': typeof GuardianMapRoute
   '/app/': typeof AppIndexRoute
   '/guardian/': typeof GuardianIndexRoute
+  '/guardian/zones/$userId': typeof GuardianZonesUserIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -148,6 +155,7 @@ export interface FileRoutesByTo {
   '/guardian/map': typeof GuardianMapRoute
   '/app': typeof AppIndexRoute
   '/guardian': typeof GuardianIndexRoute
+  '/guardian/zones/$userId': typeof GuardianZonesUserIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -168,6 +176,7 @@ export interface FileRoutesById {
   '/guardian/map': typeof GuardianMapRoute
   '/app/': typeof AppIndexRoute
   '/guardian/': typeof GuardianIndexRoute
+  '/guardian/zones/$userId': typeof GuardianZonesUserIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -189,6 +198,7 @@ export interface FileRouteTypes {
     | '/guardian/map'
     | '/app/'
     | '/guardian/'
+    | '/guardian/zones/$userId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/guardian/map'
     | '/app'
     | '/guardian'
+    | '/guardian/zones/$userId'
   id:
     | '__root__'
     | '/'
@@ -225,6 +236,7 @@ export interface FileRouteTypes {
     | '/guardian/map'
     | '/app/'
     | '/guardian/'
+    | '/guardian/zones/$userId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -355,6 +367,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppContactsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/guardian/zones/$userId': {
+      id: '/guardian/zones/$userId'
+      path: '/zones/$userId'
+      fullPath: '/guardian/zones/$userId'
+      preLoaderRoute: typeof GuardianZonesUserIdRouteImport
+      parentRoute: typeof GuardianRoute
+    }
   }
 }
 
@@ -398,12 +417,14 @@ interface GuardianRouteChildren {
   GuardianAlertsRoute: typeof GuardianAlertsRoute
   GuardianMapRoute: typeof GuardianMapRoute
   GuardianIndexRoute: typeof GuardianIndexRoute
+  GuardianZonesUserIdRoute: typeof GuardianZonesUserIdRoute
 }
 
 const GuardianRouteChildren: GuardianRouteChildren = {
   GuardianAlertsRoute: GuardianAlertsRoute,
   GuardianMapRoute: GuardianMapRoute,
   GuardianIndexRoute: GuardianIndexRoute,
+  GuardianZonesUserIdRoute: GuardianZonesUserIdRoute,
 }
 
 const GuardianRouteWithChildren = GuardianRoute._addFileChildren(

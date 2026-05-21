@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { StatusBadge } from "@/components/StatusBadge";
-import { Users, Plus, MapPin, Bell } from "lucide-react";
+import { Users, Plus, MapPin, Bell, ShieldCheck, Settings2 } from "lucide-react";
 import { BatteryWidget } from "@/components/BatteryWidget";
+import { findContainingZone, type SafeZone } from "@/lib/safe-zone";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/guardian/")({
@@ -13,12 +14,15 @@ export const Route = createFileRoute("/guardian/")({
 
 type Link = { id: string; user_id: string; label: string | null; status: string };
 type Profile = { id: string; full_name: string | null; safety_score: number };
+type LocPoint = { lat: number; lng: number };
 
 function GuardianHome() {
   const { user, profile } = useAuth();
   const [links, setLinks] = useState<Link[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [activeAlerts, setActiveAlerts] = useState<Record<string, boolean>>({});
+  const [zonesByUser, setZonesByUser] = useState<Record<string, SafeZone[]>>({});
+  const [lastLocByUser, setLastLocByUser] = useState<Record<string, LocPoint>>({});
   const [adding, setAdding] = useState(false);
   const [linkUserId, setLinkUserId] = useState("");
 
@@ -45,6 +49,27 @@ function GuardianHome() {
       const m: Record<string, boolean> = {};
       (alerts ?? []).forEach((a: any) => (m[a.user_id] = true));
       setActiveAlerts(m);
+
+      const { data: zs } = await supabase
+        .from("safe_zones")
+        .select("id, name, lat, lng, radius_m, user_id")
+        .in("user_id", ids);
+      const zmap: Record<string, SafeZone[]> = {};
+      (zs ?? []).forEach((z: any) => {
+        (zmap[z.user_id] ||= []).push(z);
+      });
+      setZonesByUser(zmap);
+
+      const { data: locs } = await supabase
+        .from("live_locations")
+        .select("user_id, lat, lng, recorded_at")
+        .in("user_id", ids)
+        .order("recorded_at", { ascending: false });
+      const lmap: Record<string, LocPoint> = {};
+      (locs ?? []).forEach((l: any) => {
+        if (!lmap[l.user_id]) lmap[l.user_id] = { lat: l.lat, lng: l.lng };
+      });
+      setLastLocByUser(lmap);
     }
   }
 
@@ -54,6 +79,11 @@ function GuardianHome() {
     const ch = supabase
       .channel("guardian-alerts")
       .on("postgres_changes", { event: "*", schema: "public", table: "emergency_alerts" }, () => load())
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "live_locations" }, (payload) => {
+        const row: any = payload.new;
+        setLastLocByUser((m) => ({ ...m, [row.user_id]: { lat: row.lat, lng: row.lng } }));
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "safe_zones" }, () => load())
       .subscribe();
     return () => {
       supabase.removeChannel(ch);
@@ -123,27 +153,50 @@ function GuardianHome() {
         {links.map((l) => {
           const p = profiles[l.user_id];
           const danger = activeAlerts[l.user_id];
+          const loc = lastLocByUser[l.user_id] ?? null;
+          const zones = zonesByUser[l.user_id] ?? [];
+          const activeZone = findContainingZone(loc, zones);
           return (
-            <Link key={l.id} to="/guardian/map" className={`glass block rounded-2xl p-4 ${danger ? "border-primary/60 bg-primary/10" : ""}`}>
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-accent/40 to-primary/30 font-display font-bold">
-                  {(p?.full_name?.[0] ?? "?").toUpperCase()}
+            <div key={l.id} className={`glass rounded-2xl p-4 ${danger ? "border-primary/60 bg-primary/10" : ""}`}>
+              <Link to="/guardian/map" className="block">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-accent/40 to-primary/30 font-display font-bold">
+                    {(p?.full_name?.[0] ?? "?").toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold">{p?.full_name ?? "User"}</p>
+                    <p className="text-[11px] text-muted-foreground">{l.label ?? "Family"}</p>
+                  </div>
+                  {danger ? (
+                    <StatusBadge variant="danger" pulse>SOS</StatusBadge>
+                  ) : activeZone ? (
+                    <StatusBadge variant="safe">Low power</StatusBadge>
+                  ) : (
+                    <StatusBadge variant="safe">Safe</StatusBadge>
+                  )}
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold">{p?.full_name ?? "User"}</p>
-                  <p className="text-[11px] text-muted-foreground">{l.label ?? "Family"}</p>
+              </Link>
+              {activeZone && !danger && (
+                <div className="mt-3 flex items-center gap-2 rounded-xl bg-accent/10 px-3 py-2 text-[11px] text-accent">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  <span className="truncate">
+                    In safe zone · <span className="font-semibold">{activeZone.name}</span> — pendant in low-power mode
+                  </span>
                 </div>
-                {danger ? (
-                  <StatusBadge variant="danger" pulse>SOS</StatusBadge>
-                ) : (
-                  <StatusBadge variant="safe">Safe</StatusBadge>
-                )}
-              </div>
+              )}
               <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-3">
                 <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Pendant</span>
                 <BatteryWidget userId={l.user_id} compact />
               </div>
-            </Link>
+              <Link
+                to="/guardian/zones/$userId"
+                params={{ userId: l.user_id }}
+                className="mt-3 flex items-center justify-center gap-1.5 rounded-xl border border-border/60 bg-background/30 py-2 text-[11px] font-medium text-muted-foreground hover:text-accent"
+              >
+                <Settings2 className="h-3.5 w-3.5" />
+                Manage safe zones
+              </Link>
+            </div>
           );
         })}
       </div>
