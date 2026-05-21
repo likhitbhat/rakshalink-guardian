@@ -21,6 +21,8 @@ function GuardianHome() {
   const [links, setLinks] = useState<Link[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [activeAlerts, setActiveAlerts] = useState<Record<string, boolean>>({});
+  const [zonesByUser, setZonesByUser] = useState<Record<string, SafeZone[]>>({});
+  const [lastLocByUser, setLastLocByUser] = useState<Record<string, LocPoint>>({});
   const [adding, setAdding] = useState(false);
   const [linkUserId, setLinkUserId] = useState("");
 
