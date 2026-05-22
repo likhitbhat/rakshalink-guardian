@@ -1,28 +1,54 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { User, Bell, Shield, Phone, History, MapPin, LogOut, ChevronRight, Moon, Globe, Copy } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Bell, Shield, Phone, History, MapPin, LogOut, ChevronRight, Moon, Globe, Copy, Users, BellRing, Eye, MapPinned } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/settings")({
   component: SettingsPage,
 });
 
+type LinkedWearer = { user_id: string; full_name: string | null };
+
 function SettingsPage() {
   const { profile, user, signOut } = useAuth();
   const nav = useNavigate();
   const accountId = user?.id ?? profile?.id ?? "";
+  const isGuardian = profile?.role === "guardian";
+  const [wearers, setWearers] = useState<LinkedWearer[]>([]);
+
+  useEffect(() => {
+    if (!isGuardian || !user?.id) return;
+    (async () => {
+      const { data: links } = await supabase
+        .from("guardian_links")
+        .select("user_id")
+        .eq("guardian_id", user.id)
+        .eq("status", "active");
+      const ids = (links ?? []).map((l) => l.user_id);
+      if (!ids.length) return setWearers([]);
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", ids);
+      setWearers((profs ?? []).map((p) => ({ user_id: p.id, full_name: p.full_name })));
+    })();
+  }, [isGuardian, user?.id]);
 
   const copyId = async () => {
     if (!accountId) return;
     try {
       await navigator.clipboard.writeText(accountId);
-      toast.success("Account ID copied", { description: "Share it with your Guardian to link." });
+      toast.success("Account ID copied", {
+        description: isGuardian ? "Share with support if needed." : "Share it with your Guardian to link.",
+      });
     } catch {
       toast.error("Couldn't copy. Select and copy manually.");
     }
   };
 
-  const groups = [
+  const userGroups = [
     {
       title: "Safety",
       items: [
@@ -41,6 +67,29 @@ function SettingsPage() {
       ],
     },
   ];
+
+  const guardianGroups = [
+    {
+      title: "Monitoring",
+      items: [
+        { icon: Users, label: "Watched wearers", to: "/guardian" as const },
+        { icon: MapPinned, label: "Live map", to: "/guardian/map" as const },
+        { icon: BellRing, label: "Alert history", to: "/guardian/alerts" as const },
+      ],
+    },
+    {
+      title: "Preferences",
+      items: [
+        { icon: Bell, label: "Push notifications", to: "/app/settings" as const },
+        { icon: Eye, label: "Quiet hours", to: "/app/settings" as const },
+        { icon: Moon, label: "Theme · Dark", to: "/app/settings" as const },
+        { icon: Globe, label: "Language · English", to: "/app/settings" as const },
+      ],
+    },
+  ];
+
+  const groups = isGuardian ? guardianGroups : userGroups;
+
 
   return (
     <div className="px-5 pt-8">
