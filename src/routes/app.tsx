@@ -15,7 +15,10 @@ function AppLayout() {
 
   useEffect(() => {
     if (!loading && !session) nav({ to: "/auth/login" });
-    if (!loading && session && profile?.role === "guardian") nav({ to: "/guardian" });
+    // Only bounce guardians away from the wearer home, not shared pages like /app/settings
+    if (!loading && session && profile?.role === "guardian" && window.location.pathname === "/app") {
+      nav({ to: "/guardian" });
+    }
   }, [loading, session, profile, nav]);
 
   useZoneTransitionTracker(user?.id);
