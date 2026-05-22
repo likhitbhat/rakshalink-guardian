@@ -245,6 +245,39 @@ export type Database = {
         }
         Relationships: []
       }
+      zone_events: {
+        Row: {
+          created_at: string
+          event: Database["public"]["Enums"]["zone_event_type"]
+          id: string
+          lat: number | null
+          lng: number | null
+          user_id: string
+          zone_id: string | null
+          zone_name: string
+        }
+        Insert: {
+          created_at?: string
+          event: Database["public"]["Enums"]["zone_event_type"]
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          user_id: string
+          zone_id?: string | null
+          zone_name: string
+        }
+        Update: {
+          created_at?: string
+          event?: Database["public"]["Enums"]["zone_event_type"]
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          user_id?: string
+          zone_id?: string | null
+          zone_name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -260,6 +293,7 @@ export type Database = {
       alert_type: "sos" | "fall" | "voice" | "deadman" | "manual"
       app_role: "user" | "guardian"
       link_status: "pending" | "active" | "revoked"
+      zone_event_type: "enter" | "exit"
       zone_type: "home" | "school" | "work" | "custom"
     }
     CompositeTypes: {
@@ -392,6 +426,7 @@ export const Constants = {
       alert_type: ["sos", "fall", "voice", "deadman", "manual"],
       app_role: ["user", "guardian"],
       link_status: ["pending", "active", "revoked"],
+      zone_event_type: ["enter", "exit"],
       zone_type: ["home", "school", "work", "custom"],
     },
   },
