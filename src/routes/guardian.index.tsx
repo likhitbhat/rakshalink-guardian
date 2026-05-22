@@ -84,6 +84,25 @@ function GuardianHome() {
         setLastLocByUser((m) => ({ ...m, [row.user_id]: { lat: row.lat, lng: row.lng } }));
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "safe_zones" }, () => load())
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "zone_events" }, (payload) => {
+        const row: any = payload.new;
+        // Only notify for users this guardian watches.
+        setProfiles((cur) => {
+          const p = cur[row.user_id];
+          if (!p) return cur;
+          const who = p.full_name ?? "Wearer";
+          if (row.event === "enter") {
+            toast.success(`${who} entered ${row.zone_name}`, {
+              description: "Pendant switched to low-power mode.",
+            });
+          } else {
+            toast.warning(`${who} left ${row.zone_name}`, {
+              description: "Live tracking resumed.",
+            });
+          }
+          return cur;
+        });
+      })
       .subscribe();
     return () => {
       supabase.removeChannel(ch);
