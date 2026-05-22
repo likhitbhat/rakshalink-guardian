@@ -104,7 +104,7 @@ function SettingsPage() {
         <span className="rounded-full bg-success/15 px-2 py-0.5 text-[11px] text-success">Active</span>
       </div>
 
-      {profile?.role === "user" && (
+      {!isGuardian && (
         <div className="mt-6">
           <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Guardian pairing</p>
           <div className="glass overflow-hidden rounded-2xl p-4">
@@ -123,6 +123,34 @@ function SettingsPage() {
           </div>
         </div>
       )}
+
+      {isGuardian && (
+        <div className="mt-6">
+          <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Linked wearers</p>
+          <div className="glass divide-y divide-border/40 overflow-hidden rounded-2xl">
+            {wearers.length === 0 ? (
+              <p className="px-4 py-4 text-xs text-muted-foreground">No wearers linked yet. Ask them to share their Account ID with you.</p>
+            ) : (
+              wearers.map((w) => (
+                <Link
+                  key={w.user_id}
+                  to="/guardian/zones/$userId"
+                  params={{ userId: w.user_id }}
+                  className="flex items-center gap-3 px-4 py-3.5"
+                >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/15 text-[11px] font-semibold text-accent">
+                    {(w.full_name?.[0] ?? "W").toUpperCase()}
+                  </div>
+                  <span className="flex-1 text-sm">{w.full_name ?? "Wearer"}</span>
+                  <span className="text-[11px] text-muted-foreground">Safe zones</span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </Link>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
 
       {groups.map((g) => (
         <div key={g.title} className="mt-6">
