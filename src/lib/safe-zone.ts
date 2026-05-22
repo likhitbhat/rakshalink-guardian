@@ -40,7 +40,7 @@ export function useSafeZones(userId: string | undefined) {
         if (!cancelled) setZones((data as any) ?? []);
       });
     const ch = supabase
-      .channel(`safe-zones-${userId}`)
+      .channel(`safe-zones-${userId}-${Math.random().toString(36).slice(2, 8)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "safe_zones", filter: `user_id=eq.${userId}` },
