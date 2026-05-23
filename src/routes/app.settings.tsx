@@ -52,47 +52,36 @@ function SettingsPage() {
     }
   };
 
-  const userGroups = [
-    {
-      title: "Safety",
-      items: [
-        { icon: Phone, label: "Emergency contacts", to: "/app/contacts" },
-        { icon: MapPin, label: "Safe zones", to: "/app/zones" },
-        { icon: History, label: "Emergency history", to: "/app/history" },
-      ],
-    },
-    {
-      title: "Preferences",
-      items: [
-        { icon: Bell, label: "Notifications", to: "/app/settings" },
-        { icon: Moon, label: "Theme · Dark", to: "/app/settings" },
-        { icon: Globe, label: "Language · English", to: "/app/settings" },
-        { icon: Shield, label: "Privacy", to: "/app/settings" },
-      ],
-    },
-  ];
+  const primaryGroup = isGuardian
+    ? {
+        title: "Monitoring",
+        items: [
+          { icon: Users, label: "Watched wearers", to: "/guardian" as const },
+          { icon: MapPinned, label: "Live map", to: "/guardian/map" as const },
+          { icon: BellRing, label: "Alert history", to: "/guardian/alerts" as const },
+        ],
+      }
+    : {
+        title: "Safety",
+        items: [
+          { icon: Phone, label: "Emergency contacts", to: "/app/contacts" as const },
+          { icon: MapPin, label: "Safe zones", to: "/app/zones" as const },
+          { icon: History, label: "Emergency history", to: "/app/history" as const },
+        ],
+      };
 
-  const guardianGroups = [
-    {
-      title: "Monitoring",
-      items: [
-        { icon: Users, label: "Watched wearers", to: "/guardian" as const },
-        { icon: MapPinned, label: "Live map", to: "/guardian/map" as const },
-        { icon: BellRing, label: "Alert history", to: "/guardian/alerts" as const },
-      ],
-    },
-    {
-      title: "Preferences",
-      items: [
-        { icon: Bell, label: "Push notifications", to: "/app/settings" as const },
-        { icon: Eye, label: "Quiet hours", to: "/app/settings" as const },
-        { icon: Moon, label: "Theme · Dark", to: "/app/settings" as const },
-        { icon: Globe, label: "Language · English", to: "/app/settings" as const },
-      ],
-    },
-  ];
-
-  const groups = isGuardian ? guardianGroups : userGroups;
+  const Toggle = ({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) => (
+    <button
+      onClick={() => onChange(!on)}
+      role="switch"
+      aria-checked={on}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition ${on ? "bg-accent" : "bg-muted"}`}
+    >
+      <span
+        className={`absolute top-0.5 h-5 w-5 rounded-full bg-background shadow transition-all ${on ? "left-[22px]" : "left-0.5"}`}
+      />
+    </button>
+  );
 
 
   return (
