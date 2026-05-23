@@ -177,7 +177,7 @@ function GuardianHome() {
           const activeZone = findContainingZone(loc, zones);
           return (
             <div key={l.id} className={`glass rounded-2xl p-4 ${danger ? "border-primary/60 bg-primary/10" : ""}`}>
-              <Link to="/guardian/map" className="block">
+              <Link to="/guardian/wearer/$userId" params={{ userId: l.user_id }} className="block">
                 <div className="flex items-center gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-accent/40 to-primary/30 font-display font-bold">
                     {(p?.full_name?.[0] ?? "?").toUpperCase()}
@@ -208,12 +208,12 @@ function GuardianHome() {
                 <BatteryWidget userId={l.user_id} compact />
               </div>
               <Link
-                to="/guardian/zones/$userId"
+                to="/guardian/wearer/$userId"
                 params={{ userId: l.user_id }}
                 className="mt-3 flex items-center justify-center gap-1.5 rounded-xl border border-border/60 bg-background/30 py-2 text-[11px] font-medium text-muted-foreground hover:text-accent"
               >
                 <Settings2 className="h-3.5 w-3.5" />
-                Manage safe zones
+                Manage wearer
               </Link>
             </div>
           );
