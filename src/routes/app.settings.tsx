@@ -2,8 +2,10 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { Bell, Shield, Phone, History, MapPin, LogOut, ChevronRight, Moon, Globe, Copy, Users, BellRing, Eye, MapPinned } from "lucide-react";
+import { Bell, Shield, Phone, History, MapPin, LogOut, ChevronRight, Moon, Sun, Globe, Copy, Users, BellRing, Eye, MapPinned } from "lucide-react";
 import { toast } from "sonner";
+import { useTheme } from "@/lib/theme";
+import { usePreferences, LANGUAGES, type LanguagePref } from "@/lib/preferences";
 
 export const Route = createFileRoute("/app/settings")({
   component: SettingsPage,
