@@ -145,20 +145,121 @@ function SettingsPage() {
       )}
 
 
-      {groups.map((g) => (
-        <div key={g.title} className="mt-6">
-          <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{g.title}</p>
-          <div className="glass divide-y divide-border/40 overflow-hidden rounded-2xl">
-            {g.items.map((it) => (
-              <Link key={it.label} to={it.to as any} className="flex items-center gap-3 px-4 py-3.5">
-                <it.icon className="h-4 w-4 text-accent" />
-                <span className="flex-1 text-sm">{it.label}</span>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </Link>
-            ))}
+      <div className="mt-6">
+        <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{primaryGroup.title}</p>
+        <div className="glass divide-y divide-border/40 overflow-hidden rounded-2xl">
+          {primaryGroup.items.map((it) => (
+            <Link key={it.label} to={it.to} className="flex items-center gap-3 px-4 py-3.5">
+              <it.icon className="h-4 w-4 text-accent" />
+              <span className="flex-1 text-sm">{it.label}</span>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Preferences</p>
+        <div className="glass divide-y divide-border/40 overflow-hidden rounded-2xl">
+          {/* Notifications */}
+          <div className="flex items-center gap-3 px-4 py-3.5">
+            <Bell className="h-4 w-4 text-accent" />
+            <div className="flex-1">
+              <p className="text-sm">{isGuardian ? "Push notifications" : "Notifications"}</p>
+              <p className="text-[11px] text-muted-foreground">
+                {isGuardian ? "Alerts for SOS, zone events, low battery" : "SOS, safe-zone & device alerts"}
+              </p>
+            </div>
+            <Toggle
+              on={prefs.notifications}
+              onChange={(v) => {
+                update("notifications", v);
+                toast.success(v ? "Notifications enabled" : "Notifications muted");
+              }}
+            />
+          </div>
+
+          {/* Quiet hours (guardian) or Privacy/share location (wearer) */}
+          {isGuardian ? (
+            <div className="flex items-center gap-3 px-4 py-3.5">
+              <Eye className="h-4 w-4 text-accent" />
+              <div className="flex-1">
+                <p className="text-sm">Quiet hours</p>
+                <p className="text-[11px] text-muted-foreground">Silence non-critical pings 10pm–7am</p>
+              </div>
+              <Toggle
+                on={prefs.quietHours}
+                onChange={(v) => {
+                  update("quietHours", v);
+                  toast.success(v ? "Quiet hours on" : "Quiet hours off");
+                }}
+              />
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 px-4 py-3.5">
+              <Shield className="h-4 w-4 text-accent" />
+              <div className="flex-1">
+                <p className="text-sm">Share live location</p>
+                <p className="text-[11px] text-muted-foreground">Let your guardians see your location</p>
+              </div>
+              <Toggle
+                on={prefs.shareLocation}
+                onChange={(v) => {
+                  update("shareLocation", v);
+                  toast.success(v ? "Location sharing on" : "Location sharing paused");
+                }}
+              />
+            </div>
+          )}
+
+          {/* Theme */}
+          <div className="flex items-center gap-3 px-4 py-3.5">
+            {theme === "dark" ? <Moon className="h-4 w-4 text-accent" /> : <Sun className="h-4 w-4 text-accent" />}
+            <div className="flex-1">
+              <p className="text-sm">Theme</p>
+              <p className="text-[11px] capitalize text-muted-foreground">{theme} mode</p>
+            </div>
+            <div className="flex rounded-full bg-muted/60 p-0.5 text-[11px]">
+              {(["dark", "light"] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => {
+                    setTheme(t);
+                    toast.success(`Switched to ${t} theme`);
+                  }}
+                  className={`rounded-full px-3 py-1 capitalize transition ${
+                    theme === t ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Language */}
+          <div className="flex items-center gap-3 px-4 py-3.5">
+            <Globe className="h-4 w-4 text-accent" />
+            <div className="flex-1">
+              <p className="text-sm">Language</p>
+              <p className="text-[11px] text-muted-foreground">App display language</p>
+            </div>
+            <select
+              value={prefs.language}
+              onChange={(e) => {
+                update("language", e.target.value as LanguagePref);
+                toast.success("Language updated");
+              }}
+              className="rounded-lg border border-border/50 bg-background/60 px-2.5 py-1.5 text-xs"
+            >
+              {LANGUAGES.map((l) => (
+                <option key={l.value} value={l.value}>{l.label}</option>
+              ))}
+            </select>
           </div>
         </div>
-      ))}
+      </div>
+
 
       <button
         onClick={async () => {
