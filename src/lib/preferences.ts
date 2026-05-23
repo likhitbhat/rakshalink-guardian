@@ -1,10 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 
-export type ThemePref = "dark" | "light";
 export type LanguagePref = "en" | "hi" | "es" | "fr";
 
 export type Preferences = {
-  theme: ThemePref;
   language: LanguagePref;
   notifications: boolean;
   quietHours: boolean;
@@ -14,7 +12,6 @@ export type Preferences = {
 const KEY = "raksha:prefs:v1";
 
 const DEFAULTS: Preferences = {
-  theme: "dark",
   language: "en",
   notifications: true,
   quietHours: false,
@@ -39,21 +36,6 @@ function read(): Preferences {
   }
 }
 
-export function applyTheme(theme: ThemePref) {
-  if (typeof document === "undefined") return;
-  const root = document.documentElement;
-  root.classList.remove("light", "dark");
-  root.classList.add(theme);
-}
-
-export function initPreferences() {
-  const p = read();
-  applyTheme(p.theme);
-  if (typeof document !== "undefined") {
-    document.documentElement.lang = p.language;
-  }
-}
-
 const listeners = new Set<(p: Preferences) => void>();
 
 export function usePreferences() {
@@ -62,6 +44,8 @@ export function usePreferences() {
   useEffect(() => {
     const fn = (p: Preferences) => setPrefs(p);
     listeners.add(fn);
+    setPrefs(read());
+    if (typeof document !== "undefined") document.documentElement.lang = read().language;
     return () => {
       listeners.delete(fn);
     };
@@ -69,8 +53,7 @@ export function usePreferences() {
 
   const update = useCallback(<K extends keyof Preferences>(key: K, value: Preferences[K]) => {
     const next = { ...read(), [key]: value };
-    localStorage.setItem(KEY, JSON.stringify(next));
-    if (key === "theme") applyTheme(next.theme);
+    try { localStorage.setItem(KEY, JSON.stringify(next)); } catch {}
     if (key === "language" && typeof document !== "undefined") document.documentElement.lang = next.language;
     listeners.forEach((l) => l(next));
   }, []);
