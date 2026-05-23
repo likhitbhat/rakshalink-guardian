@@ -27,6 +27,7 @@ import { Route as AppHistoryRouteImport } from './routes/app.history'
 import { Route as AppDeviceRouteImport } from './routes/app.device'
 import { Route as AppContactsRouteImport } from './routes/app.contacts'
 import { Route as GuardianZonesUserIdRouteImport } from './routes/guardian.zones.$userId'
+import { Route as GuardianWearerUserIdRouteImport } from './routes/guardian.wearer.$userId'
 
 const GuardianRoute = GuardianRouteImport.update({
   id: '/guardian',
@@ -118,6 +119,11 @@ const GuardianZonesUserIdRoute = GuardianZonesUserIdRouteImport.update({
   path: '/zones/$userId',
   getParentRoute: () => GuardianRoute,
 } as any)
+const GuardianWearerUserIdRoute = GuardianWearerUserIdRouteImport.update({
+  id: '/wearer/$userId',
+  path: '/wearer/$userId',
+  getParentRoute: () => GuardianRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -137,6 +143,7 @@ export interface FileRoutesByFullPath {
   '/guardian/map': typeof GuardianMapRoute
   '/app/': typeof AppIndexRoute
   '/guardian/': typeof GuardianIndexRoute
+  '/guardian/wearer/$userId': typeof GuardianWearerUserIdRoute
   '/guardian/zones/$userId': typeof GuardianZonesUserIdRoute
 }
 export interface FileRoutesByTo {
@@ -155,6 +162,7 @@ export interface FileRoutesByTo {
   '/guardian/map': typeof GuardianMapRoute
   '/app': typeof AppIndexRoute
   '/guardian': typeof GuardianIndexRoute
+  '/guardian/wearer/$userId': typeof GuardianWearerUserIdRoute
   '/guardian/zones/$userId': typeof GuardianZonesUserIdRoute
 }
 export interface FileRoutesById {
@@ -176,6 +184,7 @@ export interface FileRoutesById {
   '/guardian/map': typeof GuardianMapRoute
   '/app/': typeof AppIndexRoute
   '/guardian/': typeof GuardianIndexRoute
+  '/guardian/wearer/$userId': typeof GuardianWearerUserIdRoute
   '/guardian/zones/$userId': typeof GuardianZonesUserIdRoute
 }
 export interface FileRouteTypes {
@@ -198,6 +207,7 @@ export interface FileRouteTypes {
     | '/guardian/map'
     | '/app/'
     | '/guardian/'
+    | '/guardian/wearer/$userId'
     | '/guardian/zones/$userId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -216,6 +226,7 @@ export interface FileRouteTypes {
     | '/guardian/map'
     | '/app'
     | '/guardian'
+    | '/guardian/wearer/$userId'
     | '/guardian/zones/$userId'
   id:
     | '__root__'
@@ -236,6 +247,7 @@ export interface FileRouteTypes {
     | '/guardian/map'
     | '/app/'
     | '/guardian/'
+    | '/guardian/wearer/$userId'
     | '/guardian/zones/$userId'
   fileRoutesById: FileRoutesById
 }
@@ -374,6 +386,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GuardianZonesUserIdRouteImport
       parentRoute: typeof GuardianRoute
     }
+    '/guardian/wearer/$userId': {
+      id: '/guardian/wearer/$userId'
+      path: '/wearer/$userId'
+      fullPath: '/guardian/wearer/$userId'
+      preLoaderRoute: typeof GuardianWearerUserIdRouteImport
+      parentRoute: typeof GuardianRoute
+    }
   }
 }
 
@@ -417,6 +436,7 @@ interface GuardianRouteChildren {
   GuardianAlertsRoute: typeof GuardianAlertsRoute
   GuardianMapRoute: typeof GuardianMapRoute
   GuardianIndexRoute: typeof GuardianIndexRoute
+  GuardianWearerUserIdRoute: typeof GuardianWearerUserIdRoute
   GuardianZonesUserIdRoute: typeof GuardianZonesUserIdRoute
 }
 
@@ -424,6 +444,7 @@ const GuardianRouteChildren: GuardianRouteChildren = {
   GuardianAlertsRoute: GuardianAlertsRoute,
   GuardianMapRoute: GuardianMapRoute,
   GuardianIndexRoute: GuardianIndexRoute,
+  GuardianWearerUserIdRoute: GuardianWearerUserIdRoute,
   GuardianZonesUserIdRoute: GuardianZonesUserIdRoute,
 }
 
