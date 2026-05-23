@@ -16,6 +16,8 @@ type LinkedWearer = { user_id: string; full_name: string | null };
 function SettingsPage() {
   const { profile, user, signOut } = useAuth();
   const nav = useNavigate();
+  const { theme, setTheme } = useTheme();
+  const { prefs, update } = usePreferences();
   const accountId = user?.id ?? profile?.id ?? "";
   const isGuardian = profile?.role === "guardian";
   const [wearers, setWearers] = useState<LinkedWearer[]>([]);
