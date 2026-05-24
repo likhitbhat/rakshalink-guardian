@@ -20,6 +20,8 @@ function SettingsPage() {
   const nav = useNavigate();
   const { theme, setTheme } = useTheme();
   const { prefs, update } = usePreferences();
+  const { permission, request: requestPush, sendTest, supported: pushSupported } = usePushPermission();
+  const pushStatus = describePermission(permission);
   const accountId = user?.id ?? profile?.id ?? "";
   const isGuardian = profile?.role === "guardian";
   const [wearers, setWearers] = useState<LinkedWearer[]>([]);
