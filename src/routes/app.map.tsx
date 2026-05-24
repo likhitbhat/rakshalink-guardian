@@ -17,6 +17,7 @@ function MapPage() {
   const { user } = useAuth();
   const { loc, status } = useLiveLocation();
   const [path, setPath] = useState<[number, number][]>([]);
+  const [showTrail, setShowTrail] = useState(true);
   const zones = useSafeZones(user?.id);
   const [showHospitals, setShowHospitals] = useState(true);
   const [showPolice, setShowPolice] = useState(true);
