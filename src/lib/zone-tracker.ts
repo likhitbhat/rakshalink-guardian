@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getMockLocation } from "@/lib/mock-location";
+import { useLiveLocation } from "@/lib/use-live-location";
 import { useSafeZones, findContainingZone, type SafeZone } from "@/lib/safe-zone";
 
 /**
