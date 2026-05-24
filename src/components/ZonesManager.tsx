@@ -2,6 +2,17 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Home, School, Briefcase, MapPin, Trash2, Pencil, Crosshair } from "lucide-react";
 import { getMockLocation } from "@/lib/mock-location";
+
+function getCurrentPositionAsync(): Promise<{ lat: number; lng: number } | null> {
+  return new Promise((resolve) => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) return resolve(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => resolve(null),
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+    );
+  });
+}
 import { toast } from "sonner";
 import { MapView } from "@/components/MapView";
 import { Slider } from "@/components/ui/slider";
