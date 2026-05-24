@@ -60,21 +60,20 @@ function MapPage() {
 
   const sortedNearby = useMemo(() => {
     return [...nearby]
+      .filter((n) => (n.type === "police" ? showPolice : showHospitals))
       .map((n) => ({ ...n, dist: distanceMeters(loc, { lat: n.lat, lng: n.lng }) }))
       .sort((a, b) => a.dist - b.dist);
-  }, [nearby, loc]);
+  }, [nearby, loc, showPolice, showHospitals]);
 
   const markers = [
     { id: "me", lat: loc.lat, lng: loc.lng, label: "You", color: "oklch(0.78 0.14 200)" },
-    ...(showNearby
-      ? sortedNearby.map((n) => ({
-          id: n.id,
-          lat: n.lat,
-          lng: n.lng,
-          label: n.name,
-          color: n.type === "police" ? "oklch(0.78 0.17 75)" : "oklch(0.72 0.18 155)",
-        }))
-      : []),
+    ...sortedNearby.map((n) => ({
+      id: n.id,
+      lat: n.lat,
+      lng: n.lng,
+      label: n.name,
+      color: n.type === "police" ? "oklch(0.78 0.17 75)" : "oklch(0.72 0.18 155)",
+    })),
   ];
 
   return (
