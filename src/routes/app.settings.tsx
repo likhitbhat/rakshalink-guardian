@@ -165,23 +165,89 @@ function SettingsPage() {
       <div className="mt-6">
         <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Preferences</p>
         <div className="glass divide-y divide-border/40 overflow-hidden rounded-2xl">
-          {/* Notifications */}
-          <div className="flex items-center gap-3 px-4 py-3.5">
-            <Bell className="h-4 w-4 text-accent" />
-            <div className="flex-1">
-              <p className="text-sm">{isGuardian ? "Push notifications" : "Notifications"}</p>
-              <p className="text-[11px] text-muted-foreground">
-                {isGuardian ? "Alerts for SOS, zone events, low battery" : "SOS, safe-zone & device alerts"}
-              </p>
+          {/* Push notifications */}
+          <div className="px-4 py-3.5">
+            <div className="flex items-center gap-3">
+              <Bell className="h-4 w-4 text-accent" />
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm">Push notifications</p>
+                  <StatusBadge variant={pushStatus.tone}>{pushStatus.label}</StatusBadge>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  {isGuardian ? "Alerts for SOS, zone events, low battery" : "SOS, safe-zone & device alerts"}
+                </p>
+              </div>
+              <Toggle
+                on={prefs.notifications && permission === "granted"}
+                onChange={async (v) => {
+                  if (v) {
+                    if (!pushSupported) {
+                      toast.error("Push notifications aren't supported on this device");
+                      return;
+                    }
+                    if (permission === "denied") {
+                      toast.error("Notifications are blocked", {
+                        description: "Enable them from your browser site settings, then return here.",
+                      });
+                      return;
+                    }
+                    const result = permission === "granted" ? "granted" : await requestPush();
+                    if (result === "granted") {
+                      update("notifications", true);
+                      sendTest();
+                      toast.success("Notifications enabled");
+                    } else if (result === "denied") {
+                      toast.error("Permission denied");
+                    } else {
+                      toast.message("Permission dismissed");
+                    }
+                  } else {
+                    update("notifications", false);
+                    toast.success("Notifications muted");
+                  }
+                }}
+              />
             </div>
-            <Toggle
-              on={prefs.notifications}
-              onChange={(v) => {
-                update("notifications", v);
-                toast.success(v ? "Notifications enabled" : "Notifications muted");
-              }}
-            />
+            {pushSupported && permission !== "granted" && (
+              <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-border/50 bg-background/40 px-3 py-2.5">
+                <p className="text-[11px] text-muted-foreground">
+                  {permission === "denied"
+                    ? "Blocked in your browser. Open site settings to allow notifications."
+                    : "Allow your browser to send alerts so you don't miss critical events."}
+                </p>
+                {permission === "default" && (
+                  <button
+                    onClick={async () => {
+                      const r = await requestPush();
+                      if (r === "granted") {
+                        update("notifications", true);
+                        sendTest();
+                        toast.success("Notifications enabled");
+                      } else if (r === "denied") {
+                        toast.error("Permission denied");
+                      }
+                    }}
+                    className="shrink-0 rounded-lg bg-accent px-3 py-1.5 text-[11px] font-semibold text-accent-foreground"
+                  >
+                    Enable
+                  </button>
+                )}
+              </div>
+            )}
+            {permission === "granted" && (
+              <button
+                onClick={() => {
+                  const ok = sendTest();
+                  if (ok) toast.success("Test notification sent");
+                }}
+                className="mt-3 w-full rounded-xl border border-border/50 bg-background/40 px-3 py-2 text-[11px] font-medium text-muted-foreground hover:text-foreground"
+              >
+                Send a test notification
+              </button>
+            )}
           </div>
+
 
           {/* Quiet hours (guardian) or Privacy/share location (wearer) */}
           {isGuardian ? (
