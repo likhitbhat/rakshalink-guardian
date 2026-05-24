@@ -18,7 +18,8 @@ function MapPage() {
   const { loc, status } = useLiveLocation();
   const [path, setPath] = useState<[number, number][]>([]);
   const zones = useSafeZones(user?.id);
-  const [showNearby, setShowNearby] = useState(true);
+  const [showHospitals, setShowHospitals] = useState(true);
+  const [showPolice, setShowPolice] = useState(true);
   const [nearby, setNearby] = useState<NearbyPlace[]>([]);
   const [loadingNearby, setLoadingNearby] = useState(false);
   const lastWriteRef = useRef(0);
@@ -59,21 +60,20 @@ function MapPage() {
 
   const sortedNearby = useMemo(() => {
     return [...nearby]
+      .filter((n) => (n.type === "police" ? showPolice : showHospitals))
       .map((n) => ({ ...n, dist: distanceMeters(loc, { lat: n.lat, lng: n.lng }) }))
       .sort((a, b) => a.dist - b.dist);
-  }, [nearby, loc]);
+  }, [nearby, loc, showPolice, showHospitals]);
 
   const markers = [
     { id: "me", lat: loc.lat, lng: loc.lng, label: "You", color: "oklch(0.78 0.14 200)" },
-    ...(showNearby
-      ? sortedNearby.map((n) => ({
-          id: n.id,
-          lat: n.lat,
-          lng: n.lng,
-          label: n.name,
-          color: n.type === "police" ? "oklch(0.78 0.17 75)" : "oklch(0.72 0.18 155)",
-        }))
-      : []),
+    ...sortedNearby.map((n) => ({
+      id: n.id,
+      lat: n.lat,
+      lng: n.lng,
+      label: n.name,
+      color: n.type === "police" ? "oklch(0.78 0.17 75)" : "oklch(0.72 0.18 155)",
+    })),
   ];
 
   return (
@@ -106,8 +106,8 @@ function MapPage() {
       </div>
 
       <div className="mt-4 grid grid-cols-3 gap-2">
-        <Toggle active={showNearby} onClick={() => setShowNearby((v) => !v)} icon={Hospital} label="Hospitals" />
-        <Toggle active={showNearby} onClick={() => setShowNearby((v) => !v)} icon={ShieldIcon} label="Police" />
+        <Toggle active={showHospitals} onClick={() => setShowHospitals((v: boolean) => !v)} icon={Hospital} label="Hospitals" />
+        <Toggle active={showPolice} onClick={() => setShowPolice((v: boolean) => !v)} icon={ShieldIcon} label="Police" />
         <Toggle active={path.length > 1} onClick={() => setPath([])} icon={Navigation} label="Trail" />
       </div>
 
