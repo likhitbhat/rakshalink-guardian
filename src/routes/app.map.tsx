@@ -68,7 +68,13 @@ function MapPage() {
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
         {loc.lat.toFixed(5)}, {loc.lng.toFixed(5)} ·{" "}
-        {lowPower ? `in "${activeZone?.name}" — saving battery` : "updated every 3s"}
+        {status === "denied"
+          ? "location permission denied — showing demo"
+          : status === "unavailable" || status === "fallback"
+          ? "GPS unavailable — showing demo"
+          : status === "requesting"
+          ? "getting your location…"
+          : lowPower ? `in "${activeZone?.name}" — saving battery` : "live GPS"}
       </p>
 
       <div className="mt-4 overflow-hidden rounded-3xl border border-border">
