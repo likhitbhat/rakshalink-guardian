@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Shield, Phone, X, Mic, MapPin, Volume2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { getMockLocation } from "@/lib/mock-location";
+import { useLiveLocation } from "@/lib/use-live-location";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/sos")({
