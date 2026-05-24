@@ -62,17 +62,28 @@ export function ZonesManager({
     load();
   }, [targetUserId]);
 
-  function startAdd() {
-    const loc = getMockLocation();
+  const [locating, setLocating] = useState(false);
+
+  async function startAdd() {
+    setLocating(true);
+    const loc = (await getCurrentPositionAsync()) ?? getMockLocation();
+    setLocating(false);
     setEditor({ id: null, name: "", type: "home", lat: loc.lat, lng: loc.lng, radius_m: 200 });
   }
   function startEdit(z: Zone) {
     setEditor({ id: z.id, name: z.name, type: z.type, lat: z.lat, lng: z.lng, radius_m: z.radius_m });
   }
-  function recenter() {
+  async function recenter() {
     if (!editor) return;
-    const loc = getMockLocation();
+    setLocating(true);
+    const loc = await getCurrentPositionAsync();
+    setLocating(false);
+    if (!loc) {
+      toast.error("Couldn't get your location. Check browser location permission.");
+      return;
+    }
     setEditor({ ...editor, lat: loc.lat, lng: loc.lng });
+    toast.success("Centered on your location");
   }
 
   async function save() {
