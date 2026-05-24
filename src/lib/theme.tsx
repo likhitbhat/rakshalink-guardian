@@ -1,4 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { syncThemeToCloud } from "@/lib/preferences";
+
+
 
 type Theme = "light" | "dark";
 const ThemeCtx = createContext<{ theme: Theme; toggle: () => void; setTheme: (t: Theme) => void }>({
