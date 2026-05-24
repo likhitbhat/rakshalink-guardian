@@ -24,20 +24,23 @@ function MapPage() {
   const lowPower = !!activeZone;
 
   useEffect(() => {
+    // Only record the trail once we have a real GPS fix — otherwise the
+    // initial fallback point (Bangalore) would be connected by a line to
+    // the user's real location when the fix arrives.
+    if (status !== "live") return;
     setPath((p) => {
       const last = p[p.length - 1];
       if (last && last[0] === loc.lat && last[1] === loc.lng) return p;
       return [...p.slice(-30), [loc.lat, loc.lng]];
     });
     if (!user) return;
-    // In a safe zone, low-power mode: writes every ~30s. Outside: every ~10s.
     const interval = activeZone ? 30000 : 10000;
     const now = Date.now();
     if (now - lastWriteRef.current > interval) {
       lastWriteRef.current = now;
       supabase.from("live_locations").insert({ user_id: user.id, lat: loc.lat, lng: loc.lng }).then(() => {});
     }
-  }, [user, loc, activeZone]);
+  }, [user, loc, activeZone, status]);
 
   const markers = [
     { id: "me", lat: loc.lat, lng: loc.lng, label: "You", color: "oklch(0.78 0.14 200)" },
