@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getMockLocation } from "@/lib/mock-location";
+import { useLiveLocation } from "@/lib/use-live-location";
 import { useSafeZones, findContainingZone, type SafeZone } from "@/lib/safe-zone";
 
 /**
@@ -14,14 +14,15 @@ export function useZoneTransitionTracker(userId: string | undefined) {
   const zones = useSafeZones(userId);
   const zonesRef = useRef<SafeZone[]>([]);
   zonesRef.current = zones;
+  const { loc } = useLiveLocation();
+  const locRef = useRef(loc);
+  locRef.current = loc;
   const prevZoneId = useRef<string | null>(null);
   const prevZoneName = useRef<string>("");
   const hydrated = useRef(false);
 
   useEffect(() => {
     if (!userId) return;
-    // hydrate previous zone from localStorage per user so we don't fire
-    // duplicate events across navigation / reload.
     const key = `rl:lastZone:${userId}`;
     if (!hydrated.current) {
       try {
@@ -36,12 +37,11 @@ export function useZoneTransitionTracker(userId: string | undefined) {
     }
 
     const tick = async () => {
-      const loc = getMockLocation();
+      const loc = locRef.current;
       const current = findContainingZone(loc, zonesRef.current);
       const currentId = current?.id ?? null;
       if (currentId === prevZoneId.current) return;
 
-      // exit previous
       if (prevZoneId.current) {
         await supabase.from("zone_events").insert({
           user_id: userId,
@@ -52,7 +52,6 @@ export function useZoneTransitionTracker(userId: string | undefined) {
           lng: loc.lng,
         });
       }
-      // enter new
       if (current) {
         await supabase.from("zone_events").insert({
           user_id: userId,
@@ -74,7 +73,6 @@ export function useZoneTransitionTracker(userId: string | undefined) {
       } catch {}
     };
 
-    // Run once on mount, then poll. Polling keeps the wearer's pendant simulation honest.
     tick();
     const t = setInterval(tick, 5000);
     return () => clearInterval(t);

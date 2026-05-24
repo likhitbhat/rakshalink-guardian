@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Shield, Phone, X, Mic, MapPin, Volume2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { getMockLocation } from "@/lib/mock-location";
+import { useLiveLocation } from "@/lib/use-live-location";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/sos")({
@@ -12,6 +12,9 @@ export const Route = createFileRoute("/app/sos")({
 
 function SosPage() {
   const { user } = useAuth();
+  const { loc: liveLoc } = useLiveLocation();
+  const liveLocRef = useRef(liveLoc);
+  liveLocRef.current = liveLoc;
   const [holding, setHolding] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [activeAlert, setActiveAlert] = useState<string | null>(null);
@@ -44,7 +47,7 @@ function SosPage() {
 
   async function triggerSos() {
     if (!user) return;
-    const loc = getMockLocation();
+    const loc = liveLocRef.current;
     const { data, error } = await supabase
       .from("emergency_alerts")
       .insert({ user_id: user.id, type: "sos", status: "active", lat: loc.lat, lng: loc.lng })
@@ -57,7 +60,7 @@ function SosPage() {
     if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate?.([200, 100, 200, 100, 400]);
     // simulate live location pings
     holdRef.current = window.setInterval(async () => {
-      const l = getMockLocation();
+      const l = liveLocRef.current;
       await supabase.from("live_locations").insert({ user_id: user.id, lat: l.lat, lng: l.lng, battery: 75 });
     }, 5000);
   }

@@ -5,7 +5,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { BatteryWidget } from "@/components/BatteryWidget";
 import { supabase } from "@/integrations/supabase/client";
 import { Bluetooth, MapPin, Phone, Shield, Bell, ChevronRight, Activity, Mic, Timer, Leaf } from "lucide-react";
-import { getMockLocation } from "@/lib/mock-location";
+import { useLiveLocation } from "@/lib/use-live-location";
 import { useSafeZones, findContainingZone } from "@/lib/safe-zone";
 
 export const Route = createFileRoute("/app/")({
@@ -14,16 +14,11 @@ export const Route = createFileRoute("/app/")({
 
 function Dashboard() {
   const { user, profile } = useAuth();
-  const [loc, setLoc] = useState(getMockLocation());
+  const { loc } = useLiveLocation();
   const zones = useSafeZones(user?.id);
   const activeZone = findContainingZone(loc, zones);
   const [contactCount, setContactCount] = useState(0);
   const [recentAlerts, setRecentAlerts] = useState<{ id: string; type: string; status: string; started_at: string }[]>([]);
-
-  useEffect(() => {
-    const t = setInterval(() => setLoc(getMockLocation()), 4000);
-    return () => clearInterval(t);
-  }, []);
 
   useEffect(() => {
     (async () => {
