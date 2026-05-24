@@ -2,6 +2,17 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Home, School, Briefcase, MapPin, Trash2, Pencil, Crosshair } from "lucide-react";
 import { getMockLocation } from "@/lib/mock-location";
+
+function getCurrentPositionAsync(): Promise<{ lat: number; lng: number } | null> {
+  return new Promise((resolve) => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) return resolve(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => resolve(null),
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+    );
+  });
+}
 import { toast } from "sonner";
 import { MapView } from "@/components/MapView";
 import { Slider } from "@/components/ui/slider";
@@ -51,17 +62,28 @@ export function ZonesManager({
     load();
   }, [targetUserId]);
 
-  function startAdd() {
-    const loc = getMockLocation();
+  const [locating, setLocating] = useState(false);
+
+  async function startAdd() {
+    setLocating(true);
+    const loc = (await getCurrentPositionAsync()) ?? getMockLocation();
+    setLocating(false);
     setEditor({ id: null, name: "", type: "home", lat: loc.lat, lng: loc.lng, radius_m: 200 });
   }
   function startEdit(z: Zone) {
     setEditor({ id: z.id, name: z.name, type: z.type, lat: z.lat, lng: z.lng, radius_m: z.radius_m });
   }
-  function recenter() {
+  async function recenter() {
     if (!editor) return;
-    const loc = getMockLocation();
+    setLocating(true);
+    const loc = await getCurrentPositionAsync();
+    setLocating(false);
+    if (!loc) {
+      toast.error("Couldn't get your location. Check browser location permission.");
+      return;
+    }
     setEditor({ ...editor, lat: loc.lat, lng: loc.lng });
+    toast.success("Centered on your location");
   }
 
   async function save() {
@@ -182,10 +204,11 @@ export function ZonesManager({
 
             <button
               onClick={recenter}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-background/40 py-2.5 text-xs font-medium"
+              disabled={locating}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-background/40 py-2.5 text-xs font-medium disabled:opacity-60"
             >
               <Crosshair className="h-3.5 w-3.5" />
-              Use current location as center
+              {locating ? "Locating…" : "Use current location as center"}
             </button>
 
             <div className="flex gap-2 pt-1">
