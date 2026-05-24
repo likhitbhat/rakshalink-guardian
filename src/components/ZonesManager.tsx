@@ -204,10 +204,11 @@ export function ZonesManager({
 
             <button
               onClick={recenter}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-background/40 py-2.5 text-xs font-medium"
+              disabled={locating}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-background/40 py-2.5 text-xs font-medium disabled:opacity-60"
             >
               <Crosshair className="h-3.5 w-3.5" />
-              Use current location as center
+              {locating ? "Locating…" : "Use current location as center"}
             </button>
 
             <div className="flex gap-2 pt-1">
