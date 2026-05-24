@@ -12,6 +12,9 @@ export const Route = createFileRoute("/app/sos")({
 
 function SosPage() {
   const { user } = useAuth();
+  const { loc: liveLoc } = useLiveLocation();
+  const liveLocRef = useRef(liveLoc);
+  liveLocRef.current = liveLoc;
   const [holding, setHolding] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [activeAlert, setActiveAlert] = useState<string | null>(null);
