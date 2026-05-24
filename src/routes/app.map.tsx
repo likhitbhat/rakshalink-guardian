@@ -18,7 +18,8 @@ function MapPage() {
   const { loc, status } = useLiveLocation();
   const [path, setPath] = useState<[number, number][]>([]);
   const zones = useSafeZones(user?.id);
-  const [showNearby, setShowNearby] = useState(true);
+  const [showHospitals, setShowHospitals] = useState(true);
+  const [showPolice, setShowPolice] = useState(true);
   const [nearby, setNearby] = useState<NearbyPlace[]>([]);
   const [loadingNearby, setLoadingNearby] = useState(false);
   const lastWriteRef = useRef(0);
