@@ -6,6 +6,8 @@ import { Bell, Shield, Phone, History, MapPin, LogOut, ChevronRight, Moon, Sun, 
 import { toast } from "sonner";
 import { useTheme } from "@/lib/theme";
 import { usePreferences, LANGUAGES, type LanguagePref } from "@/lib/preferences";
+import { usePushPermission, describePermission } from "@/lib/push-notifications";
+import { StatusBadge } from "@/components/StatusBadge";
 
 export const Route = createFileRoute("/app/settings")({
   component: SettingsPage,
