@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MapView } from "@/components/MapView";
-import { NEARBY } from "@/lib/mock-location";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Navigation, Hospital, Shield as ShieldIcon, Leaf } from "lucide-react";
 import { useSafeZones, findContainingZone } from "@/lib/safe-zone";
 import { useLiveLocation } from "@/lib/use-live-location";
+import { distanceMeters } from "@/lib/safe-zone";
+import { getNearbyPlaces, type NearbyPlace } from "@/lib/places.functions";
 
 export const Route = createFileRoute("/app/map")({
   component: MapPage,
@@ -18,15 +19,15 @@ function MapPage() {
   const [path, setPath] = useState<[number, number][]>([]);
   const zones = useSafeZones(user?.id);
   const [showNearby, setShowNearby] = useState(true);
+  const [nearby, setNearby] = useState<NearbyPlace[]>([]);
+  const [loadingNearby, setLoadingNearby] = useState(false);
   const lastWriteRef = useRef(0);
+  const lastFetchKeyRef = useRef<string>("");
 
   const activeZone = useMemo(() => findContainingZone(loc, zones), [loc, zones]);
   const lowPower = !!activeZone;
 
   useEffect(() => {
-    // Only record the trail once we have a real GPS fix — otherwise the
-    // initial fallback point (Bangalore) would be connected by a line to
-    // the user's real location when the fix arrives.
     if (status !== "live") return;
     setPath((p) => {
       const last = p[p.length - 1];
@@ -42,10 +43,30 @@ function MapPage() {
     }
   }, [user, loc, activeZone, status]);
 
+  // Fetch real nearby police + hospitals around the live location.
+  // Only refetch when we move > ~500m to avoid hammering the API.
+  useEffect(() => {
+    if (status !== "live") return;
+    const key = `${loc.lat.toFixed(3)},${loc.lng.toFixed(3)}`;
+    if (key === lastFetchKeyRef.current) return;
+    lastFetchKeyRef.current = key;
+    setLoadingNearby(true);
+    getNearbyPlaces({ data: { lat: loc.lat, lng: loc.lng, radius: 5000 } })
+      .then((res) => setNearby(res.places))
+      .catch((err) => console.error("nearby places failed", err))
+      .finally(() => setLoadingNearby(false));
+  }, [loc, status]);
+
+  const sortedNearby = useMemo(() => {
+    return [...nearby]
+      .map((n) => ({ ...n, dist: distanceMeters(loc, { lat: n.lat, lng: n.lng }) }))
+      .sort((a, b) => a.dist - b.dist);
+  }, [nearby, loc]);
+
   const markers = [
     { id: "me", lat: loc.lat, lng: loc.lng, label: "You", color: "oklch(0.78 0.14 200)" },
     ...(showNearby
-      ? NEARBY.map((n) => ({
+      ? sortedNearby.map((n) => ({
           id: n.id,
           lat: n.lat,
           lng: n.lng,
@@ -91,18 +112,28 @@ function MapPage() {
       </div>
 
       <div className="glass mt-4 rounded-2xl p-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nearby</p>
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nearby</p>
+          {loadingNearby && <span className="text-[10px] text-muted-foreground">searching…</span>}
+        </div>
         <div className="mt-2 space-y-2">
-          {NEARBY.slice(0, 3).map((n) => (
+          {sortedNearby.length === 0 && !loadingNearby && (
+            <p className="text-xs text-muted-foreground">
+              {status === "live"
+                ? "No nearby police or hospitals found within 5 km."
+                : "Waiting for your location…"}
+            </p>
+          )}
+          {sortedNearby.slice(0, 6).map((n) => (
             <div key={n.id} className="flex items-center gap-3">
               {n.type === "police" ? (
                 <ShieldIcon className="h-4 w-4 text-warning" />
               ) : (
                 <Hospital className="h-4 w-4 text-success" />
               )}
-              <span className="flex-1 text-sm">{n.name}</span>
-              <span className="text-[11px] text-muted-foreground">
-                {(Math.abs(n.lat - loc.lat) * 111).toFixed(1)} km
+              <span className="flex-1 truncate text-sm">{n.name}</span>
+              <span className="shrink-0 text-[11px] text-muted-foreground">
+                {n.dist < 1000 ? `${Math.round(n.dist)} m` : `${(n.dist / 1000).toFixed(1)} km`}
               </span>
             </div>
           ))}
