@@ -47,7 +47,7 @@ function SosPage() {
 
   async function triggerSos() {
     if (!user) return;
-    const loc = getMockLocation();
+    const loc = liveLocRef.current;
     const { data, error } = await supabase
       .from("emergency_alerts")
       .insert({ user_id: user.id, type: "sos", status: "active", lat: loc.lat, lng: loc.lng })
