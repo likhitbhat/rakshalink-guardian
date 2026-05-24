@@ -60,7 +60,7 @@ function SosPage() {
     if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate?.([200, 100, 200, 100, 400]);
     // simulate live location pings
     holdRef.current = window.setInterval(async () => {
-      const l = getMockLocation();
+      const l = liveLocRef.current;
       await supabase.from("live_locations").insert({ user_id: user.id, lat: l.lat, lng: l.lng, battery: 75 });
     }, 5000);
   }
