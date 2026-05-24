@@ -17,6 +17,7 @@ function MapPage() {
   const { user } = useAuth();
   const { loc, status } = useLiveLocation();
   const [path, setPath] = useState<[number, number][]>([]);
+  const [showTrail, setShowTrail] = useState(true);
   const zones = useSafeZones(user?.id);
   const [showHospitals, setShowHospitals] = useState(true);
   const [showPolice, setShowPolice] = useState(true);
@@ -102,13 +103,13 @@ function MapPage() {
       </p>
 
       <div className="mt-4 overflow-hidden rounded-3xl border border-border">
-        <MapView center={[loc.lat, loc.lng]} markers={markers} zones={zones} path={path} height={420} />
+        <MapView center={[loc.lat, loc.lng]} markers={markers} zones={zones} path={showTrail ? path : []} height={420} />
       </div>
 
       <div className="mt-4 grid grid-cols-3 gap-2">
         <Toggle active={showHospitals} onClick={() => setShowHospitals((v: boolean) => !v)} icon={Hospital} label="Hospitals" />
         <Toggle active={showPolice} onClick={() => setShowPolice((v: boolean) => !v)} icon={ShieldIcon} label="Police" />
-        <Toggle active={path.length > 1} onClick={() => setPath([])} icon={Navigation} label="Trail" />
+        <Toggle active={showTrail} onClick={() => setShowTrail((v) => !v)} icon={Navigation} label="Trail" />
       </div>
 
       <div className="glass mt-4 rounded-2xl p-4">
