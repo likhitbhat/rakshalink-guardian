@@ -24,7 +24,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     root.classList.remove("light", "dark");
     root.classList.add(theme);
     try { localStorage.setItem("rl-theme", theme); } catch {}
+    syncThemeToCloud(theme);
   }, [theme]);
+
 
   return (
     <ThemeCtx.Provider
