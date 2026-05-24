@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export type LanguagePref = "en" | "hi" | "es" | "fr";
 
@@ -36,7 +37,89 @@ function read(): Preferences {
   }
 }
 
+function write(p: Preferences) {
+  try { localStorage.setItem(KEY, JSON.stringify(p)); } catch {}
+}
+
 const listeners = new Set<(p: Preferences) => void>();
+const broadcast = (p: Preferences) => listeners.forEach((l) => l(p));
+
+type Row = {
+  language: string;
+  notifications: boolean;
+  quiet_hours: boolean;
+  share_location: boolean;
+  theme?: string | null;
+};
+
+function rowToPrefs(r: Row): Preferences {
+  return {
+    language: (r.language as LanguagePref) ?? "en",
+    notifications: !!r.notifications,
+    quietHours: !!r.quiet_hours,
+    shareLocation: !!r.share_location,
+  };
+}
+
+let cloudSyncedUserId: string | null = null;
+
+async function pullFromCloud(userId: string) {
+  const { data, error } = await supabase
+    .from("user_preferences")
+    .select("language, notifications, quiet_hours, share_location, theme")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) return;
+  if (data) {
+    const next = { ...read(), ...rowToPrefs(data as Row) };
+    write(next);
+    if (typeof document !== "undefined") document.documentElement.lang = next.language;
+    if ((data as Row).theme && typeof document !== "undefined") {
+      const t = (data as Row).theme as "light" | "dark";
+      document.documentElement.classList.remove("light", "dark");
+      document.documentElement.classList.add(t);
+      try { localStorage.setItem("rl-theme", t); } catch {}
+    }
+    broadcast(next);
+  } else {
+    // First time: push local defaults to cloud
+    const cur = read();
+    const theme = (typeof localStorage !== "undefined" && localStorage.getItem("rl-theme")) || "dark";
+    await supabase.from("user_preferences").upsert({
+      user_id: userId,
+      language: cur.language,
+      notifications: cur.notifications,
+      quiet_hours: cur.quietHours,
+      share_location: cur.shareLocation,
+      theme,
+    });
+  }
+}
+
+async function pushField(userId: string, patch: Record<string, unknown>) {
+  await supabase.from("user_preferences").upsert(
+    { user_id: userId, ...patch },
+    { onConflict: "user_id" },
+  );
+}
+
+// Wire to auth: pull on sign-in
+if (typeof window !== "undefined") {
+  supabase.auth.getSession().then(({ data }) => {
+    const uid = data.session?.user?.id;
+    if (uid) { cloudSyncedUserId = uid; pullFromCloud(uid); }
+  });
+  supabase.auth.onAuthStateChange((_e, s) => {
+    const uid = s?.user?.id ?? null;
+    cloudSyncedUserId = uid;
+    if (uid) pullFromCloud(uid);
+  });
+}
+
+export async function syncThemeToCloud(theme: "light" | "dark") {
+  if (!cloudSyncedUserId) return;
+  await pushField(cloudSyncedUserId, { theme });
+}
 
 export function usePreferences() {
   const [prefs, setPrefs] = useState<Preferences>(() => read());
@@ -46,16 +129,18 @@ export function usePreferences() {
     listeners.add(fn);
     setPrefs(read());
     if (typeof document !== "undefined") document.documentElement.lang = read().language;
-    return () => {
-      listeners.delete(fn);
-    };
+    return () => { listeners.delete(fn); };
   }, []);
 
   const update = useCallback(<K extends keyof Preferences>(key: K, value: Preferences[K]) => {
     const next = { ...read(), [key]: value };
-    try { localStorage.setItem(KEY, JSON.stringify(next)); } catch {}
+    write(next);
     if (key === "language" && typeof document !== "undefined") document.documentElement.lang = next.language;
-    listeners.forEach((l) => l(next));
+    broadcast(next);
+    if (cloudSyncedUserId) {
+      const col = key === "quietHours" ? "quiet_hours" : key === "shareLocation" ? "share_location" : key;
+      pushField(cloudSyncedUserId, { [col]: value });
+    }
   }, []);
 
   return { prefs, update };
