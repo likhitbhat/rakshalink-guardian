@@ -106,8 +106,8 @@ function MapPage() {
       </div>
 
       <div className="mt-4 grid grid-cols-3 gap-2">
-        <Toggle active={showNearby} onClick={() => setShowNearby((v) => !v)} icon={Hospital} label="Hospitals" />
-        <Toggle active={showNearby} onClick={() => setShowNearby((v) => !v)} icon={ShieldIcon} label="Police" />
+        <Toggle active={showHospitals} onClick={() => setShowHospitals((v: boolean) => !v)} icon={Hospital} label="Hospitals" />
+        <Toggle active={showPolice} onClick={() => setShowPolice((v: boolean) => !v)} icon={ShieldIcon} label="Police" />
         <Toggle active={path.length > 1} onClick={() => setPath([])} icon={Navigation} label="Trail" />
       </div>
 
