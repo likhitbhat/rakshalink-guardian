@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Shield, Phone, X, Mic, MapPin, Volume2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useLiveLocation } from "@/lib/use-live-location";
+import { sendEmergencySms } from "@/lib/sms.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/sos")({
