@@ -104,6 +104,18 @@ function MapPage() {
           : lowPower ? `in "${activeZone?.name}" — saving battery` : "live GPS"}
       </p>
 
+      {status === "denied" && (
+        <div className="mt-4 flex gap-3 rounded-2xl border border-primary/40 bg-primary/10 p-4">
+          <MapPinOff className="h-5 w-5 shrink-0 text-primary" />
+          <div className="text-xs">
+            <p className="font-semibold text-primary">Location permission denied</p>
+            <p className="mt-1 text-muted-foreground">
+              RakshaLink needs your location to share live position with guardians, trigger SOS with accurate coordinates, and detect safe zones. Enable location access in your browser settings and reload this page.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="mt-4 overflow-hidden rounded-3xl border border-border">
         <MapView center={[loc.lat, loc.lng]} markers={markers} zones={zones} path={showTrail ? path : []} height={420} />
       </div>
