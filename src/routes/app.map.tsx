@@ -17,6 +17,7 @@ export const Route = createFileRoute("/app/map")({
 function MapPage() {
   const { user } = useAuth();
   const { loc, status } = useLiveLocation();
+  const { prefs } = usePreferences();
   const [path, setPath] = useState<[number, number][]>([]);
   const [showTrail, setShowTrail] = useState(true);
   const zones = useSafeZones(user?.id);
@@ -35,16 +36,16 @@ function MapPage() {
     setPath((p) => {
       const last = p[p.length - 1];
       if (last && last[0] === loc.lat && last[1] === loc.lng) return p;
-      return [...p.slice(-30), [loc.lat, loc.lng]];
+      return [...p.slice(-9), [loc.lat, loc.lng]];
     });
-    if (!user) return;
+    if (!user || !prefs.shareLocation) return;
     const interval = activeZone ? 30000 : 10000;
     const now = Date.now();
     if (now - lastWriteRef.current > interval) {
       lastWriteRef.current = now;
       supabase.from("live_locations").insert({ user_id: user.id, lat: loc.lat, lng: loc.lng }).then(() => {});
     }
-  }, [user, loc, activeZone, status]);
+  }, [user, loc, activeZone, status, prefs.shareLocation]);
 
   // Fetch real nearby police + hospitals around the live location.
   // Only refetch when we move > ~500m to avoid hammering the API.
