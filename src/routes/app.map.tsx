@@ -3,11 +3,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { MapView } from "@/components/MapView";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { Navigation, Hospital, Shield as ShieldIcon, Leaf } from "lucide-react";
+import { Navigation, Hospital, Shield as ShieldIcon, Leaf, MapPinOff } from "lucide-react";
 import { useSafeZones, findContainingZone } from "@/lib/safe-zone";
 import { useLiveLocation } from "@/lib/use-live-location";
 import { distanceMeters } from "@/lib/safe-zone";
 import { getNearbyPlaces, type NearbyPlace } from "@/lib/places.functions";
+import { usePreferences } from "@/lib/preferences";
 
 export const Route = createFileRoute("/app/map")({
   component: MapPage,
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/app/map")({
 function MapPage() {
   const { user } = useAuth();
   const { loc, status } = useLiveLocation();
+  const { prefs } = usePreferences();
   const [path, setPath] = useState<[number, number][]>([]);
   const [showTrail, setShowTrail] = useState(true);
   const zones = useSafeZones(user?.id);
@@ -34,16 +36,16 @@ function MapPage() {
     setPath((p) => {
       const last = p[p.length - 1];
       if (last && last[0] === loc.lat && last[1] === loc.lng) return p;
-      return [...p.slice(-30), [loc.lat, loc.lng]];
+      return [...p.slice(-9), [loc.lat, loc.lng]];
     });
-    if (!user) return;
+    if (!user || !prefs.shareLocation) return;
     const interval = activeZone ? 30000 : 10000;
     const now = Date.now();
     if (now - lastWriteRef.current > interval) {
       lastWriteRef.current = now;
       supabase.from("live_locations").insert({ user_id: user.id, lat: loc.lat, lng: loc.lng }).then(() => {});
     }
-  }, [user, loc, activeZone, status]);
+  }, [user, loc, activeZone, status, prefs.shareLocation]);
 
   // Fetch real nearby police + hospitals around the live location.
   // Only refetch when we move > ~500m to avoid hammering the API.
@@ -101,6 +103,18 @@ function MapPage() {
           ? "getting your location…"
           : lowPower ? `in "${activeZone?.name}" — saving battery` : "live GPS"}
       </p>
+
+      {status === "denied" && (
+        <div className="mt-4 flex gap-3 rounded-2xl border border-primary/40 bg-primary/10 p-4">
+          <MapPinOff className="h-5 w-5 shrink-0 text-primary" />
+          <div className="text-xs">
+            <p className="font-semibold text-primary">Location permission denied</p>
+            <p className="mt-1 text-muted-foreground">
+              RakshaLink needs your location to share live position with guardians, trigger SOS with accurate coordinates, and detect safe zones. Enable location access in your browser settings and reload this page.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="mt-4 overflow-hidden rounded-3xl border border-border">
         <MapView center={[loc.lat, loc.lng]} markers={markers} zones={zones} path={showTrail ? path : []} height={420} />
