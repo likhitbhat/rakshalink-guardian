@@ -61,6 +61,14 @@ function SosPage() {
     setSeconds(0);
     toast.success("Emergency activated · guardians notified");
     if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate?.([200, 100, 200, 100, 400]);
+    // fire SMS to all emergency contacts
+    sendSms({ data: { alertId: data.id, alertType: "sos", lat: loc.lat, lng: loc.lng } })
+      .then((res) => {
+        if (res.sent > 0) toast.success(`SMS sent to ${res.sent}/${res.total} contacts`);
+        if (res.failed > 0) toast.error(`${res.failed} SMS failed to deliver`);
+        if (res.total === 0) toast("No emergency contacts on file");
+      })
+      .catch((e) => toast.error(`SMS error: ${e?.message ?? "unknown"}`));
     // simulate live location pings
     holdRef.current = window.setInterval(async () => {
       const l = liveLocRef.current;
