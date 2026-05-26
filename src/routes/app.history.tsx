@@ -3,7 +3,100 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { StatusBadge } from "@/components/StatusBadge";
-import { AlertTriangle, Mic, Timer, Activity, Hand } from "lucide-react";
+import { AlertTriangle, Mic, Timer, Activity, Hand, MessageSquare, CheckCircle2, XCircle } from "lucide-react";
+
+type SmsEntry = { name: string; phone: string; status: "sent" | "failed"; error?: string };
+type SmsBatch = { timestamp: string; sent: number; failed: number; total: number; entries: SmsEntry[] };
+
+function parseSmsBatches(notes: string | null | undefined): SmsBatch[] {
+  if (!notes) return [];
+  const batches: SmsBatch[] = [];
+  const lines = notes.split("\n");
+  let current: SmsBatch | null = null;
+  const headerRe = /^\[SMS (.+?)\]\s+(\d+)\/(\d+) delivered,\s+(\d+) failed\.?/;
+  const entryRe = /^\s*-\s+(.+?)\s+\((.+?)\):\s+(sent|failed)(?:\s+—\s+(.*))?$/;
+  for (const line of lines) {
+    const h = line.match(headerRe);
+    if (h) {
+      if (current) batches.push(current);
+      current = { timestamp: h[1], sent: +h[2], total: +h[3], failed: +h[4], entries: [] };
+      continue;
+    }
+    const e = line.match(entryRe);
+    if (e && current) {
+      current.entries.push({
+        name: e[1].trim(),
+        phone: e[2].trim(),
+        status: e[3] as "sent" | "failed",
+        error: e[4]?.trim(),
+      });
+    }
+  }
+  if (current) batches.push(current);
+  return batches;
+}
+
+function SmsDeliveryPanel({ notes }: { notes: string | null | undefined }) {
+  const batches = parseSmsBatches(notes);
+  if (batches.length === 0) return null;
+  return (
+    <div className="mt-3 rounded-xl border border-border bg-background/40 p-3">
+      <div className="mb-2 flex items-center gap-2">
+        <MessageSquare className="h-3.5 w-3.5 text-accent" />
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          SMS delivery
+        </p>
+      </div>
+      <div className="space-y-3">
+        {batches.map((b, i) => (
+          <div key={i} className="space-y-2">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-muted-foreground">
+                {new Date(b.timestamp).toLocaleString()}
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1 rounded-full border border-success/30 bg-success/10 px-2 py-0.5 text-success">
+                  <CheckCircle2 className="h-3 w-3" /> {b.sent} sent
+                </span>
+                {b.failed > 0 && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-primary">
+                    <XCircle className="h-3 w-3" /> {b.failed} failed
+                  </span>
+                )}
+                <span className="text-muted-foreground">/ {b.total}</span>
+              </div>
+            </div>
+            <ul className="space-y-1">
+              {b.entries.map((e, j) => (
+                <li
+                  key={j}
+                  className="flex items-start justify-between gap-2 rounded-lg bg-card/40 px-2 py-1.5 text-[11px]"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium">{e.name}</p>
+                    <p className="truncate text-muted-foreground">{e.phone}</p>
+                    {e.status === "failed" && e.error && (
+                      <p className="mt-0.5 text-primary/90">Reason: {e.error}</p>
+                    )}
+                  </div>
+                  {e.status === "sent" ? (
+                    <span className="inline-flex shrink-0 items-center gap-1 text-success">
+                      <CheckCircle2 className="h-3 w-3" /> Sent
+                    </span>
+                  ) : (
+                    <span className="inline-flex shrink-0 items-center gap-1 text-primary">
+                      <XCircle className="h-3 w-3" /> Failed
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/app/history")({
   component: HistoryPage,
