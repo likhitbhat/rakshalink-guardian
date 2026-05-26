@@ -151,11 +151,7 @@ function HistoryPage() {
                     📍 {a.lat.toFixed(4)}, {a.lng.toFixed(4)}
                   </p>
                 )}
-                {a.notes && (
-                  <pre className="mt-2 whitespace-pre-wrap rounded-lg bg-background/40 p-2 text-[10px] leading-relaxed text-muted-foreground">
-                    {a.notes}
-                  </pre>
-                )}
+                <SmsDeliveryPanel notes={a.notes} />
               </div>
             </div>
           );
