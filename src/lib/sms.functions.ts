@@ -4,22 +4,22 @@ import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
+const GATEWAY_URL = "https://connector-gateway.lovable.dev/twilio";
+
 /**
  * Normalize a raw phone string to E.164 (e.g. +919812345678).
  * Defaults to India ("IN") when no country code is present, preserving
  * backwards compatibility with existing 10-digit Indian numbers on file.
  */
-function normalizePhone(raw: string): { e164: string; country: string | undefined; nationalNumber: string } | null {
+function normalizePhone(raw: string): { e164: string; country: string | undefined } | null {
   if (!raw) return null;
   const trimmed = raw.trim();
-  // If user already prefixed with + assume international; otherwise default to IN.
   const parsed = trimmed.startsWith("+")
     ? parsePhoneNumberFromString(trimmed)
     : parsePhoneNumberFromString(trimmed, "IN");
   if (!parsed || !parsed.isValid()) return null;
-  return { e164: parsed.number, country: parsed.country, nationalNumber: parsed.nationalNumber };
+  return { e164: parsed.number, country: parsed.country };
 }
-
 
 const InputSchema = z.object({
   alertId: z.string().uuid(),
@@ -39,12 +39,15 @@ export const sendEmergencySms = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => InputSchema.parse(input))
   .handler(async ({ data, context }): Promise<SmsResult> => {
-    const apiKey = process.env.FAST2SMS_API_KEY;
-    if (!apiKey) throw new Error("FAST2SMS_API_KEY is not configured");
+    const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const TWILIO_API_KEY = process.env.TWILIO_API_KEY;
+    if (!TWILIO_API_KEY) throw new Error("TWILIO_API_KEY is not configured");
+    const TWILIO_FROM_NUMBER = process.env.TWILIO_FROM_NUMBER;
+    if (!TWILIO_FROM_NUMBER) throw new Error("TWILIO_FROM_NUMBER is not configured");
 
     const { userId } = context;
 
-    // Get wearer name
     const { data: profile } = await supabaseAdmin
       .from("profiles")
       .select("full_name")
@@ -52,7 +55,6 @@ export const sendEmergencySms = createServerFn({ method: "POST" })
       .maybeSingle();
     const wearerName = profile?.full_name ?? "A RakshaLink user";
 
-    // Get contacts
     const { data: contacts, error: cErr } = await supabaseAdmin
       .from("emergency_contacts")
       .select("name, phone")
@@ -82,31 +84,30 @@ export const sendEmergencySms = createServerFn({ method: "POST" })
         });
         continue;
       }
-      // Fast2SMS bulkV2 (route=q) only supports Indian (10-digit) numbers.
-      // International numbers are normalized & logged but cannot be delivered via this provider.
-      if (normalized.country !== "IN") {
-        failed++;
-        details.push({
-          phone: normalized.e164,
-          name: c.name,
-          status: "failed",
-          error: `International number (${normalized.country ?? "non-IN"}) not supported by Fast2SMS`,
-        });
-        continue;
-      }
-      const phone = normalized.nationalNumber; // 10-digit IN number
 
       try {
-        const url = `https://www.fast2sms.com/dev/bulkV2?authorization=${encodeURIComponent(apiKey)}&route=q&message=${encodeURIComponent(message)}&flash=0&numbers=${phone}`;
-        const res = await fetch(url, { method: "GET" });
+        const body = new URLSearchParams({
+          To: normalized.e164,
+          From: TWILIO_FROM_NUMBER,
+          Body: message,
+        });
+        const res = await fetch(`${GATEWAY_URL}/Messages.json`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "X-Connection-Api-Key": TWILIO_API_KEY,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body,
+        });
         const json: any = await res.json().catch(() => ({}));
-        if (res.ok && json?.return === true) {
+        if (res.ok && json?.sid) {
           sent++;
-          details.push({ phone: c.phone, name: c.name, status: "sent" });
+          details.push({ phone: normalized.e164, name: c.name, status: "sent" });
         } else {
           failed++;
           details.push({
-            phone: c.phone,
+            phone: normalized.e164,
             name: c.name,
             status: "failed",
             error: json?.message ? String(json.message) : `HTTP ${res.status}`,
@@ -114,7 +115,12 @@ export const sendEmergencySms = createServerFn({ method: "POST" })
         }
       } catch (e: any) {
         failed++;
-        details.push({ phone: c.phone, name: c.name, status: "failed", error: e?.message ?? "Network error" });
+        details.push({
+          phone: normalized.e164,
+          name: c.name,
+          status: "failed",
+          error: e?.message ?? "Network error",
+        });
       }
     }
 
@@ -127,7 +133,6 @@ export const sendEmergencySms = createServerFn({ method: "POST" })
     ];
     const noteAppend = noteLines.join("\n");
 
-    // Append to alert notes
     const { data: existing } = await supabaseAdmin
       .from("emergency_alerts")
       .select("notes, user_id")
