@@ -1,40 +1,28 @@
-# Plan: Generate Complete Project Documentation PDF
+## Problem
 
-Create a single PDF artifact (`/mnt/documents/RakshaLink_Documentation.pdf`) covering the entire RakshaLink app — purpose, features, architecture, screens, database, and tech stack — using ReportLab.
+`.env` is listed in `.gitignore`, but it was committed to the repo before being ignored. Git keeps tracking already-committed files even if they later match `.gitignore`. That's why it still shows up on GitHub.
+
+`git ls-files` confirms `.env` is currently tracked.
+
+## Fix
+
+1. Untrack `.env` from git without deleting the local file:
+   ```
+   git rm --cached .env
+   ```
+   The file stays on disk (Lovable Cloud still needs it locally), but git stops tracking it.
+
+2. On the next sync, GitHub will record a commit that deletes `.env` from the repo. From then on, `.gitignore` will keep it out.
+
+3. Keep `.env.example` tracked as the public template (already in place).
+
+## Important caveat
+
+Removing the file from the latest commit does **not** purge it from git history. Any secrets that were ever in `.env` are still visible in older commits on GitHub and should be considered compromised. Recommended follow-up:
+
+- Rotate every secret that was in `.env` (Supabase keys via the Cloud key-rotation flow, Twilio auth token in the Twilio console, Google Maps key in Google Cloud, etc.).
+- If you want history scrubbed too, that requires a force-push history rewrite (e.g. `git filter-repo`) — let me know and I can walk through it, but it's disruptive for anyone else with a clone.
 
 ## Scope
 
-This is a one-off artifact generation task. No app code will change. The PDF will be saved to `/mnt/documents/` and delivered via a `<presentation-artifact>` tag.
-
-## PDF Sections
-
-1. **Cover Page** — App name (RakshaLink), tagline, "IoT Safety Network", date
-2. **Executive Summary** — What the app does in 1 paragraph (wearable pendant SOS, live GPS, guardian alerts)
-3. **Key Features** — Instant SOS, Live tracking, BLE pendant, Fall detection, Guardian alerts, Safe zones
-4. **User Roles** — Wearer (app user) vs Guardian (monitors wearer)
-5. **Screens / Routes** — Walkthrough of each page:
-   - Landing, Auth (login/register)
-   - Wearer: Home, Map, SOS, Contacts, Zones, Device, History, Settings
-   - Guardian: Index, Map, Alerts, Wearer detail, Zones detail
-6. **Database Schema** — All 9 tables (profiles, devices, emergency_contacts, emergency_alerts, guardian_links, live_locations, safe_zones, zone_events, user_preferences) with column descriptions
-7. **Technical Architecture** — TanStack Start, React 19, Tailwind v4, Lovable Cloud (Supabase), Google Maps Places integration, BLE simulation
-8. **Safety Logic** — How SOS triggers alerts, how safe zones save battery (30s vs 10s polling), fall detection
-9. **Design System** — Dark theme, color tokens, glass effect, typography
-10. **Demo Limitations** — Pendant hardware and SMS gateway are simulated
-
-## Implementation Steps
-
-1. Explore remaining route files briefly to make section 5 accurate (already have file list).
-2. Query each table's columns via `psql \d` for accurate schema section.
-3. Write a single Python script using ReportLab Platypus (SimpleDocTemplate, Paragraph, Table, PageBreak) with branded styling (red/cyan accents matching the app).
-4. Run script → produces PDF.
-5. QA: convert PDF pages to images with `pdftoppm` and visually inspect every page for overflow, clipping, or layout issues. Fix and re-render if needed.
-6. Deliver via `<presentation-artifact path="RakshaLink_Documentation.pdf" mime_type="application/pdf">`.
-
-## Out of Scope
-
-- No changes to app source code
-- No new routes, components, or database changes
-- Not a marketing brochure — this is a technical + product reference document
-
-Estimated output: ~10–15 page PDF.
+Single command run against the repo. No app code changes.
