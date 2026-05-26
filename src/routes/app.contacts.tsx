@@ -28,13 +28,22 @@ function ContactsPage() {
 
   async function add() {
     if (!user || !form.name || !form.phone) return;
-    const { error } = await supabase.from("emergency_contacts").insert({ ...form, user_id: user.id });
+    const raw = form.phone.trim();
+    const parsed = raw.startsWith("+")
+      ? parsePhoneNumberFromString(raw)
+      : parsePhoneNumberFromString(raw, "IN");
+    if (!parsed || !parsed.isValid()) {
+      return toast.error("Invalid phone number. Use +<country code><number> for international.");
+    }
+    const payload = { ...form, phone: parsed.number, user_id: user.id };
+    const { error } = await supabase.from("emergency_contacts").insert(payload);
     if (error) return toast.error(error.message);
     setAdding(false);
     setForm({ name: "", phone: "", relation: "" });
-    toast.success("Contact added");
+    toast.success(`Contact added (${parsed.country ?? "INTL"})`);
     load();
   }
+
 
   return (
     <div className="px-5 pt-8">
