@@ -71,12 +71,31 @@ export const sendEmergencySms = createServerFn({ method: "POST" })
     let failed = 0;
 
     for (const c of contacts ?? []) {
-      const phone = (c.phone || "").replace(/\D/g, "").slice(-10);
-      if (phone.length !== 10) {
+      const normalized = normalizePhone(c.phone || "");
+      if (!normalized) {
         failed++;
-        details.push({ phone: c.phone, name: c.name, status: "failed", error: "Invalid phone" });
+        details.push({
+          phone: c.phone,
+          name: c.name,
+          status: "failed",
+          error: "Invalid phone number format",
+        });
         continue;
       }
+      // Fast2SMS bulkV2 (route=q) only supports Indian (10-digit) numbers.
+      // International numbers are normalized & logged but cannot be delivered via this provider.
+      if (normalized.country !== "IN") {
+        failed++;
+        details.push({
+          phone: normalized.e164,
+          name: c.name,
+          status: "failed",
+          error: `International number (${normalized.country ?? "non-IN"}) not supported by Fast2SMS`,
+        });
+        continue;
+      }
+      const phone = normalized.nationalNumber; // 10-digit IN number
+
       try {
         const url = `https://www.fast2sms.com/dev/bulkV2?authorization=${encodeURIComponent(apiKey)}&route=q&message=${encodeURIComponent(message)}&flash=0&numbers=${phone}`;
         const res = await fetch(url, { method: "GET" });
