@@ -1,7 +1,25 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
+/**
+ * Normalize a raw phone string to E.164 (e.g. +919812345678).
+ * Defaults to India ("IN") when no country code is present, preserving
+ * backwards compatibility with existing 10-digit Indian numbers on file.
+ */
+function normalizePhone(raw: string): { e164: string; country: string | undefined; nationalNumber: string } | null {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  // If user already prefixed with + assume international; otherwise default to IN.
+  const parsed = trimmed.startsWith("+")
+    ? parsePhoneNumberFromString(trimmed)
+    : parsePhoneNumberFromString(trimmed, "IN");
+  if (!parsed || !parsed.isValid()) return null;
+  return { e164: parsed.number, country: parsed.country, nationalNumber: parsed.nationalNumber };
+}
+
 
 const InputSchema = z.object({
   alertId: z.string().uuid(),
