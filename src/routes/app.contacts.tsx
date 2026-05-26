@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Phone, Trash2, User } from "lucide-react";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/app/contacts")({
   component: ContactsPage,
@@ -26,13 +28,22 @@ function ContactsPage() {
 
   async function add() {
     if (!user || !form.name || !form.phone) return;
-    const { error } = await supabase.from("emergency_contacts").insert({ ...form, user_id: user.id });
+    const raw = form.phone.trim();
+    const parsed = raw.startsWith("+")
+      ? parsePhoneNumberFromString(raw)
+      : parsePhoneNumberFromString(raw, "IN");
+    if (!parsed || !parsed.isValid()) {
+      return toast.error("Invalid phone number. Use +<country code><number> for international.");
+    }
+    const payload = { ...form, phone: parsed.number, user_id: user.id };
+    const { error } = await supabase.from("emergency_contacts").insert(payload);
     if (error) return toast.error(error.message);
     setAdding(false);
     setForm({ name: "", phone: "", relation: "" });
-    toast.success("Contact added");
+    toast.success(`Contact added (${parsed.country ?? "INTL"})`);
     load();
   }
+
 
   return (
     <div className="px-5 pt-8">
@@ -79,7 +90,7 @@ function ContactsPage() {
         {adding && (
           <div className="glass-strong space-y-2 rounded-2xl p-4">
             <input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full rounded-xl bg-background/40 px-3 py-2.5 text-sm outline-none" />
-            <input placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full rounded-xl bg-background/40 px-3 py-2.5 text-sm outline-none" />
+            <input placeholder="Phone (e.g. 9812345678 or +14155552671)" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full rounded-xl bg-background/40 px-3 py-2.5 text-sm outline-none" />
             <input placeholder="Relation (mom, friend...)" value={form.relation} onChange={(e) => setForm({ ...form, relation: e.target.value })} className="w-full rounded-xl bg-background/40 px-3 py-2.5 text-sm outline-none" />
             <div className="flex gap-2">
               <button onClick={() => setAdding(false)} className="flex-1 rounded-xl border border-border py-2.5 text-sm">Cancel</button>
