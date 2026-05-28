@@ -46,7 +46,7 @@ function Dashboard() {
       supabase.removeChannel(ch);
     };
   }, [user]);
-  }, []);
+  
 
   const greeting = (() => {
     const h = new Date().getHours();
