@@ -138,8 +138,10 @@ export const Route = createFileRoute("/app/history")({
 function HistoryPage() {
   const { user } = useAuth();
   const [alerts, setAlerts] = useState<any[]>([]);
+  const [showMonthlyPrompt, setShowMonthlyPrompt] = useState(false);
+  const [clearing, setClearing] = useState(false);
 
-  useEffect(() => {
+  const load = () => {
     if (!user) return;
     supabase
       .from("emergency_alerts")
@@ -147,12 +149,90 @@ function HistoryPage() {
       .eq("user_id", user.id)
       .order("started_at", { ascending: false })
       .then(({ data }) => setAlerts(data ?? []));
+  };
+
+  useEffect(() => {
+    load();
+    // Monthly prompt: if cookie month != current month, suggest clearing
+    const last = getCookie(LAST_CLEARED_COOKIE);
+    if (last !== currentMonthKey()) setShowMonthlyPrompt(true);
   }, [user]);
 
+  const clearHistory = async () => {
+    if (!user) return;
+    setClearing(true);
+    const { error } = await supabase.from("emergency_alerts").delete().eq("user_id", user.id);
+    setClearing(false);
+    if (error) {
+      toast.error("Failed to clear history");
+      return;
+    }
+    setCookie(LAST_CLEARED_COOKIE, currentMonthKey());
+    setShowMonthlyPrompt(false);
+    setAlerts([]);
+    toast.success("History cleared");
+  };
+
+  const dismissPrompt = () => {
+    setCookie(LAST_CLEARED_COOKIE, currentMonthKey());
+    setShowMonthlyPrompt(false);
+  };
+
   return (
-    <div className="px-5 pt-8">
-      <h1 className="font-display text-2xl font-bold">Emergency history</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Timeline of all alerts and responses.</p>
+    <div className="px-5 pt-8 pb-6">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl font-bold">Emergency history</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Timeline of all alerts and responses.</p>
+        </div>
+        {alerts.length > 0 && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <Trash2 className="h-3.5 w-3.5" /> Clear
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Clear all history?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This permanently deletes every emergency alert from your account. We store a small
+                  cookie on this device to remember the last time you cleared, so we can remind you
+                  next month. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={clearHistory} disabled={clearing}>
+                  {clearing ? "Clearing…" : "Delete all"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+      </div>
+
+      {showMonthlyPrompt && alerts.length > 0 && (
+        <div className="mt-4 rounded-2xl border border-accent/40 bg-accent/10 p-4">
+          <div className="flex items-start gap-3">
+            <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold">Monthly cleanup</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                A new month has started. Clear old emergency records to keep your account tidy?
+              </p>
+              <div className="mt-3 flex gap-2">
+                <Button size="sm" variant="default" onClick={clearHistory} disabled={clearing}>
+                  {clearing ? "Clearing…" : "Clear now"}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={dismissPrompt}>
+                  Not now
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="mt-6 space-y-3">
         {alerts.length === 0 && (
