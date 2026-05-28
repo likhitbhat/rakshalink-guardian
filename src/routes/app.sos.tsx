@@ -41,6 +41,24 @@ function SosPage() {
     return () => clearInterval(t);
   }, [holding]);
 
+  // Rehydrate any still-active alert when the page mounts (e.g. after refresh)
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("emergency_alerts")
+      .select("id, started_at")
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .order("started_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!data) return;
+        setActiveAlert(data.id);
+        setSeconds(Math.floor((Date.now() - new Date(data.started_at).getTime()) / 1000));
+      });
+  }, [user]);
+
   // Active timer
   useEffect(() => {
     if (!activeAlert) return;
