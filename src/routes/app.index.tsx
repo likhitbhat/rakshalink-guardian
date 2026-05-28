@@ -19,17 +19,34 @@ function Dashboard() {
   const activeZone = findContainingZone(loc, zones);
   const [contactCount, setContactCount] = useState(0);
   const [recentAlerts, setRecentAlerts] = useState<{ id: string; type: string; status: string; started_at: string }[]>([]);
+  const [activeAlert, setActiveAlert] = useState<{ id: string; type: string; started_at: string } | null>(null);
 
   useEffect(() => {
-    (async () => {
+    if (!user) return;
+    const load = async () => {
       const [c, a] = await Promise.all([
         supabase.from("emergency_contacts").select("id", { count: "exact", head: true }),
         supabase.from("emergency_alerts").select("id, type, status, started_at").order("started_at", { ascending: false }).limit(3),
       ]);
       setContactCount(c.count ?? 0);
-      setRecentAlerts((a.data as any) ?? []);
-    })();
-  }, []);
+      const alerts = (a.data as any) ?? [];
+      setRecentAlerts(alerts);
+      setActiveAlert(alerts.find((x: any) => x.status === "active") ?? null);
+    };
+    load();
+    const ch = supabase
+      .channel(`home-alerts-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "emergency_alerts", filter: `user_id=eq.${user.id}` },
+        () => load(),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [user]);
+  
 
   const greeting = (() => {
     const h = new Date().getHours();
@@ -49,23 +66,41 @@ function Dashboard() {
       </div>
 
       {/* Safety status hero */}
-      <div className="glass-strong relative mt-6 overflow-hidden rounded-3xl p-5">
-        <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-success/15 blur-3xl" />
+      <div className={`glass-strong relative mt-6 overflow-hidden rounded-3xl p-5 ${activeAlert ? "border border-primary/50" : ""}`}>
+        <div className={`absolute -right-10 -top-10 h-40 w-40 rounded-full blur-3xl ${activeAlert ? "bg-primary/30 animate-pulse" : "bg-success/15"}`} />
         <div className="relative">
-          <StatusBadge variant="safe" pulse>You are safe</StatusBadge>
+          {activeAlert ? (
+            <StatusBadge variant="danger" pulse>Emergency active</StatusBadge>
+          ) : (
+            <StatusBadge variant="safe" pulse>You are safe</StatusBadge>
+          )}
           <div className="mt-4 flex items-end gap-2">
-            <span className="font-display text-5xl font-bold text-gradient-cyan">{profile?.safety_score ?? 85}</span>
-            <span className="mb-2 text-xs text-muted-foreground">/ 100 Safety Score</span>
+            {activeAlert ? (
+              <>
+                <span className="font-display text-3xl font-bold capitalize text-primary">{activeAlert.type} alert</span>
+                <span className="mb-1 text-xs text-muted-foreground">since {new Date(activeAlert.started_at).toLocaleTimeString()}</span>
+              </>
+            ) : (
+              <>
+                <span className="font-display text-5xl font-bold text-gradient-cyan">{profile?.safety_score ?? 85}</span>
+                <span className="mb-2 text-xs text-muted-foreground">/ 100 Safety Score</span>
+              </>
+            )}
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <MapPin className="h-3.5 w-3.5 text-accent" />
             {loc.lat.toFixed(4)}, {loc.lng.toFixed(4)} · live
-            {activeZone && (
+            {activeZone && !activeAlert && (
               <span className="inline-flex items-center gap-1 rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-medium text-accent">
                 <Leaf className="h-3 w-3" /> Low power · {activeZone.name}
               </span>
             )}
           </div>
+          {activeAlert && (
+            <Link to="/app/sos" className="mt-4 block w-full rounded-2xl bg-primary py-3 text-center text-sm font-semibold text-primary-foreground">
+              Open emergency · Cancel
+            </Link>
+          )}
         </div>
       </div>
 
