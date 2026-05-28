@@ -66,9 +66,27 @@ function SosPage() {
     return () => clearInterval(t);
   }, [activeAlert]);
 
+  async function getFreshLocation(): Promise<{ lat: number; lng: number }> {
+    if (typeof navigator === "undefined" || !navigator.geolocation) return liveLocRef.current;
+    return new Promise((resolve) => {
+      const fallback = setTimeout(() => resolve(liveLocRef.current), 4000);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          clearTimeout(fallback);
+          resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        },
+        () => {
+          clearTimeout(fallback);
+          resolve(liveLocRef.current);
+        },
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 4000 },
+      );
+    });
+  }
+
   async function triggerSos() {
     if (!user) return;
-    const loc = liveLocRef.current;
+    const loc = await getFreshLocation();
     const { data, error } = await supabase
       .from("emergency_alerts")
       .insert({ user_id: user.id, type: "sos", status: "active", lat: loc.lat, lng: loc.lng })
@@ -79,7 +97,7 @@ function SosPage() {
     setSeconds(0);
     toast.success("Emergency activated · guardians notified");
     if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate?.([200, 100, 200, 100, 400]);
-    // fire SMS to all emergency contacts
+    // fire SMS to all emergency contacts with the freshly-acquired GPS
     sendSms({ data: { alertId: data.id, alertType: "sos", lat: loc.lat, lng: loc.lng } })
       .then((res) => {
         if (res.sent > 0) toast.success(`SMS sent to ${res.sent}/${res.total} contacts`);
@@ -87,7 +105,8 @@ function SosPage() {
         if (res.total === 0) toast("No emergency contacts on file");
       })
       .catch((e) => toast.error(`SMS error: ${e?.message ?? "unknown"}`));
-    // simulate live location pings
+    // live location pings — also push the first fresh fix immediately
+    await supabase.from("live_locations").insert({ user_id: user.id, lat: loc.lat, lng: loc.lng, battery: 75 });
     holdRef.current = window.setInterval(async () => {
       const l = liveLocRef.current;
       await supabase.from("live_locations").insert({ user_id: user.id, lat: l.lat, lng: l.lng, battery: 75 });
