@@ -19,16 +19,33 @@ function Dashboard() {
   const activeZone = findContainingZone(loc, zones);
   const [contactCount, setContactCount] = useState(0);
   const [recentAlerts, setRecentAlerts] = useState<{ id: string; type: string; status: string; started_at: string }[]>([]);
+  const [activeAlert, setActiveAlert] = useState<{ id: string; type: string; started_at: string } | null>(null);
 
   useEffect(() => {
-    (async () => {
+    if (!user) return;
+    const load = async () => {
       const [c, a] = await Promise.all([
         supabase.from("emergency_contacts").select("id", { count: "exact", head: true }),
         supabase.from("emergency_alerts").select("id, type, status, started_at").order("started_at", { ascending: false }).limit(3),
       ]);
       setContactCount(c.count ?? 0);
-      setRecentAlerts((a.data as any) ?? []);
-    })();
+      const alerts = (a.data as any) ?? [];
+      setRecentAlerts(alerts);
+      setActiveAlert(alerts.find((x: any) => x.status === "active") ?? null);
+    };
+    load();
+    const ch = supabase
+      .channel(`home-alerts-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "emergency_alerts", filter: `user_id=eq.${user.id}` },
+        () => load(),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [user]);
   }, []);
 
   const greeting = (() => {
