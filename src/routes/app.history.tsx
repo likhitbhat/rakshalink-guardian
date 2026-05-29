@@ -162,7 +162,10 @@ function HistoryPage() {
   const clearHistory = async () => {
     if (!user) return;
     setClearing(true);
-    const { error } = await supabase.from("emergency_alerts").delete().eq("user_id", user.id);
+    const { error } = await supabase
+      .from("emergency_alerts")
+      .update({ hidden_by_owner: true })
+      .eq("user_id", user.id);
     setClearing(false);
     if (error) {
       toast.error("Failed to clear history");
