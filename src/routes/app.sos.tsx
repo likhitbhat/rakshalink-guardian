@@ -101,7 +101,10 @@ function SosPage() {
       .insert({ user_id: user.id, type: "sos", status: "active", lat: loc.lat, lng: loc.lng })
       .select("id")
       .single();
-    if (error) return toast.error(error.message);
+    if (error) {
+      triggeringRef.current = false;
+      return toast.error(error.message);
+    }
     setActiveAlert(data.id);
     setSeconds(0);
     toast.success("Emergency activated · guardians notified");
