@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as GuardianRouteImport } from './routes/guardian'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
@@ -17,6 +18,7 @@ import { Route as GuardianIndexRouteImport } from './routes/guardian.index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as GuardianMapRouteImport } from './routes/guardian.map'
 import { Route as GuardianAlertsRouteImport } from './routes/guardian.alerts'
+import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as AuthRegisterRouteImport } from './routes/auth.register'
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
 import { Route as AppZonesRouteImport } from './routes/app.zones'
@@ -26,10 +28,18 @@ import { Route as AppMapRouteImport } from './routes/app.map'
 import { Route as AppHistoryRouteImport } from './routes/app.history'
 import { Route as AppDeviceRouteImport } from './routes/app.device'
 import { Route as AppContactsRouteImport } from './routes/app.contacts'
+import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as GuardianZonesUserIdRouteImport } from './routes/guardian.zones.$userId'
 import { Route as GuardianWearerUserIdRouteImport } from './routes/guardian.wearer.$userId'
+import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 
+const UnsubscribeRoute = UnsubscribeRouteImport.update({
+  id: '/unsubscribe',
+  path: '/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GuardianRoute = GuardianRouteImport.update({
   id: '/guardian',
   path: '/guardian',
@@ -69,6 +79,11 @@ const GuardianAlertsRoute = GuardianAlertsRouteImport.update({
   id: '/alerts',
   path: '/alerts',
   getParentRoute: () => GuardianRoute,
+} as any)
+const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
+  id: '/email/unsubscribe',
+  path: '/email/unsubscribe',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRegisterRoute = AuthRegisterRouteImport.update({
   id: '/register',
@@ -115,6 +130,11 @@ const AppContactsRoute = AppContactsRouteImport.update({
   path: '/contacts',
   getParentRoute: () => AppRoute,
 } as any)
+const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
+  id: '/lovable/email/suppression',
+  path: '/lovable/email/suppression',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GuardianZonesUserIdRoute = GuardianZonesUserIdRouteImport.update({
   id: '/zones/$userId',
   path: '/zones/$userId',
@@ -125,6 +145,18 @@ const GuardianWearerUserIdRoute = GuardianWearerUserIdRouteImport.update({
   path: '/wearer/$userId',
   getParentRoute: () => GuardianRoute,
 } as any)
+const LovableEmailTransactionalSendRoute =
+  LovableEmailTransactionalSendRouteImport.update({
+    id: '/lovable/email/transactional/send',
+    path: '/lovable/email/transactional/send',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
     id: '/lovable/email/queue/process',
@@ -137,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/guardian': typeof GuardianRouteWithChildren
+  '/unsubscribe': typeof UnsubscribeRoute
   '/app/contacts': typeof AppContactsRoute
   '/app/device': typeof AppDeviceRoute
   '/app/history': typeof AppHistoryRoute
@@ -146,17 +179,22 @@ export interface FileRoutesByFullPath {
   '/app/zones': typeof AppZonesRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/guardian/alerts': typeof GuardianAlertsRoute
   '/guardian/map': typeof GuardianMapRoute
   '/app/': typeof AppIndexRoute
   '/guardian/': typeof GuardianIndexRoute
   '/guardian/wearer/$userId': typeof GuardianWearerUserIdRoute
   '/guardian/zones/$userId': typeof GuardianZonesUserIdRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/unsubscribe': typeof UnsubscribeRoute
   '/app/contacts': typeof AppContactsRoute
   '/app/device': typeof AppDeviceRoute
   '/app/history': typeof AppHistoryRoute
@@ -166,13 +204,17 @@ export interface FileRoutesByTo {
   '/app/zones': typeof AppZonesRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/guardian/alerts': typeof GuardianAlertsRoute
   '/guardian/map': typeof GuardianMapRoute
   '/app': typeof AppIndexRoute
   '/guardian': typeof GuardianIndexRoute
   '/guardian/wearer/$userId': typeof GuardianWearerUserIdRoute
   '/guardian/zones/$userId': typeof GuardianZonesUserIdRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -180,6 +222,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/guardian': typeof GuardianRouteWithChildren
+  '/unsubscribe': typeof UnsubscribeRoute
   '/app/contacts': typeof AppContactsRoute
   '/app/device': typeof AppDeviceRoute
   '/app/history': typeof AppHistoryRoute
@@ -189,13 +232,17 @@ export interface FileRoutesById {
   '/app/zones': typeof AppZonesRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/guardian/alerts': typeof GuardianAlertsRoute
   '/guardian/map': typeof GuardianMapRoute
   '/app/': typeof AppIndexRoute
   '/guardian/': typeof GuardianIndexRoute
   '/guardian/wearer/$userId': typeof GuardianWearerUserIdRoute
   '/guardian/zones/$userId': typeof GuardianZonesUserIdRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -204,6 +251,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/guardian'
+    | '/unsubscribe'
     | '/app/contacts'
     | '/app/device'
     | '/app/history'
@@ -213,17 +261,22 @@ export interface FileRouteTypes {
     | '/app/zones'
     | '/auth/login'
     | '/auth/register'
+    | '/email/unsubscribe'
     | '/guardian/alerts'
     | '/guardian/map'
     | '/app/'
     | '/guardian/'
     | '/guardian/wearer/$userId'
     | '/guardian/zones/$userId'
+    | '/lovable/email/suppression'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/unsubscribe'
     | '/app/contacts'
     | '/app/device'
     | '/app/history'
@@ -233,19 +286,24 @@ export interface FileRouteTypes {
     | '/app/zones'
     | '/auth/login'
     | '/auth/register'
+    | '/email/unsubscribe'
     | '/guardian/alerts'
     | '/guardian/map'
     | '/app'
     | '/guardian'
     | '/guardian/wearer/$userId'
     | '/guardian/zones/$userId'
+    | '/lovable/email/suppression'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
   id:
     | '__root__'
     | '/'
     | '/app'
     | '/auth'
     | '/guardian'
+    | '/unsubscribe'
     | '/app/contacts'
     | '/app/device'
     | '/app/history'
@@ -255,13 +313,17 @@ export interface FileRouteTypes {
     | '/app/zones'
     | '/auth/login'
     | '/auth/register'
+    | '/email/unsubscribe'
     | '/guardian/alerts'
     | '/guardian/map'
     | '/app/'
     | '/guardian/'
     | '/guardian/wearer/$userId'
     | '/guardian/zones/$userId'
+    | '/lovable/email/suppression'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -269,11 +331,23 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   GuardianRoute: typeof GuardianRouteWithChildren
+  UnsubscribeRoute: typeof UnsubscribeRoute
+  EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
+  LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/unsubscribe': {
+      id: '/unsubscribe'
+      path: '/unsubscribe'
+      fullPath: '/unsubscribe'
+      preLoaderRoute: typeof UnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/guardian': {
       id: '/guardian'
       path: '/guardian'
@@ -329,6 +403,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/guardian/alerts'
       preLoaderRoute: typeof GuardianAlertsRouteImport
       parentRoute: typeof GuardianRoute
+    }
+    '/email/unsubscribe': {
+      id: '/email/unsubscribe'
+      path: '/email/unsubscribe'
+      fullPath: '/email/unsubscribe'
+      preLoaderRoute: typeof EmailUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/auth/register': {
       id: '/auth/register'
@@ -393,6 +474,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppContactsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/lovable/email/suppression': {
+      id: '/lovable/email/suppression'
+      path: '/lovable/email/suppression'
+      fullPath: '/lovable/email/suppression'
+      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/guardian/zones/$userId': {
       id: '/guardian/zones/$userId'
       path: '/zones/$userId'
@@ -406,6 +494,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/guardian/wearer/$userId'
       preLoaderRoute: typeof GuardianWearerUserIdRouteImport
       parentRoute: typeof GuardianRoute
+    }
+    '/lovable/email/transactional/send': {
+      id: '/lovable/email/transactional/send'
+      path: '/lovable/email/transactional/send'
+      fullPath: '/lovable/email/transactional/send'
+      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/lovable/email/queue/process': {
       id: '/lovable/email/queue/process'
@@ -478,7 +580,12 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   GuardianRoute: GuardianRouteWithChildren,
+  UnsubscribeRoute: UnsubscribeRoute,
+  EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
+  LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -10,6 +10,7 @@ import { usePreferences, LANGUAGES, type LanguagePref } from "@/lib/preferences"
 import { usePushPermission, describePermission } from "@/lib/push-notifications";
 import { StatusBadge } from "@/components/StatusBadge";
 import { inviteGuardian, listMyGuardians, revokeGuardian } from "@/lib/guardians.functions";
+import { sendTransactionalEmail } from "@/lib/email/send";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -67,8 +68,23 @@ function SettingsPage() {
     setInviting(true);
     try {
       const res = await inviteFn({ data: { email } });
+      let emailSent = false;
+      try {
+        await sendTransactionalEmail({
+          templateName: "guardian-invite",
+          recipientEmail: res.guardianEmail,
+          idempotencyKey: `guardian-invite-${user?.id ?? ""}-${res.guardianEmail}`,
+          templateData: {
+            wearerName: res.wearerName,
+            acceptUrl: `${window.location.origin}/guardian`,
+          },
+        });
+        emailSent = true;
+      } catch {
+        // Email delivery is best-effort; the invite still appears in-app.
+      }
       toast.success(res.status === "reinvited" ? "Invitation re-sent" : "Invitation sent", {
-        description: res.emailSent
+        description: emailSent
           ? "We emailed your guardian an invite link."
           : "They'll see the invite when they open RakshaLink.",
       });
