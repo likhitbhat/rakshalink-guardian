@@ -129,6 +129,7 @@ function SosPage() {
     if (!activeAlert) return;
     await supabase.from("emergency_alerts").update({ status: "cancelled", ended_at: new Date().toISOString() }).eq("id", activeAlert);
     if (holdRef.current) clearInterval(holdRef.current);
+    triggeringRef.current = false;
     setActiveAlert(null);
     setSeconds(0);
     toast("Emergency cancelled");
