@@ -56,6 +56,8 @@ export type Database = {
       emergency_alerts: {
         Row: {
           ended_at: string | null
+          hidden_by_guardian: boolean
+          hidden_by_owner: boolean
           id: string
           lat: number | null
           lng: number | null
@@ -67,6 +69,8 @@ export type Database = {
         }
         Insert: {
           ended_at?: string | null
+          hidden_by_guardian?: boolean
+          hidden_by_owner?: boolean
           id?: string
           lat?: number | null
           lng?: number | null
@@ -78,6 +82,8 @@ export type Database = {
         }
         Update: {
           ended_at?: string | null
+          hidden_by_guardian?: boolean
+          hidden_by_owner?: boolean
           id?: string
           lat?: number | null
           lng?: number | null
@@ -316,6 +322,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      hide_alert_for_guardian: {
+        Args: { _alert_id: string }
+        Returns: undefined
+      }
+      hide_all_alerts_for_guardian: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
       is_guardian_of: {
         Args: { _guardian: string; _user: string }
         Returns: boolean
