@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { MapView } from "@/components/MapView";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { Navigation, Hospital, Shield as ShieldIcon, Leaf, MapPinOff } from "lucide-react";
+import { Navigation, Hospital, Shield as ShieldIcon, Leaf, MapPinOff, Pill, LifeBuoy } from "lucide-react";
 import { useSafeZones, findContainingZone } from "@/lib/safe-zone";
 import { useLiveLocation } from "@/lib/use-live-location";
 import { distanceMeters } from "@/lib/safe-zone";
