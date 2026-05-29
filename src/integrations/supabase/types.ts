@@ -441,6 +441,10 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      guardian_add_alert_note: {
+        Args: { _alert_id: string; _note: string }
+        Returns: undefined
+      }
       hide_alert_for_guardian: {
         Args: { _alert_id: string }
         Returns: undefined
