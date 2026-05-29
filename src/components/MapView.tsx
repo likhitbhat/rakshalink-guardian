@@ -8,6 +8,7 @@ export type MapMarker = {
   label?: string;
   color?: string;
   emergency?: boolean;
+  popupHtml?: string;
 };
 export type MapZone = { id: string; lat: number; lng: number; radius_m: number; name?: string };
 
