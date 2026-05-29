@@ -147,6 +147,7 @@ function HistoryPage() {
       .from("emergency_alerts")
       .select("*")
       .eq("user_id", user.id)
+      .eq("hidden_by_owner", false)
       .order("started_at", { ascending: false })
       .then(({ data }) => setAlerts(data ?? []));
   };
