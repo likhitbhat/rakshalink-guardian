@@ -338,42 +338,102 @@ function HistoryPage() {
         </div>
       )}
 
+      {alerts.length > 0 && (
+        <div className="mt-5 flex flex-wrap gap-2">
+          {([
+            ["all", "All"],
+            ["sos", "SOS"],
+            ["fall", "Fall"],
+            ["active", "Active"],
+            ["resolved", "Resolved"],
+          ] as [HistoryFilter, string][]).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setFilter(key)}
+              className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                filter === key
+                  ? "border-primary/40 bg-primary/15 text-primary"
+                  : "border-border bg-muted/30 text-muted-foreground"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="mt-6 space-y-3">
-        {alerts.length === 0 && (
-          <div className="glass rounded-2xl p-6 text-center text-sm text-muted-foreground">
-            No emergencies recorded. That's a great thing.
-          </div>
-        )}
-        {alerts.map((a, i) => {
-          const Icon = a.type === "fall" ? Activity : a.type === "voice" ? Mic : a.type === "deadman" ? Timer : a.type === "manual" ? Hand : AlertTriangle;
-          return (
-            <div key={a.id} className="relative pl-8">
-              <div className="absolute left-2 top-3 h-3 w-3 rounded-full bg-primary shadow-[0_0_0_4px_oklch(0.62_0.24_25/0.2)]" />
-              {i < alerts.length - 1 && <div className="absolute left-3 top-6 h-full w-px bg-border" />}
-              <div className="glass rounded-2xl p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Icon className="h-4 w-4 text-primary" />
-                    <p className="text-sm font-semibold capitalize">{a.type}</p>
-                  </div>
-                  <StatusBadge variant={a.status === "active" ? "danger" : a.status === "resolved" ? "safe" : "muted"}>
-                    {a.status}
-                  </StatusBadge>
-                </div>
-                <p className="mt-1 text-[11px] text-muted-foreground">
-                  {new Date(a.started_at).toLocaleString()}
-                </p>
-                {a.lat && (
-                  <p className="mt-2 text-xs text-accent">
-                    📍 {a.lat.toFixed(4)}, {a.lng.toFixed(4)}
-                  </p>
-                )}
-                <SmsDeliveryPanel notes={a.notes} />
+        {(() => {
+          const sorted = [...alerts].sort((a, b) => {
+            if (a.status === "active" && b.status !== "active") return -1;
+            if (b.status === "active" && a.status !== "active") return 1;
+            return new Date(b.started_at).getTime() - new Date(a.started_at).getTime();
+          });
+          const filtered = sorted.filter((a) => {
+            if (filter === "all") return true;
+            if (filter === "active") return a.status === "active";
+            if (filter === "resolved") return a.status === "resolved";
+            if (filter === "sos") return a.type === "sos" || a.type === "manual";
+            if (filter === "fall") return a.type === "fall";
+            return true;
+          });
+          if (filtered.length === 0) {
+            return (
+              <div className="glass rounded-2xl p-6 text-center text-sm text-muted-foreground">
+                {alerts.length === 0
+                  ? "No emergencies recorded. That's a great thing."
+                  : "No alerts match this filter."}
               </div>
-            </div>
-          );
-        })}
+            );
+          }
+          return filtered.map((a, i) => {
+            const Icon = a.type === "fall" ? Activity : a.type === "voice" ? Mic : a.type === "deadman" ? Timer : a.type === "manual" ? Hand : AlertTriangle;
+            const isActive = a.status === "active";
+            return (
+              <div key={a.id} className="relative pl-8">
+                <div className={`absolute left-2 top-3 h-3 w-3 rounded-full ${isActive ? "bg-primary animate-pulse" : "bg-primary"} shadow-[0_0_0_4px_oklch(0.62_0.24_25/0.2)]`} />
+                {i < filtered.length - 1 && <div className="absolute left-3 top-6 h-full w-px bg-border" />}
+                <div className={`glass rounded-2xl p-4 ${isActive ? "border border-primary/50 bg-primary/5" : ""}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Icon className="h-4 w-4 text-primary" />
+                      <p className="text-sm font-semibold capitalize">{a.type}</p>
+                    </div>
+                    <StatusBadge variant={isActive ? "danger" : a.status === "resolved" ? "safe" : "muted"} pulse={isActive}>
+                      {a.status}
+                    </StatusBadge>
+                  </div>
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    {new Date(a.started_at).toLocaleString()}
+                  </p>
+                  {a.lat != null && a.lng != null && (
+                    <a
+                      href={`https://www.google.com/maps?q=${a.lat},${a.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 inline-flex items-center gap-1 text-xs text-accent underline-offset-2 hover:underline"
+                    >
+                      📍 {a.lat.toFixed(4)}, {a.lng.toFixed(4)}
+                    </a>
+                  )}
+                  {isActive && (
+                    <Button
+                      size="sm"
+                      className="mt-3 w-full"
+                      onClick={() => markResolved(a.id)}
+                      disabled={resolving === a.id}
+                    >
+                      {resolving === a.id ? "Resolving…" : "Mark resolved"}
+                    </Button>
+                  )}
+                  <SmsDeliveryPanel notes={a.notes} />
+                </div>
+              </div>
+            );
+          });
+        })()}
       </div>
+
     </div>
   );
 }
