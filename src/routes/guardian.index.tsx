@@ -142,17 +142,14 @@ function GuardianHome() {
   }, [user]);
 
   async function addLink() {
-    if (!user || !linkUserId) return;
-    const { error } = await supabase.from("guardian_links").insert({
-      guardian_id: user.id,
-      user_id: linkUserId.trim(),
-      status: "active",
-    });
-    if (error) return toast.error(error.message);
+    // Guardian links require the wearer's explicit consent. A guardian can no
+    // longer self-assign to an arbitrary account; the wearer must send an
+    // invitation from their Settings, which this guardian then accepts below.
     setLinkUserId("");
     setAdding(false);
-    toast.success("User linked");
-    load();
+    toast.info("Ask the wearer to invite you", {
+      description: "They can add you as a guardian from their app Settings. The invite will then appear here to accept.",
+    });
   }
 
   return (
@@ -180,16 +177,10 @@ function GuardianHome() {
 
       {adding && (
         <div className="glass-strong mt-4 space-y-2 rounded-2xl p-4">
-          <p className="text-xs text-muted-foreground">Paste the user's account ID (they can find it in Settings).</p>
-          <input
-            placeholder="User ID (uuid)"
-            value={linkUserId}
-            onChange={(e) => setLinkUserId(e.target.value)}
-            className="w-full rounded-xl bg-background/40 px-3 py-2.5 text-sm outline-none"
-          />
+          <p className="text-xs text-muted-foreground">Guardian links are started by the wearer for your safety. Ask them to invite you from their Settings — the request will show up here to accept.</p>
           <div className="flex gap-2">
-            <button onClick={() => setAdding(false)} className="flex-1 rounded-xl border border-border py-2.5 text-sm">Cancel</button>
-            <button onClick={addLink} className="flex-1 rounded-xl bg-accent py-2.5 text-sm font-semibold text-accent-foreground">Link</button>
+            <button onClick={() => setAdding(false)} className="flex-1 rounded-xl border border-border py-2.5 text-sm">Close</button>
+            <button onClick={addLink} className="flex-1 rounded-xl bg-accent py-2.5 text-sm font-semibold text-accent-foreground">Got it</button>
           </div>
         </div>
       )}
