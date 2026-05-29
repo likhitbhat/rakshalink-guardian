@@ -27,6 +27,36 @@ function GuardianHome() {
   const [lastLocByUser, setLastLocByUser] = useState<Record<string, LocPoint>>({});
   const [adding, setAdding] = useState(false);
   const [linkUserId, setLinkUserId] = useState("");
+  const [pending, setPending] = useState<{ id: string; wearerName: string | null; wearerId: string }[]>([]);
+  const [respondingId, setRespondingId] = useState<string | null>(null);
+  const listPendingFn = useServerFn(listPendingInvites);
+  const respondFn = useServerFn(respondToInvite);
+
+  async function loadPending() {
+    try {
+      setPending(await listPendingFn());
+    } catch {
+      /* non-fatal */
+    }
+  }
+
+  useEffect(() => {
+    if (user) loadPending();
+  }, [user]);
+
+  async function handleRespond(id: string, action: "accept" | "decline") {
+    setRespondingId(id);
+    try {
+      await respondFn({ data: { linkId: id, action } });
+      toast.success(action === "accept" ? "Invitation accepted" : "Invitation declined");
+      await loadPending();
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't update invitation");
+    } finally {
+      setRespondingId(null);
+    }
+  }
 
   async function load() {
     if (!user) return;
