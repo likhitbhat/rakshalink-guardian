@@ -177,16 +177,10 @@ function GuardianHome() {
 
       {adding && (
         <div className="glass-strong mt-4 space-y-2 rounded-2xl p-4">
-          <p className="text-xs text-muted-foreground">Paste the user's account ID (they can find it in Settings).</p>
-          <input
-            placeholder="User ID (uuid)"
-            value={linkUserId}
-            onChange={(e) => setLinkUserId(e.target.value)}
-            className="w-full rounded-xl bg-background/40 px-3 py-2.5 text-sm outline-none"
-          />
+          <p className="text-xs text-muted-foreground">Guardian links are started by the wearer for your safety. Ask them to invite you from their Settings — the request will show up here to accept.</p>
           <div className="flex gap-2">
-            <button onClick={() => setAdding(false)} className="flex-1 rounded-xl border border-border py-2.5 text-sm">Cancel</button>
-            <button onClick={addLink} className="flex-1 rounded-xl bg-accent py-2.5 text-sm font-semibold text-accent-foreground">Link</button>
+            <button onClick={() => setAdding(false)} className="flex-1 rounded-xl border border-border py-2.5 text-sm">Close</button>
+            <button onClick={addLink} className="flex-1 rounded-xl bg-accent py-2.5 text-sm font-semibold text-accent-foreground">Got it</button>
           </div>
         </div>
       )}
