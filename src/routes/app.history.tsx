@@ -141,11 +141,32 @@ export const Route = createFileRoute("/app/history")({
   component: HistoryPage,
 });
 
+type HistoryFilter = "all" | "sos" | "fall" | "active" | "resolved";
+
 function HistoryPage() {
   const { user } = useAuth();
   const [alerts, setAlerts] = useState<any[]>([]);
   const [showMonthlyPrompt, setShowMonthlyPrompt] = useState(false);
   const [clearing, setClearing] = useState(false);
+  const [filter, setFilter] = useState<HistoryFilter>("all");
+  const [resolving, setResolving] = useState<string | null>(null);
+
+  const markResolved = async (id: string) => {
+    if (!user) return;
+    setResolving(id);
+    const { error } = await supabase
+      .from("emergency_alerts")
+      .update({ status: "resolved", ended_at: new Date().toISOString() })
+      .eq("id", id)
+      .eq("user_id", user.id);
+    setResolving(null);
+    if (error) {
+      toast.error("Failed to update alert");
+      return;
+    }
+    load();
+    toast.success("Alert marked resolved");
+  };
 
   const load = () => {
     if (!user) return;
