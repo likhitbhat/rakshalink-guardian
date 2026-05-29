@@ -137,21 +137,23 @@ function MapPage() {
       <p className="mt-1 text-xs text-muted-foreground">
         {loc.lat.toFixed(5)}, {loc.lng.toFixed(5)} ·{" "}
         {status === "denied"
-          ? "location permission denied — showing demo"
+          ? "location permission denied — showing last known location"
           : status === "unavailable" || status === "fallback"
-          ? "GPS unavailable — showing demo"
+          ? "GPS unavailable — showing last known location"
           : status === "requesting"
           ? "getting your location…"
           : lowPower ? `in "${activeZone?.name}" — saving battery` : "live GPS"}
       </p>
 
-      {status === "denied" && (
-        <div className="mt-4 flex gap-3 rounded-2xl border border-primary/40 bg-primary/10 p-4">
-          <MapPinOff className="h-5 w-5 shrink-0 text-primary" />
+      {(status === "denied" || status === "unavailable" || status === "fallback") && (
+        <div className="mt-4 flex gap-3 rounded-2xl border border-warning/40 bg-warning/10 p-4">
+          <MapPinOff className="h-5 w-5 shrink-0 text-warning" />
           <div className="text-xs">
-            <p className="font-semibold text-primary">Location permission denied</p>
+            <p className="font-semibold text-warning">GPS signal unavailable</p>
             <p className="mt-1 text-muted-foreground">
-              RakshaLink needs your location to share live position with guardians, trigger SOS with accurate coordinates, and detect safe zones. Enable location access in your browser settings and reload this page.
+              {status === "denied"
+                ? "Location permission was denied. We are displaying your last known location from this device. Enable location access in your browser settings for live tracking."
+                : "We can't access your live GPS right now. Showing the last known location saved on this device."}
             </p>
           </div>
         </div>
