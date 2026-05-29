@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { StatusBadge } from "@/components/StatusBadge";
-import { AlertTriangle, Mic, Timer, Activity, Hand, MessageSquare, CheckCircle2, XCircle, Trash2, CalendarClock } from "lucide-react";
+import { AlertTriangle, Mic, Timer, Activity, Hand, MessageSquare, CheckCircle2, XCircle, Trash2, CalendarClock, Download, FileText, FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -16,6 +16,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 
 const LAST_CLEARED_COOKIE = "raksha_history_last_cleared";
