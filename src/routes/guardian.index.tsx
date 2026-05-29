@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { StatusBadge } from "@/components/StatusBadge";
-import { Users, Plus, MapPin, Bell, ShieldCheck, Settings2 } from "lucide-react";
+import { Users, Plus, MapPin, Bell, ShieldCheck, Settings2, Check, X, Mail } from "lucide-react";
 import { BatteryWidget } from "@/components/BatteryWidget";
 import { findContainingZone, type SafeZone } from "@/lib/safe-zone";
+import { listPendingInvites, respondToInvite } from "@/lib/guardians.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/guardian/")({
@@ -25,6 +27,36 @@ function GuardianHome() {
   const [lastLocByUser, setLastLocByUser] = useState<Record<string, LocPoint>>({});
   const [adding, setAdding] = useState(false);
   const [linkUserId, setLinkUserId] = useState("");
+  const [pending, setPending] = useState<{ id: string; wearerName: string | null; wearerId: string }[]>([]);
+  const [respondingId, setRespondingId] = useState<string | null>(null);
+  const listPendingFn = useServerFn(listPendingInvites);
+  const respondFn = useServerFn(respondToInvite);
+
+  async function loadPending() {
+    try {
+      setPending(await listPendingFn());
+    } catch {
+      /* non-fatal */
+    }
+  }
+
+  useEffect(() => {
+    if (user) loadPending();
+  }, [user]);
+
+  async function handleRespond(id: string, action: "accept" | "decline") {
+    setRespondingId(id);
+    try {
+      await respondFn({ data: { linkId: id, action } });
+      toast.success(action === "accept" ? "Invitation accepted" : "Invitation declined");
+      await loadPending();
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't update invitation");
+    } finally {
+      setRespondingId(null);
+    }
+  }
 
   async function load() {
     if (!user) return;
@@ -158,6 +190,44 @@ function GuardianHome() {
           <div className="flex gap-2">
             <button onClick={() => setAdding(false)} className="flex-1 rounded-xl border border-border py-2.5 text-sm">Cancel</button>
             <button onClick={addLink} className="flex-1 rounded-xl bg-accent py-2.5 text-sm font-semibold text-accent-foreground">Link</button>
+          </div>
+        </div>
+      )}
+
+      {pending.length > 0 && (
+        <div className="mb-2 mt-6">
+          <h2 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pending invitations</h2>
+          <div className="space-y-2">
+            {pending.map((inv) => (
+              <div key={inv.id} className="glass rounded-2xl p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-warning/15 text-warning">
+                    <Mail className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold">{inv.wearerName ?? "A RakshaLink user"}</p>
+                    <p className="text-[11px] text-muted-foreground">wants you to be their guardian</p>
+                  </div>
+                  <StatusBadge variant="warn">Pending</StatusBadge>
+                </div>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={() => handleRespond(inv.id, "decline")}
+                    disabled={respondingId === inv.id}
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-sm font-medium disabled:opacity-50"
+                  >
+                    <X className="h-4 w-4" /> Decline
+                  </button>
+                  <button
+                    onClick={() => handleRespond(inv.id, "accept")}
+                    disabled={respondingId === inv.id}
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-accent py-2.5 text-sm font-semibold text-accent-foreground disabled:opacity-50"
+                  >
+                    <Check className="h-4 w-4" /> Accept
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

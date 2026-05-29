@@ -1,19 +1,32 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { Bell, Shield, Phone, History, MapPin, LogOut, ChevronRight, Moon, Sun, Globe, Copy, Users, BellRing, Eye, MapPinned } from "lucide-react";
+import { Bell, Shield, Phone, History, MapPin, LogOut, ChevronRight, Moon, Sun, Globe, Copy, Users, BellRing, Eye, MapPinned, UserPlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTheme } from "@/lib/theme";
 import { usePreferences, LANGUAGES, type LanguagePref } from "@/lib/preferences";
 import { usePushPermission, describePermission } from "@/lib/push-notifications";
 import { StatusBadge } from "@/components/StatusBadge";
+import { inviteGuardian, listMyGuardians, revokeGuardian } from "@/lib/guardians.functions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/app/settings")({
   component: SettingsPage,
 });
 
 type LinkedWearer = { user_id: string; full_name: string | null };
+type GuardianRow = { id: string; status: string; guardianName: string | null; guardianEmail: string | null };
 
 function SettingsPage() {
   const { profile, user, signOut } = useAuth();
@@ -25,6 +38,60 @@ function SettingsPage() {
   const accountId = user?.id ?? profile?.id ?? "";
   const isGuardian = profile?.role === "guardian";
   const [wearers, setWearers] = useState<LinkedWearer[]>([]);
+
+  const inviteFn = useServerFn(inviteGuardian);
+  const listGuardiansFn = useServerFn(listMyGuardians);
+  const revokeFn = useServerFn(revokeGuardian);
+  const [guardians, setGuardians] = useState<GuardianRow[]>([]);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviting, setInviting] = useState(false);
+  const [revokeTarget, setRevokeTarget] = useState<GuardianRow | null>(null);
+
+  async function loadGuardians() {
+    if (isGuardian || !user?.id) return;
+    try {
+      const rows = await listGuardiansFn();
+      setGuardians(rows);
+    } catch (e: any) {
+      // non-fatal
+    }
+  }
+
+  useEffect(() => {
+    loadGuardians();
+  }, [isGuardian, user?.id]);
+
+  async function handleInvite() {
+    const email = inviteEmail.trim();
+    if (!email) return;
+    setInviting(true);
+    try {
+      const res = await inviteFn({ data: { email } });
+      toast.success(res.status === "reinvited" ? "Invitation re-sent" : "Invitation sent", {
+        description: res.emailSent
+          ? "We emailed your guardian an invite link."
+          : "They'll see the invite when they open RakshaLink.",
+      });
+      setInviteEmail("");
+      loadGuardians();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't send invitation");
+    } finally {
+      setInviting(false);
+    }
+  }
+
+  async function confirmRevoke() {
+    if (!revokeTarget) return;
+    try {
+      await revokeFn({ data: { linkId: revokeTarget.id } });
+      toast.success("Guardian access revoked");
+      setRevokeTarget(null);
+      loadGuardians();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't revoke");
+    }
+  }
 
   useEffect(() => {
     if (!isGuardian || !user?.id) return;
@@ -120,6 +187,67 @@ function SettingsPage() {
           </div>
         </div>
       )}
+
+      {!isGuardian && (
+        <div className="mt-6">
+          <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Guardians</p>
+          <div className="glass overflow-hidden rounded-2xl">
+            <div className="divide-y divide-border/40">
+              {guardians.length === 0 ? (
+                <p className="px-4 py-4 text-xs text-muted-foreground">
+                  No guardians yet. Invite someone to monitor your safety.
+                </p>
+              ) : (
+                guardians.map((g) => (
+                  <div key={g.id} className="flex items-center gap-3 px-4 py-3.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/15 text-[11px] font-semibold text-accent">
+                      {(g.guardianName?.[0] ?? g.guardianEmail?.[0] ?? "G").toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm">{g.guardianName ?? g.guardianEmail ?? "Guardian"}</p>
+                      {g.guardianEmail && (
+                        <p className="truncate text-[11px] text-muted-foreground">{g.guardianEmail}</p>
+                      )}
+                    </div>
+                    <StatusBadge variant={g.status === "active" ? "safe" : "warn"}>
+                      {g.status === "active" ? "Active" : "Pending"}
+                    </StatusBadge>
+                    <button
+                      onClick={() => setRevokeTarget(g)}
+                      className="shrink-0 rounded-lg p-2 text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                      aria-label="Revoke guardian"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="border-t border-border/40 p-3">
+              <div className="flex items-center gap-2">
+                <input
+                  type="email"
+                  inputMode="email"
+                  placeholder="Guardian's email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && !inviting && handleInvite()}
+                  className="flex-1 rounded-xl border border-border/50 bg-background/40 px-3 py-2.5 text-sm outline-none"
+                />
+                <button
+                  onClick={handleInvite}
+                  disabled={inviting || !inviteEmail.trim()}
+                  className="flex shrink-0 items-center gap-1.5 rounded-xl bg-accent px-3 py-2.5 text-sm font-semibold text-accent-foreground disabled:opacity-50"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  {inviting ? "Sending…" : "Invite"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {isGuardian && (
         <div className="mt-6">
@@ -342,6 +470,24 @@ function SettingsPage() {
       </button>
 
       <p className="mt-6 text-center text-[11px] text-muted-foreground">RakshaLink v1.0 · Demo build</p>
+
+      <AlertDialog open={!!revokeTarget} onOpenChange={(o) => !o && setRevokeTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Revoke guardian access?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {revokeTarget?.guardianName ?? revokeTarget?.guardianEmail ?? "This guardian"} will no longer be
+              able to monitor your safety or receive your emergency alerts. You can invite them again later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRevoke} className="bg-primary text-primary-foreground hover:bg-primary/90">
+              Revoke
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
