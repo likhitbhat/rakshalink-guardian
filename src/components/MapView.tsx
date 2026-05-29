@@ -8,6 +8,7 @@ export type MapMarker = {
   label?: string;
   color?: string;
   emergency?: boolean;
+  popupHtml?: string;
 };
 export type MapZone = { id: string; lat: number; lng: number; radius_m: number; name?: string };
 
@@ -77,7 +78,8 @@ export function MapView({
       </div>`;
       const icon = L.divIcon({ html, className: "", iconSize: [18, 18], iconAnchor: [9, 9] });
       const marker = L.marker([m.lat, m.lng], { icon }).addTo(layer);
-      if (m.label) marker.bindTooltip(m.label);
+      if (m.popupHtml) marker.bindPopup(m.popupHtml);
+      else if (m.label) marker.bindTooltip(m.label);
     });
 
     map.setView(center, map.getZoom());

@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { MapView } from "@/components/MapView";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { Navigation, Hospital, Shield as ShieldIcon, Leaf, MapPinOff } from "lucide-react";
+import { Navigation, Hospital, Shield as ShieldIcon, Leaf, MapPinOff, Pill, LifeBuoy } from "lucide-react";
 import { useSafeZones, findContainingZone } from "@/lib/safe-zone";
 import { useLiveLocation } from "@/lib/use-live-location";
 import { distanceMeters } from "@/lib/safe-zone";
@@ -23,8 +23,10 @@ function MapPage() {
   const zones = useSafeZones(user?.id);
   const [showHospitals, setShowHospitals] = useState(true);
   const [showPolice, setShowPolice] = useState(true);
+  const [showPharmacies, setShowPharmacies] = useState(true);
   const [nearby, setNearby] = useState<NearbyPlace[]>([]);
   const [loadingNearby, setLoadingNearby] = useState(false);
+  const [nearbyEnabled, setNearbyEnabled] = useState(false);
   const lastWriteRef = useRef(0);
   const lastFetchKeyRef = useRef<string>("");
 
@@ -47,36 +49,75 @@ function MapPage() {
     }
   }, [user, loc, activeZone, status, prefs.shareLocation]);
 
-  // Fetch real nearby police + hospitals around the live location.
-  // Only refetch when we move > ~500m to avoid hammering the API.
-  useEffect(() => {
-    if (status !== "live") return;
-    const key = `${loc.lat.toFixed(3)},${loc.lng.toFixed(3)}`;
-    if (key === lastFetchKeyRef.current) return;
-    lastFetchKeyRef.current = key;
+  // Fetch real nearby hospitals, police + pharmacies around the live location.
+  // Only runs once the user taps "Nearby Help"; refetches when we move > ~500m.
+  const fetchNearby = (lat: number, lng: number) => {
     setLoadingNearby(true);
-    getNearbyPlaces({ data: { lat: loc.lat, lng: loc.lng, radius: 5000 } })
+    getNearbyPlaces({ data: { lat, lng, radius: 5000 } })
       .then((res) => setNearby(res.places))
       .catch((err) => console.error("nearby places failed", err))
       .finally(() => setLoadingNearby(false));
-  }, [loc, status]);
+  };
+
+  useEffect(() => {
+    if (!nearbyEnabled || status !== "live") return;
+    const key = `${loc.lat.toFixed(3)},${loc.lng.toFixed(3)}`;
+    if (key === lastFetchKeyRef.current) return;
+    lastFetchKeyRef.current = key;
+    fetchNearby(loc.lat, loc.lng);
+  }, [loc, status, nearbyEnabled]);
+
+  const handleNearbyHelp = () => {
+    setNearbyEnabled(true);
+    lastFetchKeyRef.current = `${loc.lat.toFixed(3)},${loc.lng.toFixed(3)}`;
+    fetchNearby(loc.lat, loc.lng);
+  };
 
   const sortedNearby = useMemo(() => {
     return [...nearby]
-      .filter((n) => (n.type === "police" ? showPolice : showHospitals))
+      .filter((n) =>
+        n.type === "police" ? showPolice : n.type === "hospital" ? showHospitals : showPharmacies,
+      )
       .map((n) => ({ ...n, dist: distanceMeters(loc, { lat: n.lat, lng: n.lng }) }))
       .sort((a, b) => a.dist - b.dist);
-  }, [nearby, loc, showPolice, showHospitals]);
+  }, [nearby, loc, showPolice, showHospitals, showPharmacies]);
+
+  const colorFor = (t: NearbyPlace["type"]) =>
+    t === "police"
+      ? "oklch(0.78 0.17 75)"
+      : t === "hospital"
+      ? "oklch(0.62 0.24 25)"
+      : "oklch(0.72 0.18 155)";
 
   const markers = [
     { id: "me", lat: loc.lat, lng: loc.lng, label: "You", color: "oklch(0.78 0.14 200)" },
-    ...sortedNearby.map((n) => ({
-      id: n.id,
-      lat: n.lat,
-      lng: n.lng,
-      label: n.name,
-      color: n.type === "police" ? "oklch(0.78 0.17 75)" : "oklch(0.72 0.18 155)",
-    })),
+    ...sortedNearby.map((n) => {
+      const distLabel =
+        n.dist < 1000 ? `${Math.round(n.dist)} m away` : `${(n.dist / 1000).toFixed(1)} km away`;
+      const typeLabel =
+        n.type === "police" ? "Police" : n.type === "hospital" ? "Hospital" : "Pharmacy";
+      const openLabel =
+        n.openNow == null
+          ? ""
+          : n.openNow
+          ? `<span style="color:#22c55e;font-weight:600">Open now</span>`
+          : `<span style="color:#ef4444;font-weight:600">Closed</span>`;
+      const dirUrl = `https://www.google.com/maps/dir/?api=1&destination=${n.lat},${n.lng}&destination_place_id=${encodeURIComponent(n.id)}`;
+      const popupHtml = `<div style="min-width:170px;font-family:inherit">
+        <div style="font-weight:700;font-size:13px;margin-bottom:2px">${n.name}</div>
+        <div style="font-size:11px;color:#888">${typeLabel} · ${distLabel}</div>
+        ${openLabel ? `<div style="font-size:11px;margin-top:2px">${openLabel}</div>` : ""}
+        <a href="${dirUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:8px;padding:5px 10px;border-radius:8px;background:#2563eb;color:#fff;font-size:11px;font-weight:600;text-decoration:none">Get Directions</a>
+      </div>`;
+      return {
+        id: n.id,
+        lat: n.lat,
+        lng: n.lng,
+        label: n.name,
+        color: colorFor(n.type),
+        popupHtml,
+      };
+    }),
   ];
 
   return (
@@ -120,9 +161,19 @@ function MapPage() {
         <MapView center={[loc.lat, loc.lng]} markers={markers} zones={zones} path={showTrail ? path : []} height={420} />
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-2">
+      <button
+        onClick={handleNearbyHelp}
+        disabled={loadingNearby}
+        className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3 text-sm font-semibold text-primary-foreground shadow transition hover:bg-primary/90 disabled:opacity-60"
+      >
+        <LifeBuoy className="h-4 w-4" />
+        {loadingNearby ? "Finding help nearby…" : "Nearby Help"}
+      </button>
+
+      <div className="mt-4 grid grid-cols-4 gap-2">
         <Toggle active={showHospitals} onClick={() => setShowHospitals((v: boolean) => !v)} icon={Hospital} label="Hospitals" />
         <Toggle active={showPolice} onClick={() => setShowPolice((v: boolean) => !v)} icon={ShieldIcon} label="Police" />
+        <Toggle active={showPharmacies} onClick={() => setShowPharmacies((v: boolean) => !v)} icon={Pill} label="Pharmacies" />
         <Toggle active={showTrail} onClick={() => setShowTrail((v) => !v)} icon={Navigation} label="Trail" />
       </div>
 
@@ -132,21 +183,33 @@ function MapPage() {
           {loadingNearby && <span className="text-[10px] text-muted-foreground">searching…</span>}
         </div>
         <div className="mt-2 space-y-2">
-          {sortedNearby.length === 0 && !loadingNearby && (
+          {!nearbyEnabled && !loadingNearby && (
+            <p className="text-xs text-muted-foreground">
+              Tap “Nearby Help” to find hospitals, police and pharmacies around you.
+            </p>
+          )}
+          {nearbyEnabled && sortedNearby.length === 0 && !loadingNearby && (
             <p className="text-xs text-muted-foreground">
               {status === "live"
-                ? "No nearby police or hospitals found within 5 km."
+                ? "No nearby help found within 5 km."
                 : "Waiting for your location…"}
             </p>
           )}
-          {sortedNearby.slice(0, 6).map((n) => (
+          {sortedNearby.slice(0, 8).map((n) => (
             <div key={n.id} className="flex items-center gap-3">
               {n.type === "police" ? (
                 <ShieldIcon className="h-4 w-4 text-warning" />
+              ) : n.type === "hospital" ? (
+                <Hospital className="h-4 w-4 text-destructive" />
               ) : (
-                <Hospital className="h-4 w-4 text-success" />
+                <Pill className="h-4 w-4 text-success" />
               )}
               <span className="flex-1 truncate text-sm">{n.name}</span>
+              {n.openNow != null && (
+                <span className={`shrink-0 text-[10px] font-medium ${n.openNow ? "text-success" : "text-destructive"}`}>
+                  {n.openNow ? "Open" : "Closed"}
+                </span>
+              )}
               <span className="shrink-0 text-[11px] text-muted-foreground">
                 {n.dist < 1000 ? `${Math.round(n.dist)} m` : `${(n.dist / 1000).toFixed(1)} km`}
               </span>
