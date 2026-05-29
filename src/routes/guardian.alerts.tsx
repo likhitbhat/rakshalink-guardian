@@ -73,8 +73,36 @@ function GuardianAlerts() {
 
   return (
     <div className="px-5 pt-8">
-      <h1 className="font-display text-2xl font-bold">Alerts</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Live emergency feed for everyone you watch.</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl font-bold">Alerts</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Live emergency feed for everyone you watch.</p>
+        </div>
+        {alerts.length > 0 && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <Trash2 className="h-3.5 w-3.5" /> Clear
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Clear alerts from your dashboard?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This removes these alerts from your guardian view only. The wearer keeps their own
+                  history. This cannot be undone for your dashboard.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={clearHistory} disabled={clearing}>
+                  {clearing ? "Clearing…" : "Clear all"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+      </div>
 
       <div className="mt-6 space-y-2">
         {alerts.length === 0 && (
