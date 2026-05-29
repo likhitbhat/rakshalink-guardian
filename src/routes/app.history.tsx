@@ -147,6 +147,7 @@ function HistoryPage() {
       .from("emergency_alerts")
       .select("*")
       .eq("user_id", user.id)
+      .eq("hidden_by_owner", false)
       .order("started_at", { ascending: false })
       .then(({ data }) => setAlerts(data ?? []));
   };
@@ -161,7 +162,10 @@ function HistoryPage() {
   const clearHistory = async () => {
     if (!user) return;
     setClearing(true);
-    const { error } = await supabase.from("emergency_alerts").delete().eq("user_id", user.id);
+    const { error } = await supabase
+      .from("emergency_alerts")
+      .update({ hidden_by_owner: true })
+      .eq("user_id", user.id);
     setClearing(false);
     if (error) {
       toast.error("Failed to clear history");
@@ -196,9 +200,9 @@ function HistoryPage() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Clear all history?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This permanently deletes every emergency alert from your account. We store a small
-                  cookie on this device to remember the last time you cleared, so we can remind you
-                  next month. This action cannot be undone.
+                  This clears every emergency alert from your history view. Your guardians keep
+                  their own copy until they clear it themselves. We store a small cookie on this
+                  device to remind you next month.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
