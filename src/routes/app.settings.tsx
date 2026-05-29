@@ -1,13 +1,25 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { Bell, Shield, Phone, History, MapPin, LogOut, ChevronRight, Moon, Sun, Globe, Copy, Users, BellRing, Eye, MapPinned } from "lucide-react";
+import { Bell, Shield, Phone, History, MapPin, LogOut, ChevronRight, Moon, Sun, Globe, Copy, Users, BellRing, Eye, MapPinned, UserPlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTheme } from "@/lib/theme";
 import { usePreferences, LANGUAGES, type LanguagePref } from "@/lib/preferences";
 import { usePushPermission, describePermission } from "@/lib/push-notifications";
 import { StatusBadge } from "@/components/StatusBadge";
+import { inviteGuardian, listMyGuardians, revokeGuardian } from "@/lib/guardians.functions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/app/settings")({
   component: SettingsPage,
