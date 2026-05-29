@@ -9,12 +9,16 @@ const Input = z.object({
   radius: z.number().min(100).max(50000).default(5000),
 });
 
+export type PlaceType = "police" | "hospital" | "pharmacy";
+
 export type NearbyPlace = {
   id: string;
   name: string;
-  type: "police" | "hospital";
+  type: PlaceType;
   lat: number;
   lng: number;
+  openNow?: boolean | null;
+  address?: string;
 };
 
 async function searchNearby(
@@ -23,16 +27,18 @@ async function searchNearby(
   lat: number,
   lng: number,
   radius: number,
-  type: "police" | "hospital",
+  type: PlaceType,
 ): Promise<NearbyPlace[]> {
-  const includedTypes = type === "police" ? ["police"] : ["hospital"];
+  const includedTypes =
+    type === "police" ? ["police"] : type === "hospital" ? ["hospital"] : ["pharmacy"];
   const res = await fetch(`${GATEWAY_URL}/places/v1/places:searchNearby`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${lovableKey}`,
       "X-Connection-Api-Key": apiKey,
       "Content-Type": "application/json",
-      "X-Goog-FieldMask": "places.id,places.displayName,places.location",
+      "X-Goog-FieldMask":
+        "places.id,places.displayName,places.location,places.currentOpeningHours.openNow,places.formattedAddress",
     },
     body: JSON.stringify({
       includedTypes,
@@ -53,6 +59,8 @@ async function searchNearby(
     type,
     lat: p.location?.latitude,
     lng: p.location?.longitude,
+    openNow: p.currentOpeningHours?.openNow ?? null,
+    address: p.formattedAddress ?? undefined,
   }));
 }
 
@@ -64,9 +72,10 @@ export const getNearbyPlaces = createServerFn({ method: "POST" })
     if (!lovableKey) throw new Error("LOVABLE_API_KEY is not configured");
     if (!apiKey) throw new Error("GOOGLE_MAPS_API_KEY is not configured");
 
-    const [police, hospitals] = await Promise.all([
+    const [police, hospitals, pharmacies] = await Promise.all([
       searchNearby(apiKey, lovableKey, data.lat, data.lng, data.radius, "police"),
       searchNearby(apiKey, lovableKey, data.lat, data.lng, data.radius, "hospital"),
+      searchNearby(apiKey, lovableKey, data.lat, data.lng, data.radius, "pharmacy"),
     ]);
-    return { places: [...police, ...hospitals] };
+    return { places: [...police, ...hospitals, ...pharmacies] };
   });
