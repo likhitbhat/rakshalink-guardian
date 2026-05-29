@@ -470,6 +470,24 @@ function SettingsPage() {
       </button>
 
       <p className="mt-6 text-center text-[11px] text-muted-foreground">RakshaLink v1.0 · Demo build</p>
+
+      <AlertDialog open={!!revokeTarget} onOpenChange={(o) => !o && setRevokeTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Revoke guardian access?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {revokeTarget?.guardianName ?? revokeTarget?.guardianEmail ?? "This guardian"} will no longer be
+              able to monitor your safety or receive your emergency alerts. You can invite them again later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRevoke} className="bg-primary text-primary-foreground hover:bg-primary/90">
+              Revoke
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
