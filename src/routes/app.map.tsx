@@ -161,9 +161,19 @@ function MapPage() {
         <MapView center={[loc.lat, loc.lng]} markers={markers} zones={zones} path={showTrail ? path : []} height={420} />
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-2">
+      <button
+        onClick={handleNearbyHelp}
+        disabled={loadingNearby}
+        className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3 text-sm font-semibold text-primary-foreground shadow transition hover:bg-primary/90 disabled:opacity-60"
+      >
+        <LifeBuoy className="h-4 w-4" />
+        {loadingNearby ? "Finding help nearby…" : "Nearby Help"}
+      </button>
+
+      <div className="mt-4 grid grid-cols-4 gap-2">
         <Toggle active={showHospitals} onClick={() => setShowHospitals((v: boolean) => !v)} icon={Hospital} label="Hospitals" />
         <Toggle active={showPolice} onClick={() => setShowPolice((v: boolean) => !v)} icon={ShieldIcon} label="Police" />
+        <Toggle active={showPharmacies} onClick={() => setShowPharmacies((v: boolean) => !v)} icon={Pill} label="Pharmacies" />
         <Toggle active={showTrail} onClick={() => setShowTrail((v) => !v)} icon={Navigation} label="Trail" />
       </div>
 
@@ -173,21 +183,33 @@ function MapPage() {
           {loadingNearby && <span className="text-[10px] text-muted-foreground">searching…</span>}
         </div>
         <div className="mt-2 space-y-2">
-          {sortedNearby.length === 0 && !loadingNearby && (
+          {!nearbyEnabled && !loadingNearby && (
+            <p className="text-xs text-muted-foreground">
+              Tap “Nearby Help” to find hospitals, police and pharmacies around you.
+            </p>
+          )}
+          {nearbyEnabled && sortedNearby.length === 0 && !loadingNearby && (
             <p className="text-xs text-muted-foreground">
               {status === "live"
-                ? "No nearby police or hospitals found within 5 km."
+                ? "No nearby help found within 5 km."
                 : "Waiting for your location…"}
             </p>
           )}
-          {sortedNearby.slice(0, 6).map((n) => (
+          {sortedNearby.slice(0, 8).map((n) => (
             <div key={n.id} className="flex items-center gap-3">
               {n.type === "police" ? (
                 <ShieldIcon className="h-4 w-4 text-warning" />
+              ) : n.type === "hospital" ? (
+                <Hospital className="h-4 w-4 text-destructive" />
               ) : (
-                <Hospital className="h-4 w-4 text-success" />
+                <Pill className="h-4 w-4 text-success" />
               )}
               <span className="flex-1 truncate text-sm">{n.name}</span>
+              {n.openNow != null && (
+                <span className={`shrink-0 text-[10px] font-medium ${n.openNow ? "text-success" : "text-destructive"}`}>
+                  {n.openNow ? "Open" : "Closed"}
+                </span>
+              )}
               <span className="shrink-0 text-[11px] text-muted-foreground">
                 {n.dist < 1000 ? `${Math.round(n.dist)} m` : `${(n.dist / 1000).toFixed(1)} km`}
               </span>
