@@ -14,7 +14,7 @@ export const Route = createFileRoute("/app/")({
 
 function Dashboard() {
   const { user, profile } = useAuth();
-  const { loc } = useLiveLocation();
+  const { loc, status } = useLiveLocation();
   const zones = useSafeZones(user?.id);
   const activeZone = findContainingZone(loc, zones);
   const [contactCount, setContactCount] = useState(0);
