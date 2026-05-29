@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as GuardianRouteImport } from './routes/guardian'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
@@ -34,6 +35,11 @@ import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lova
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 
+const UnsubscribeRoute = UnsubscribeRouteImport.update({
+  id: '/unsubscribe',
+  path: '/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GuardianRoute = GuardianRouteImport.update({
   id: '/guardian',
   path: '/guardian',
@@ -163,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/guardian': typeof GuardianRouteWithChildren
+  '/unsubscribe': typeof UnsubscribeRoute
   '/app/contacts': typeof AppContactsRoute
   '/app/device': typeof AppDeviceRoute
   '/app/history': typeof AppHistoryRoute
@@ -187,6 +194,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/unsubscribe': typeof UnsubscribeRoute
   '/app/contacts': typeof AppContactsRoute
   '/app/device': typeof AppDeviceRoute
   '/app/history': typeof AppHistoryRoute
@@ -214,6 +222,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/guardian': typeof GuardianRouteWithChildren
+  '/unsubscribe': typeof UnsubscribeRoute
   '/app/contacts': typeof AppContactsRoute
   '/app/device': typeof AppDeviceRoute
   '/app/history': typeof AppHistoryRoute
@@ -242,6 +251,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/guardian'
+    | '/unsubscribe'
     | '/app/contacts'
     | '/app/device'
     | '/app/history'
@@ -266,6 +276,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/unsubscribe'
     | '/app/contacts'
     | '/app/device'
     | '/app/history'
@@ -292,6 +303,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/guardian'
+    | '/unsubscribe'
     | '/app/contacts'
     | '/app/device'
     | '/app/history'
@@ -319,6 +331,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   GuardianRoute: typeof GuardianRouteWithChildren
+  UnsubscribeRoute: typeof UnsubscribeRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -328,6 +341,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/unsubscribe': {
+      id: '/unsubscribe'
+      path: '/unsubscribe'
+      fullPath: '/unsubscribe'
+      preLoaderRoute: typeof UnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/guardian': {
       id: '/guardian'
       path: '/guardian'
@@ -560,6 +580,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   GuardianRoute: GuardianRouteWithChildren,
+  UnsubscribeRoute: UnsubscribeRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
