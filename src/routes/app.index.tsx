@@ -20,18 +20,27 @@ function Dashboard() {
   const [contactCount, setContactCount] = useState(0);
   const [recentAlerts, setRecentAlerts] = useState<{ id: string; type: string; status: string; started_at: string }[]>([]);
   const [activeAlert, setActiveAlert] = useState<{ id: string; type: string; started_at: string } | null>(null);
+  const [monthAlertCount, setMonthAlertCount] = useState(0);
+  const [deviceBattery, setDeviceBattery] = useState<number | null>(null);
 
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      const [c, a] = await Promise.all([
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      const [c, a, m, d] = await Promise.all([
         supabase.from("emergency_contacts").select("id", { count: "exact", head: true }),
         supabase.from("emergency_alerts").select("id, type, status, started_at").order("started_at", { ascending: false }).limit(3),
+        supabase.from("emergency_alerts").select("id", { count: "exact", head: true }).gte("started_at", startOfMonth.toISOString()),
+        supabase.from("devices").select("battery").eq("user_id", user.id).order("last_seen", { ascending: false }).limit(1),
       ]);
       setContactCount(c.count ?? 0);
       const alerts = (a.data as any) ?? [];
       setRecentAlerts(alerts);
       setActiveAlert(alerts.find((x: any) => x.status === "active") ?? null);
+      setMonthAlertCount(m.count ?? 0);
+      setDeviceBattery((d.data as any)?.[0]?.battery ?? null);
     };
     load();
     const ch = supabase
@@ -46,6 +55,7 @@ function Dashboard() {
       supabase.removeChannel(ch);
     };
   }, [user]);
+
   
 
   const greeting = (() => {
