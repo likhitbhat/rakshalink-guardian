@@ -23,8 +23,10 @@ function MapPage() {
   const zones = useSafeZones(user?.id);
   const [showHospitals, setShowHospitals] = useState(true);
   const [showPolice, setShowPolice] = useState(true);
+  const [showPharmacies, setShowPharmacies] = useState(true);
   const [nearby, setNearby] = useState<NearbyPlace[]>([]);
   const [loadingNearby, setLoadingNearby] = useState(false);
+  const [nearbyEnabled, setNearbyEnabled] = useState(false);
   const lastWriteRef = useRef(0);
   const lastFetchKeyRef = useRef<string>("");
 
