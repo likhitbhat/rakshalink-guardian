@@ -50,7 +50,8 @@ const InviteSchema = z.object({
 
 type InviteResult = {
   status: "invited" | "reinvited";
-  emailSent: boolean;
+  wearerName: string;
+  guardianEmail: string;
   guardianName: string | null;
 };
 
