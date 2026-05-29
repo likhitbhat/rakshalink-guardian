@@ -154,10 +154,45 @@ function GuardianAlerts() {
               <p className="mt-1 text-[11px] text-muted-foreground">
                 {new Date(a.started_at).toLocaleString()}
               </p>
-              {a.lat && (
-                <p className="mt-1 text-xs text-accent">📍 {a.lat.toFixed(4)}, {a.lng.toFixed(4)}</p>
+              {a.lat != null && a.lng != null && (
+                <a
+                  href={`https://www.google.com/maps?q=${a.lat},${a.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 inline-flex items-center gap-1 text-xs text-accent underline-offset-2 hover:underline"
+                >
+                  <MapPin className="h-3 w-3" /> {a.lat.toFixed(4)}, {a.lng.toFixed(4)} · Live location
+                </a>
+              )}
+              {openNote === a.id ? (
+                <div className="mt-3 space-y-2">
+                  <Textarea
+                    value={noteDrafts[a.id] ?? ""}
+                    onChange={(e) => setNoteDrafts((d) => ({ ...d, [a.id]: e.target.value }))}
+                    placeholder="Add a note for this alert…"
+                    className="min-h-[64px] text-sm"
+                  />
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={() => addNote(a.id)} disabled={savingNote}>
+                      {savingNote ? "Saving…" : "Save note"}
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => setOpenNote(null)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-3 gap-1.5"
+                  onClick={() => setOpenNote(a.id)}
+                >
+                  <MessageSquarePlus className="h-3.5 w-3.5" /> Add note
+                </Button>
               )}
             </div>
+
           </div>
         ))}
       </div>
