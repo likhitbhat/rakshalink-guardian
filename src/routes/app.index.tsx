@@ -89,7 +89,14 @@ function Dashboard() {
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <MapPin className="h-3.5 w-3.5 text-accent" />
-            {loc.lat.toFixed(4)}, {loc.lng.toFixed(4)} · live
+            {loc.lat.toFixed(4)}, {loc.lng.toFixed(4)} ·{" "}
+            {status === "live"
+              ? "live"
+              : status === "requesting"
+              ? "locating…"
+              : status === "denied"
+              ? "last known location"
+              : "last known location"}
             {activeZone && !activeAlert && (
               <span className="inline-flex items-center gap-1 rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-medium text-accent">
                 <Leaf className="h-3 w-3" /> Low power · {activeZone.name}
