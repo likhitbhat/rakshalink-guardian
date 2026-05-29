@@ -291,6 +291,7 @@ function HistoryPage() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+          </div>
         )}
       </div>
 
