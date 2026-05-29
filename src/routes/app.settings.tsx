@@ -26,6 +26,7 @@ export const Route = createFileRoute("/app/settings")({
 });
 
 type LinkedWearer = { user_id: string; full_name: string | null };
+type GuardianRow = { id: string; status: string; guardianName: string | null; guardianEmail: string | null };
 
 function SettingsPage() {
   const { profile, user, signOut } = useAuth();
@@ -37,6 +38,60 @@ function SettingsPage() {
   const accountId = user?.id ?? profile?.id ?? "";
   const isGuardian = profile?.role === "guardian";
   const [wearers, setWearers] = useState<LinkedWearer[]>([]);
+
+  const inviteFn = useServerFn(inviteGuardian);
+  const listGuardiansFn = useServerFn(listMyGuardians);
+  const revokeFn = useServerFn(revokeGuardian);
+  const [guardians, setGuardians] = useState<GuardianRow[]>([]);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviting, setInviting] = useState(false);
+  const [revokeTarget, setRevokeTarget] = useState<GuardianRow | null>(null);
+
+  async function loadGuardians() {
+    if (isGuardian || !user?.id) return;
+    try {
+      const rows = await listGuardiansFn();
+      setGuardians(rows);
+    } catch (e: any) {
+      // non-fatal
+    }
+  }
+
+  useEffect(() => {
+    loadGuardians();
+  }, [isGuardian, user?.id]);
+
+  async function handleInvite() {
+    const email = inviteEmail.trim();
+    if (!email) return;
+    setInviting(true);
+    try {
+      const res = await inviteFn({ data: { email } });
+      toast.success(res.status === "reinvited" ? "Invitation re-sent" : "Invitation sent", {
+        description: res.emailSent
+          ? "We emailed your guardian an invite link."
+          : "They'll see the invite when they open RakshaLink.",
+      });
+      setInviteEmail("");
+      loadGuardians();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't send invitation");
+    } finally {
+      setInviting(false);
+    }
+  }
+
+  async function confirmRevoke() {
+    if (!revokeTarget) return;
+    try {
+      await revokeFn({ data: { linkId: revokeTarget.id } });
+      toast.success("Guardian access revoked");
+      setRevokeTarget(null);
+      loadGuardians();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't revoke");
+    }
+  }
 
   useEffect(() => {
     if (!isGuardian || !user?.id) return;
