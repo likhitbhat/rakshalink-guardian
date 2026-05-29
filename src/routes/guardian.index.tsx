@@ -194,6 +194,44 @@ function GuardianHome() {
         </div>
       )}
 
+      {pending.length > 0 && (
+        <div className="mb-2 mt-6">
+          <h2 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pending invitations</h2>
+          <div className="space-y-2">
+            {pending.map((inv) => (
+              <div key={inv.id} className="glass rounded-2xl p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-warning/15 text-warning">
+                    <Mail className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold">{inv.wearerName ?? "A RakshaLink user"}</p>
+                    <p className="text-[11px] text-muted-foreground">wants you to be their guardian</p>
+                  </div>
+                  <StatusBadge variant="warn">Pending</StatusBadge>
+                </div>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={() => handleRespond(inv.id, "decline")}
+                    disabled={respondingId === inv.id}
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-sm font-medium disabled:opacity-50"
+                  >
+                    <X className="h-4 w-4" /> Decline
+                  </button>
+                  <button
+                    onClick={() => handleRespond(inv.id, "accept")}
+                    disabled={respondingId === inv.id}
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-accent py-2.5 text-sm font-semibold text-accent-foreground disabled:opacity-50"
+                  >
+                    <Check className="h-4 w-4" /> Accept
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <h2 className="mb-2 mt-6 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Monitored</h2>
       <div className="space-y-2">
         {links.length === 0 && (
