@@ -142,17 +142,14 @@ function GuardianHome() {
   }, [user]);
 
   async function addLink() {
-    if (!user || !linkUserId) return;
-    const { error } = await supabase.from("guardian_links").insert({
-      guardian_id: user.id,
-      user_id: linkUserId.trim(),
-      status: "active",
-    });
-    if (error) return toast.error(error.message);
+    // Guardian links require the wearer's explicit consent. A guardian can no
+    // longer self-assign to an arbitrary account; the wearer must send an
+    // invitation from their Settings, which this guardian then accepts below.
     setLinkUserId("");
     setAdding(false);
-    toast.success("User linked");
-    load();
+    toast.info("Ask the wearer to invite you", {
+      description: "They can add you as a guardian from their app Settings. The invite will then appear here to accept.",
+    });
   }
 
   return (
