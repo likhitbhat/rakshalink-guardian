@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { StatusBadge } from "@/components/StatusBadge";
-import { AlertTriangle, Trash2 } from "lucide-react";
+import { AlertTriangle, Trash2, MapPin, MessageSquarePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +29,29 @@ function GuardianAlerts() {
   const [names, setNames] = useState<Record<string, string>>({});
   const [clearing, setClearing] = useState(false);
   const [wearerIds, setWearerIds] = useState<string[]>([]);
+  const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
+  const [openNote, setOpenNote] = useState<string | null>(null);
+  const [savingNote, setSavingNote] = useState(false);
+
+  const addNote = async (alertId: string) => {
+    const note = (noteDrafts[alertId] ?? "").trim();
+    if (!note) return;
+    setSavingNote(true);
+    const { error } = await supabase.rpc("guardian_add_alert_note", {
+      _alert_id: alertId,
+      _note: note,
+    });
+    setSavingNote(false);
+    if (error) {
+      toast.error("Failed to add note");
+      return;
+    }
+    setNoteDrafts((d) => ({ ...d, [alertId]: "" }));
+    setOpenNote(null);
+    load();
+    toast.success("Note added");
+  };
+
 
   async function load() {
     if (!user) return;
