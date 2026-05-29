@@ -1,6 +1,24 @@
 import { useEffect, useRef, useState } from "react";
 import { getMockLocation } from "@/lib/mock-location";
 
+const LS_KEY = "rakshalink_last_location";
+
+function loadLastKnown(): LiveLocation | null {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (typeof parsed.lat === "number" && typeof parsed.lng === "number") return parsed as LiveLocation;
+  } catch { /* ignore */ }
+  return null;
+}
+
+function saveLastKnown(loc: LiveLocation) {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({ lat: loc.lat, lng: loc.lng }));
+  } catch { /* ignore */ }
+}
+
 export type LiveLocation = { lat: number; lng: number; accuracy?: number };
 
 export type LiveLocationStatus =
@@ -16,11 +34,13 @@ export type LiveLocationStatus =
  *
  * - Asks the browser for permission on mount.
  * - If granted, streams real coordinates via watchPosition.
- * - If denied / unavailable / running outside a secure context, falls back
- *   to the simulated mock location so the rest of the UI keeps working.
+ * - If denied / unavailable, falls back to the last known location stored
+ *   in localStorage. If no last known location exists, uses a simulated
+ *   mock location so the rest of the UI keeps working.
  */
 export function useLiveLocation(): { loc: LiveLocation; status: LiveLocationStatus } {
-  const [loc, setLoc] = useState<LiveLocation>(() => getMockLocation());
+  const lastKnown = loadLastKnown();
+  const [loc, setLoc] = useState<LiveLocation>(() => lastKnown ?? getMockLocation());
   const [status, setStatus] = useState<LiveLocationStatus>("idle");
   const fallbackTimer = useRef<number | null>(null);
 
@@ -28,8 +48,11 @@ export function useLiveLocation(): { loc: LiveLocation; status: LiveLocationStat
     const startFallback = (next: LiveLocationStatus) => {
       setStatus(next);
       if (fallbackTimer.current != null) return;
+      const saved = loadLastKnown();
+      if (saved) setLoc(saved);
       fallbackTimer.current = window.setInterval(() => {
-        setLoc(getMockLocation());
+        const s = loadLastKnown();
+        setLoc(s ?? getMockLocation());
       }, 3000) as unknown as number;
     };
 
@@ -52,12 +75,14 @@ export function useLiveLocation(): { loc: LiveLocation; status: LiveLocationStat
       watchId = navigator.geolocation.watchPosition(
         (pos) => {
           stopFallback();
-          setStatus("live");
-          setLoc({
+          const newLoc = {
             lat: pos.coords.latitude,
             lng: pos.coords.longitude,
             accuracy: pos.coords.accuracy,
-          });
+          };
+          saveLastKnown(newLoc);
+          setStatus("live");
+          setLoc(newLoc);
         },
         (err) => {
           if (err.code === err.PERMISSION_DENIED) startFallback("denied");
@@ -79,3 +104,4 @@ export function useLiveLocation(): { loc: LiveLocation; status: LiveLocationStat
 
   return { loc, status };
 }
+
