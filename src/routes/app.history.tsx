@@ -188,6 +188,62 @@ function HistoryPage() {
     setShowMonthlyPrompt(false);
   };
 
+  const buildRows = () =>
+    alerts.map((a) => {
+      const batches = parseSmsBatches(a.notes);
+      const sms = batches
+        .flatMap((b) => b.entries.map((e) => `${e.name} (${e.phone}): ${e.status}${e.error ? ` - ${e.error}` : ""}`))
+        .join("; ");
+      return {
+        type: a.type ?? "",
+        status: a.status ?? "",
+        date: new Date(a.started_at).toLocaleString(),
+        location: a.lat != null ? `${a.lat.toFixed(5)}, ${a.lng.toFixed(5)}` : "",
+        sms,
+      };
+    });
+
+  const exportCSV = () => {
+    if (alerts.length === 0) return;
+    const rows = buildRows();
+    const header = ["Type", "Status", "Date", "Location", "SMS delivery"];
+    const esc = (v: string) => `"${String(v).replace(/"/g, '""')}"`;
+    const csv = [
+      header.map(esc).join(","),
+      ...rows.map((r) => [r.type, r.status, r.date, r.location, r.sms].map(esc).join(",")),
+    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `rakshalink-emergency-history-${currentMonthKey()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("CSV exported");
+  };
+
+  const exportPDF = async () => {
+    if (alerts.length === 0) return;
+    const { default: jsPDF } = await import("jspdf");
+    const autoTable = (await import("jspdf-autotable")).default;
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("RakshaLink — Emergency History", 14, 18);
+    doc.setFontSize(10);
+    doc.text(`Exported ${new Date().toLocaleString()}`, 14, 25);
+    const rows = buildRows();
+    autoTable(doc, {
+      startY: 30,
+      head: [["Type", "Status", "Date", "Location", "SMS delivery"]],
+      body: rows.map((r) => [r.type, r.status, r.date, r.location, r.sms]),
+      styles: { fontSize: 8, cellWidth: "wrap" },
+      headStyles: { fillColor: [220, 50, 50] },
+      columnStyles: { 4: { cellWidth: 50 } },
+    });
+    doc.save(`rakshalink-emergency-history-${currentMonthKey()}.pdf`);
+    toast.success("PDF exported");
+  };
+
   return (
     <div className="px-5 pt-8 pb-6">
       <div className="flex items-start justify-between gap-3">
