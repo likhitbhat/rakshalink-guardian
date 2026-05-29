@@ -3,7 +3,20 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { StatusBadge } from "@/components/StatusBadge";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/guardian/alerts")({
   component: GuardianAlerts,
@@ -13,16 +26,20 @@ function GuardianAlerts() {
   const { user } = useAuth();
   const [alerts, setAlerts] = useState<any[]>([]);
   const [names, setNames] = useState<Record<string, string>>({});
+  const [clearing, setClearing] = useState(false);
+  const [wearerIds, setWearerIds] = useState<string[]>([]);
 
   async function load() {
     if (!user) return;
     const { data: links } = await supabase.from("guardian_links").select("user_id").eq("guardian_id", user.id).eq("status", "active");
     const ids = (links ?? []).map((l: any) => l.user_id);
+    setWearerIds(ids);
     if (!ids.length) return setAlerts([]);
     const { data } = await supabase
       .from("emergency_alerts")
       .select("*")
       .in("user_id", ids)
+      .eq("hidden_by_guardian", false)
       .order("started_at", { ascending: false })
       .limit(50);
     setAlerts(data ?? []);
@@ -42,6 +59,17 @@ function GuardianAlerts() {
       supabase.removeChannel(ch);
     };
   }, [user]);
+
+  const clearHistory = async () => {
+    if (!user || !wearerIds.length) return;
+    setClearing(true);
+    for (const uid of wearerIds) {
+      await supabase.rpc("hide_all_alerts_for_guardian", { _user_id: uid });
+    }
+    setClearing(false);
+    setAlerts([]);
+    toast.success("History cleared from your dashboard");
+  };
 
   return (
     <div className="px-5 pt-8">
