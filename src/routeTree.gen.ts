@@ -28,6 +28,7 @@ import { Route as AppDeviceRouteImport } from './routes/app.device'
 import { Route as AppContactsRouteImport } from './routes/app.contacts'
 import { Route as GuardianZonesUserIdRouteImport } from './routes/guardian.zones.$userId'
 import { Route as GuardianWearerUserIdRouteImport } from './routes/guardian.wearer.$userId'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 
 const GuardianRoute = GuardianRouteImport.update({
   id: '/guardian',
@@ -124,6 +125,12 @@ const GuardianWearerUserIdRoute = GuardianWearerUserIdRouteImport.update({
   path: '/wearer/$userId',
   getParentRoute: () => GuardianRoute,
 } as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -145,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/guardian/': typeof GuardianIndexRoute
   '/guardian/wearer/$userId': typeof GuardianWearerUserIdRoute
   '/guardian/zones/$userId': typeof GuardianZonesUserIdRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -164,6 +172,7 @@ export interface FileRoutesByTo {
   '/guardian': typeof GuardianIndexRoute
   '/guardian/wearer/$userId': typeof GuardianWearerUserIdRoute
   '/guardian/zones/$userId': typeof GuardianZonesUserIdRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -186,6 +195,7 @@ export interface FileRoutesById {
   '/guardian/': typeof GuardianIndexRoute
   '/guardian/wearer/$userId': typeof GuardianWearerUserIdRoute
   '/guardian/zones/$userId': typeof GuardianZonesUserIdRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -209,6 +219,7 @@ export interface FileRouteTypes {
     | '/guardian/'
     | '/guardian/wearer/$userId'
     | '/guardian/zones/$userId'
+    | '/lovable/email/queue/process'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -228,6 +239,7 @@ export interface FileRouteTypes {
     | '/guardian'
     | '/guardian/wearer/$userId'
     | '/guardian/zones/$userId'
+    | '/lovable/email/queue/process'
   id:
     | '__root__'
     | '/'
@@ -249,6 +261,7 @@ export interface FileRouteTypes {
     | '/guardian/'
     | '/guardian/wearer/$userId'
     | '/guardian/zones/$userId'
+    | '/lovable/email/queue/process'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -256,6 +269,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   GuardianRoute: typeof GuardianRouteWithChildren
+  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -393,6 +407,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GuardianWearerUserIdRouteImport
       parentRoute: typeof GuardianRoute
     }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -457,6 +478,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   GuardianRoute: GuardianRouteWithChildren,
+  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
