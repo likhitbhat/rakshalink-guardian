@@ -23,6 +23,7 @@ function SosPage() {
   const [activeAlert, setActiveAlert] = useState<string | null>(null);
   const [seconds, setSeconds] = useState(0);
   const holdRef = useRef<number | null>(null);
+  const triggeringRef = useRef(false);
 
   // Hold-to-trigger countdown
   useEffect(() => {
@@ -32,13 +33,21 @@ function SosPage() {
       setCountdown((c) => {
         if (c <= 1) {
           clearInterval(t);
-          triggerSos();
           return 0;
         }
         return c - 1;
       });
     }, 1000);
-    return () => clearInterval(t);
+    // Fire SOS exactly once, 3s after hold starts
+    const fire = setTimeout(() => {
+      if (triggeringRef.current || activeAlert) return;
+      triggeringRef.current = true;
+      triggerSos();
+    }, 3000);
+    return () => {
+      clearInterval(t);
+      clearTimeout(fire);
+    };
   }, [holding]);
 
   // Rehydrate any still-active alert when the page mounts (e.g. after refresh)
