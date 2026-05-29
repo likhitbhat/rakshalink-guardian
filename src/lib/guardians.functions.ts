@@ -19,30 +19,6 @@ async function findUserByEmail(email: string): Promise<{ id: string; email: stri
   return null;
 }
 
-async function sendInviteEmail(args: {
-  toEmail: string;
-  wearerName: string;
-  acceptUrl: string;
-}): Promise<boolean> {
-  // Best-effort email delivery. Requires Lovable email infrastructure to be
-  // configured; if it isn't, we silently skip — the invitation still shows up
-  // in the guardian's "Pending Invitations" inside the app.
-  try {
-    const { error } = await supabaseAdmin.rpc("enqueue_email" as any, {
-      queue_name: "transactional_emails",
-      payload: {
-        to: args.toEmail,
-        subject: `${args.wearerName} invited you as their Guardian on RakshaLink`,
-        html: `<p>${args.wearerName} has invited you to be their Guardian on RakshaLink.</p>
-<p>As a Guardian you'll be able to monitor their safety and receive emergency alerts.</p>
-<p><a href="${args.acceptUrl}">Open RakshaLink to accept the invitation</a></p>`,
-      },
-    } as any);
-    return !error;
-  } catch {
-    return false;
-  }
-}
 
 const InviteSchema = z.object({
   email: z.string().trim().email().max(255),
