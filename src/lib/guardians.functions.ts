@@ -111,20 +111,10 @@ export const inviteGuardian = createServerFn({ method: "POST" })
       .eq("id", guardian.id)
       .maybeSingle();
 
-    const origin =
-      getRequestHeader("origin") ||
-      (getRequestHeader("host") ? `https://${getRequestHeader("host")}` : "");
-    const acceptUrl = `${origin}/guardian`;
-
-    const emailSent = await sendInviteEmail({
-      toEmail: guardian.email,
-      wearerName,
-      acceptUrl,
-    });
-
     return {
       status: existing ? "reinvited" : "invited",
-      emailSent,
+      wearerName,
+      guardianEmail: guardian.email,
       guardianName: gProfile?.full_name ?? null,
     };
   });
