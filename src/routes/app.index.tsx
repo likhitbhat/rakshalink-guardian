@@ -121,6 +121,26 @@ function Dashboard() {
         </div>
       </div>
 
+      {/* Quick stats */}
+      <div className="mt-4 grid grid-cols-3 gap-3">
+        <div className="glass rounded-2xl p-4">
+          <Bell className="mb-2 h-5 w-5 text-primary" />
+          <p className="font-display text-2xl font-bold">{monthAlertCount}</p>
+          <p className="text-[11px] text-muted-foreground">Alerts this month</p>
+        </div>
+        <div className="glass rounded-2xl p-4">
+          <Leaf className="mb-2 h-5 w-5 text-accent" />
+          <p className="text-sm font-semibold">{activeZone ? activeZone.name : "Outside zones"}</p>
+          <p className="text-[11px] text-muted-foreground">Safe zone status</p>
+        </div>
+        <div className="glass rounded-2xl p-4">
+          <Bluetooth className="mb-2 h-5 w-5 text-accent" />
+          <p className="font-display text-2xl font-bold">{deviceBattery != null ? `${deviceBattery}%` : "—"}</p>
+          <p className="text-[11px] text-muted-foreground">Device battery</p>
+        </div>
+      </div>
+
+
       {/* Device row */}
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Link to="/app/device" className="glass rounded-2xl p-4">
