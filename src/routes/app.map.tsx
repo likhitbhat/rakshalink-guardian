@@ -49,36 +49,75 @@ function MapPage() {
     }
   }, [user, loc, activeZone, status, prefs.shareLocation]);
 
-  // Fetch real nearby police + hospitals around the live location.
-  // Only refetch when we move > ~500m to avoid hammering the API.
-  useEffect(() => {
-    if (status !== "live") return;
-    const key = `${loc.lat.toFixed(3)},${loc.lng.toFixed(3)}`;
-    if (key === lastFetchKeyRef.current) return;
-    lastFetchKeyRef.current = key;
+  // Fetch real nearby hospitals, police + pharmacies around the live location.
+  // Only runs once the user taps "Nearby Help"; refetches when we move > ~500m.
+  const fetchNearby = (lat: number, lng: number) => {
     setLoadingNearby(true);
-    getNearbyPlaces({ data: { lat: loc.lat, lng: loc.lng, radius: 5000 } })
+    getNearbyPlaces({ data: { lat, lng, radius: 5000 } })
       .then((res) => setNearby(res.places))
       .catch((err) => console.error("nearby places failed", err))
       .finally(() => setLoadingNearby(false));
-  }, [loc, status]);
+  };
+
+  useEffect(() => {
+    if (!nearbyEnabled || status !== "live") return;
+    const key = `${loc.lat.toFixed(3)},${loc.lng.toFixed(3)}`;
+    if (key === lastFetchKeyRef.current) return;
+    lastFetchKeyRef.current = key;
+    fetchNearby(loc.lat, loc.lng);
+  }, [loc, status, nearbyEnabled]);
+
+  const handleNearbyHelp = () => {
+    setNearbyEnabled(true);
+    lastFetchKeyRef.current = `${loc.lat.toFixed(3)},${loc.lng.toFixed(3)}`;
+    fetchNearby(loc.lat, loc.lng);
+  };
 
   const sortedNearby = useMemo(() => {
     return [...nearby]
-      .filter((n) => (n.type === "police" ? showPolice : showHospitals))
+      .filter((n) =>
+        n.type === "police" ? showPolice : n.type === "hospital" ? showHospitals : showPharmacies,
+      )
       .map((n) => ({ ...n, dist: distanceMeters(loc, { lat: n.lat, lng: n.lng }) }))
       .sort((a, b) => a.dist - b.dist);
-  }, [nearby, loc, showPolice, showHospitals]);
+  }, [nearby, loc, showPolice, showHospitals, showPharmacies]);
+
+  const colorFor = (t: NearbyPlace["type"]) =>
+    t === "police"
+      ? "oklch(0.78 0.17 75)"
+      : t === "hospital"
+      ? "oklch(0.62 0.24 25)"
+      : "oklch(0.72 0.18 155)";
 
   const markers = [
     { id: "me", lat: loc.lat, lng: loc.lng, label: "You", color: "oklch(0.78 0.14 200)" },
-    ...sortedNearby.map((n) => ({
-      id: n.id,
-      lat: n.lat,
-      lng: n.lng,
-      label: n.name,
-      color: n.type === "police" ? "oklch(0.78 0.17 75)" : "oklch(0.72 0.18 155)",
-    })),
+    ...sortedNearby.map((n) => {
+      const distLabel =
+        n.dist < 1000 ? `${Math.round(n.dist)} m away` : `${(n.dist / 1000).toFixed(1)} km away`;
+      const typeLabel =
+        n.type === "police" ? "Police" : n.type === "hospital" ? "Hospital" : "Pharmacy";
+      const openLabel =
+        n.openNow == null
+          ? ""
+          : n.openNow
+          ? `<span style="color:#22c55e;font-weight:600">Open now</span>`
+          : `<span style="color:#ef4444;font-weight:600">Closed</span>`;
+      const dirUrl = `https://www.google.com/maps/dir/?api=1&destination=${n.lat},${n.lng}&destination_place_id=${encodeURIComponent(n.id)}`;
+      const popupHtml = `<div style="min-width:170px;font-family:inherit">
+        <div style="font-weight:700;font-size:13px;margin-bottom:2px">${n.name}</div>
+        <div style="font-size:11px;color:#888">${typeLabel} · ${distLabel}</div>
+        ${openLabel ? `<div style="font-size:11px;margin-top:2px">${openLabel}</div>` : ""}
+        <a href="${dirUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:8px;padding:5px 10px;border-radius:8px;background:#2563eb;color:#fff;font-size:11px;font-weight:600;text-decoration:none">Get Directions</a>
+      </div>`;
+      return {
+        id: n.id,
+        lat: n.lat,
+        lng: n.lng,
+        label: n.name,
+        color: colorFor(n.type),
+        popupHtml,
+      };
+    }),
   ];
 
   return (
