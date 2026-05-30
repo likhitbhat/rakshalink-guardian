@@ -32,8 +32,10 @@ function AppLayout() {
   }
 
   return (
-    <AppShell>
-      <Outlet />
-    </AppShell>
+    <FallDetectionProvider>
+      <AppShell>
+        <Outlet />
+      </AppShell>
+    </FallDetectionProvider>
   );
 }
