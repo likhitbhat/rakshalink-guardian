@@ -1,16 +1,21 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { Shield, MapPin, Bell, Bluetooth, Zap, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { resolvePostAuthPath } from "@/lib/post-auth";
 import { ThemeToggle } from "@/lib/theme";
 
 export const Route = createFileRoute("/")({
   beforeLoad: async () => {
     if (typeof window === "undefined") return;
     const { data } = await supabase.auth.getSession();
-    if (data.session) throw redirect({ to: "/app" });
+    if (data.session) {
+      const path = await resolvePostAuthPath(data.session.user.id);
+      throw redirect({ to: path });
+    }
   },
   component: Landing,
 });
+
 
 function Landing() {
   return (

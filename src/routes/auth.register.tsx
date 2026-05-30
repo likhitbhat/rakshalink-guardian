@@ -1,6 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
+import { resolvePostAuthPath } from "@/lib/post-auth";
 import { toast } from "sonner";
 import { Shield, Mail, Lock, User, Phone, Loader2, Users } from "lucide-react";
 
@@ -13,23 +15,68 @@ function RegisterPage() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
   const [role, setRole] = useState<"user" | "guardian">("user");
   const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
   const nav = useNavigate();
+
+  function describeError(message: string): string {
+    const m = message.toLowerCase();
+    if (m.includes("already registered") || m.includes("already been registered"))
+      return "That email is already registered. Try signing in instead.";
+    if (m.includes("failed to fetch") || m.includes("network"))
+      return "Network error — check your connection and try again.";
+    return message;
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signUp({
-      email: form.email,
-      password: form.password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/app`,
-        data: { full_name: form.name, phone: form.phone, role },
-      },
-    });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success("Account created — welcome to RakshaLink");
-    nav({ to: role === "guardian" ? "/guardian" : "/app" });
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: form.email,
+        password: form.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/app`,
+          data: { full_name: form.name, phone: form.phone, role },
+        },
+      });
+      if (error) {
+        toast.error(describeError(error.message));
+        return;
+      }
+      if (!data.session) {
+        toast.success("Account created — check your email to verify, then sign in");
+        nav({ to: "/auth/login" });
+        return;
+      }
+      toast.success("Account created — welcome to RakshaLink");
+      const path = data.user ? await resolvePostAuthPath(data.user.id) : "/app";
+      nav({ to: path });
+    } catch {
+      toast.error("Network error — check your connection and try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onGoogle() {
+    setGoogleBusy(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        toast.error(describeError(result.error.message ?? "Google sign-in failed"));
+        setGoogleBusy(false);
+        return;
+      }
+      if (result.redirected) return;
+      const { data } = await supabase.auth.getUser();
+      const path = data.user ? await resolvePostAuthPath(data.user.id) : "/onboarding";
+      nav({ to: path });
+    } catch {
+      toast.error("Network error — check your connection and try again.");
+      setGoogleBusy(false);
+    }
   }
 
   return (
@@ -40,6 +87,21 @@ function RegisterPage() {
       </Link>
       <h1 className="text-3xl font-bold">Activate your shield</h1>
       <p className="mt-1 text-sm text-muted-foreground">Choose how you'll use RakshaLink.</p>
+
+      <button
+        type="button"
+        onClick={onGoogle}
+        disabled={googleBusy}
+        className="mt-6 flex w-full items-center justify-center gap-3 rounded-2xl border border-border bg-card/60 py-3.5 font-semibold backdrop-blur transition hover:bg-card disabled:opacity-60"
+      >
+        {googleBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
+        Continue with Google
+      </button>
+
+      <div className="my-5 flex items-center gap-3 text-[11px] uppercase tracking-widest text-muted-foreground">
+        <span className="h-px flex-1 bg-border" /> or sign up with email <span className="h-px flex-1 bg-border" />
+      </div>
+
 
       <div className="mt-6 grid grid-cols-2 gap-3">
         {(["user", "guardian"] as const).map((r) => (
@@ -83,6 +145,19 @@ function RegisterPage() {
     </div>
   );
 }
+
+function GoogleIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z" />
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z" />
+      <path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z" />
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z" />
+    </svg>
+  );
+}
+
+
 
 function Field({
   icon: Icon,

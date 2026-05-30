@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as GuardianRouteImport } from './routes/guardian'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
@@ -19,8 +20,10 @@ import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as GuardianMapRouteImport } from './routes/guardian.map'
 import { Route as GuardianAlertsRouteImport } from './routes/guardian.alerts'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
 import { Route as AuthRegisterRouteImport } from './routes/auth.register'
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
+import { Route as AuthForgotPasswordRouteImport } from './routes/auth.forgot-password'
 import { Route as AppZonesRouteImport } from './routes/app.zones'
 import { Route as AppSosRouteImport } from './routes/app.sos'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
@@ -38,6 +41,11 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
   path: '/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GuardianRoute = GuardianRouteImport.update({
@@ -85,6 +93,11 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => AuthRoute,
+} as any)
 const AuthRegisterRoute = AuthRegisterRouteImport.update({
   id: '/register',
   path: '/register',
@@ -93,6 +106,11 @@ const AuthRegisterRoute = AuthRegisterRouteImport.update({
 const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => AuthRoute,
 } as any)
 const AppZonesRoute = AppZonesRouteImport.update({
@@ -169,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/guardian': typeof GuardianRouteWithChildren
+  '/onboarding': typeof OnboardingRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/app/contacts': typeof AppContactsRoute
   '/app/device': typeof AppDeviceRoute
@@ -177,8 +196,10 @@ export interface FileRoutesByFullPath {
   '/app/settings': typeof AppSettingsRoute
   '/app/sos': typeof AppSosRoute
   '/app/zones': typeof AppZonesRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/guardian/alerts': typeof GuardianAlertsRoute
   '/guardian/map': typeof GuardianMapRoute
@@ -194,6 +215,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/onboarding': typeof OnboardingRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/app/contacts': typeof AppContactsRoute
   '/app/device': typeof AppDeviceRoute
@@ -202,8 +224,10 @@ export interface FileRoutesByTo {
   '/app/settings': typeof AppSettingsRoute
   '/app/sos': typeof AppSosRoute
   '/app/zones': typeof AppZonesRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/guardian/alerts': typeof GuardianAlertsRoute
   '/guardian/map': typeof GuardianMapRoute
@@ -222,6 +246,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/guardian': typeof GuardianRouteWithChildren
+  '/onboarding': typeof OnboardingRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/app/contacts': typeof AppContactsRoute
   '/app/device': typeof AppDeviceRoute
@@ -230,8 +255,10 @@ export interface FileRoutesById {
   '/app/settings': typeof AppSettingsRoute
   '/app/sos': typeof AppSosRoute
   '/app/zones': typeof AppZonesRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/guardian/alerts': typeof GuardianAlertsRoute
   '/guardian/map': typeof GuardianMapRoute
@@ -251,6 +278,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/guardian'
+    | '/onboarding'
     | '/unsubscribe'
     | '/app/contacts'
     | '/app/device'
@@ -259,8 +287,10 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/sos'
     | '/app/zones'
+    | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
+    | '/auth/reset-password'
     | '/email/unsubscribe'
     | '/guardian/alerts'
     | '/guardian/map'
@@ -276,6 +306,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/onboarding'
     | '/unsubscribe'
     | '/app/contacts'
     | '/app/device'
@@ -284,8 +315,10 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/sos'
     | '/app/zones'
+    | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
+    | '/auth/reset-password'
     | '/email/unsubscribe'
     | '/guardian/alerts'
     | '/guardian/map'
@@ -303,6 +336,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/guardian'
+    | '/onboarding'
     | '/unsubscribe'
     | '/app/contacts'
     | '/app/device'
@@ -311,8 +345,10 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/sos'
     | '/app/zones'
+    | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
+    | '/auth/reset-password'
     | '/email/unsubscribe'
     | '/guardian/alerts'
     | '/guardian/map'
@@ -331,6 +367,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   GuardianRoute: typeof GuardianRouteWithChildren
+  OnboardingRoute: typeof OnboardingRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -346,6 +383,13 @@ declare module '@tanstack/react-router' {
       path: '/unsubscribe'
       fullPath: '/unsubscribe'
       preLoaderRoute: typeof UnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/guardian': {
@@ -411,6 +455,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/reset-password': {
+      id: '/auth/reset-password'
+      path: '/reset-password'
+      fullPath: '/auth/reset-password'
+      preLoaderRoute: typeof AuthResetPasswordRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/auth/register': {
       id: '/auth/register'
       path: '/register'
@@ -423,6 +474,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/auth/login'
       preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/forgot-password': {
+      id: '/auth/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/auth/forgot-password'
+      preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof AuthRoute
     }
     '/app/zones': {
@@ -544,13 +602,17 @@ const AppRouteChildren: AppRouteChildren = {
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface AuthRouteChildren {
+  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
+  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
+  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
+  AuthResetPasswordRoute: AuthResetPasswordRoute,
 }
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
@@ -580,6 +642,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   GuardianRoute: GuardianRouteWithChildren,
+  OnboardingRoute: OnboardingRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
@@ -590,13 +653,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
