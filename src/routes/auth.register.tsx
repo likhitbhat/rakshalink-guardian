@@ -88,6 +88,21 @@ function RegisterPage() {
       <h1 className="text-3xl font-bold">Activate your shield</h1>
       <p className="mt-1 text-sm text-muted-foreground">Choose how you'll use RakshaLink.</p>
 
+      <button
+        type="button"
+        onClick={onGoogle}
+        disabled={googleBusy}
+        className="mt-6 flex w-full items-center justify-center gap-3 rounded-2xl border border-border bg-card/60 py-3.5 font-semibold backdrop-blur transition hover:bg-card disabled:opacity-60"
+      >
+        {googleBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
+        Continue with Google
+      </button>
+
+      <div className="my-5 flex items-center gap-3 text-[11px] uppercase tracking-widest text-muted-foreground">
+        <span className="h-px flex-1 bg-border" /> or sign up with email <span className="h-px flex-1 bg-border" />
+      </div>
+
+
       <div className="mt-6 grid grid-cols-2 gap-3">
         {(["user", "guardian"] as const).map((r) => (
           <button
