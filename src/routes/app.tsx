@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { AppShell } from "@/components/AppShell";
 import { Shield } from "lucide-react";
 import { useZoneTransitionTracker } from "@/lib/zone-tracker";
+import { FallDetectionProvider } from "@/lib/fall-detection";
 
 export const Route = createFileRoute("/app")({
   component: AppLayout,
@@ -32,8 +33,10 @@ function AppLayout() {
   }
 
   return (
-    <AppShell>
-      <Outlet />
-    </AppShell>
+    <FallDetectionProvider>
+      <AppShell>
+        <Outlet />
+      </AppShell>
+    </FallDetectionProvider>
   );
 }
