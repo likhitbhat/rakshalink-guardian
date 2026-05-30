@@ -141,6 +141,96 @@ function DevicePage() {
   );
 }
 
+function FallDetectionCard() {
+  const { supported, enabled, setEnabled, permission, needsPermission, requestPermission, active } =
+    useFallDetection();
+
+  if (!supported) {
+    return (
+      <div className="glass-strong mt-6 rounded-3xl p-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-muted/40">
+            <Smartphone className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <div>
+            <p className="font-semibold">Fall detection</p>
+            <p className="text-[11px] text-muted-foreground">Requires a mobile device</p>
+          </div>
+        </div>
+        <p className="mt-4 rounded-2xl bg-background/40 p-3 text-xs text-muted-foreground">
+          Fall detection uses your phone's motion sensors. Open RakshaLink on a mobile device to
+          enable it.
+        </p>
+      </div>
+    );
+  }
+
+  async function toggle() {
+    if (!enabled) {
+      if (needsPermission) await requestPermission();
+      setEnabled(true);
+    } else {
+      setEnabled(false);
+    }
+  }
+
+  const statusOn = enabled && active;
+
+  return (
+    <div className="glass-strong mt-6 overflow-hidden rounded-3xl p-6">
+      <div className="flex items-center gap-3">
+        <div
+          className={`flex h-11 w-11 items-center justify-center rounded-2xl ${
+            statusOn ? "bg-success/20 text-success" : "bg-muted/40 text-muted-foreground"
+          }`}
+        >
+          <ShieldAlert className="h-5 w-5" />
+        </div>
+        <div className="flex-1">
+          <p className="font-semibold">Fall detection</p>
+          <p className="text-[11px] text-muted-foreground">
+            Auto-alert guardians if a hard fall is detected
+          </p>
+        </div>
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium ${
+            statusOn ? "bg-success/15 text-success" : "bg-muted/40 text-muted-foreground"
+          }`}
+        >
+          <Activity className="h-3 w-3" /> {statusOn ? "Active" : "Inactive"}
+        </span>
+      </div>
+
+      {enabled && needsPermission && (
+        <button
+          onClick={requestPermission}
+          className="mt-4 w-full rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground"
+        >
+          Allow motion access
+        </button>
+      )}
+
+      <button
+        onClick={toggle}
+        className={`mt-4 w-full rounded-2xl py-3 text-sm font-semibold ${
+          enabled
+            ? "border border-border bg-background/40 text-muted-foreground"
+            : "bg-accent text-accent-foreground"
+        }`}
+      >
+        {enabled ? "Disable fall detection" : "Enable fall detection"}
+      </button>
+
+      {permission === "denied" && (
+        <p className="mt-3 text-[11px] text-primary">
+          Motion access was denied. Enable it in your browser settings to use fall detection.
+        </p>
+      )}
+    </div>
+  );
+}
+
+
 function Stat({ icon: Icon, label, value, tone }: any) {
   const t = tone === "success" ? "text-success" : "text-accent";
   return (
