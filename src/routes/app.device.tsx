@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Bluetooth, Battery, Signal, RefreshCw, CheckCircle2, Loader2, Cpu } from "lucide-react";
+import { Bluetooth, Battery, Signal, RefreshCw, CheckCircle2, Loader2, Cpu, Activity, ShieldAlert, Smartphone } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { useFallDetection } from "@/lib/fall-detection";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/device")({
