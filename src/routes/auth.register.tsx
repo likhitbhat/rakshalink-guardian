@@ -1,6 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
+import { resolvePostAuthPath } from "@/lib/post-auth";
 import { toast } from "sonner";
 import { Shield, Mail, Lock, User, Phone, Loader2, Users } from "lucide-react";
 
@@ -13,23 +15,68 @@ function RegisterPage() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
   const [role, setRole] = useState<"user" | "guardian">("user");
   const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
   const nav = useNavigate();
+
+  function describeError(message: string): string {
+    const m = message.toLowerCase();
+    if (m.includes("already registered") || m.includes("already been registered"))
+      return "That email is already registered. Try signing in instead.";
+    if (m.includes("failed to fetch") || m.includes("network"))
+      return "Network error — check your connection and try again.";
+    return message;
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signUp({
-      email: form.email,
-      password: form.password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/app`,
-        data: { full_name: form.name, phone: form.phone, role },
-      },
-    });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success("Account created — welcome to RakshaLink");
-    nav({ to: role === "guardian" ? "/guardian" : "/app" });
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: form.email,
+        password: form.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/app`,
+          data: { full_name: form.name, phone: form.phone, role },
+        },
+      });
+      if (error) {
+        toast.error(describeError(error.message));
+        return;
+      }
+      if (!data.session) {
+        toast.success("Account created — check your email to verify, then sign in");
+        nav({ to: "/auth/login" });
+        return;
+      }
+      toast.success("Account created — welcome to RakshaLink");
+      const path = data.user ? await resolvePostAuthPath(data.user.id) : "/app";
+      nav({ to: path });
+    } catch {
+      toast.error("Network error — check your connection and try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onGoogle() {
+    setGoogleBusy(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        toast.error(describeError(result.error.message ?? "Google sign-in failed"));
+        setGoogleBusy(false);
+        return;
+      }
+      if (result.redirected) return;
+      const { data } = await supabase.auth.getUser();
+      const path = data.user ? await resolvePostAuthPath(data.user.id) : "/onboarding";
+      nav({ to: path });
+    } catch {
+      toast.error("Network error — check your connection and try again.");
+      setGoogleBusy(false);
+    }
   }
 
   return (
