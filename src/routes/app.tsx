@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { AppShell } from "@/components/AppShell";
 import { Shield } from "lucide-react";
 import { useZoneTransitionTracker } from "@/lib/zone-tracker";
+import { useBackgroundLocationTracking } from "@/lib/location-tracker";
 import { FallDetectionProvider } from "@/lib/fall-detection";
 import { OfflineSync } from "@/components/OfflineSync";
 
@@ -24,6 +25,7 @@ function AppLayout() {
   }, [loading, session, profile, nav]);
 
   useZoneTransitionTracker(user?.id);
+  useBackgroundLocationTracking(user?.id);
 
   if (loading || !session) {
     return (

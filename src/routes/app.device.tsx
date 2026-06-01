@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Bluetooth, Battery, Signal, RefreshCw, CheckCircle2, Loader2, Cpu, Activity, ShieldAlert, Smartphone } from "lucide-react";
+import { Bluetooth, Battery, Signal, RefreshCw, CheckCircle2, Loader2, Cpu, Activity, ShieldAlert, Smartphone, Navigation } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { useFallDetection } from "@/lib/fall-detection";
+import { useTrackingStatus } from "@/lib/location-tracker";
+import { usePreferences } from "@/lib/preferences";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/device")({
@@ -73,6 +75,10 @@ function DevicePage() {
       <p className="mt-1 text-sm text-muted-foreground">Pair and monitor your wearable.</p>
 
       <FallDetectionCard />
+
+      <LocationTrackingCard />
+
+
 
 
       {paired ? (
@@ -229,6 +235,37 @@ function FallDetectionCard() {
     </div>
   );
 }
+
+function LocationTrackingCard() {
+  const status = useTrackingStatus();
+  const { prefs } = usePreferences();
+
+  const meta =
+    status === "active"
+      ? { label: "Tracking Active", badge: "bg-success/15 text-success", icon: "bg-success/20 text-success", desc: "Live location sharing with your guardians" }
+      : status === "background"
+        ? { label: "Background Mode", badge: "bg-warning/15 text-warning", icon: "bg-warning/20 text-warning", desc: "Minimized — updating every 30s to save battery" }
+        : { label: "Tracking Paused", badge: "bg-primary/15 text-primary", icon: "bg-muted/40 text-muted-foreground", desc: prefs.shareLocation ? "Location sharing is stopped" : "Location sharing is turned off in settings" };
+
+  return (
+    <div className="glass-strong mt-6 overflow-hidden rounded-3xl p-6">
+      <div className="flex items-center gap-3">
+        <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${meta.icon}`}>
+          <Navigation className="h-5 w-5" />
+        </div>
+        <div className="flex-1">
+          <p className="font-semibold">Location tracking</p>
+          <p className="text-[11px] text-muted-foreground">{meta.desc}</p>
+        </div>
+        <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium ${meta.badge}`}>
+          <Activity className="h-3 w-3" /> {meta.label}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+
 
 
 function Stat({ icon: Icon, label, value, tone }: any) {
