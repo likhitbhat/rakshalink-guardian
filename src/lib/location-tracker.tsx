@@ -32,6 +32,24 @@ export function useTrackingStatus(): TrackingStatus {
   );
 }
 
+// ---- Last successful GPS update timestamp ----
+let lastUpdateAt = 0; // epoch ms
+const updateListeners = new Set<() => void>();
+function setLastUpdate(ts: number) {
+  lastUpdateAt = ts;
+  updateListeners.forEach((l) => l());
+}
+export function useLastLocationUpdate(): number {
+  return useSyncExternalStore(
+    (cb) => {
+      updateListeners.add(cb);
+      return () => updateListeners.delete(cb);
+    },
+    () => lastUpdateAt,
+    () => 0,
+  );
+}
+
 async function readBattery(): Promise<number> {
   try {
     const nav = navigator as Navigator & { getBattery?: () => Promise<{ level: number }> };
