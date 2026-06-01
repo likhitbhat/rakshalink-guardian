@@ -160,7 +160,9 @@ function SosPage() {
             <span className="h-2 w-2 animate-ping rounded-full bg-primary" /> Emergency active
           </span>
           <h1 className="mt-4 font-display text-5xl font-bold text-primary">{format(seconds)}</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Guardians notified · live tracking on</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {online ? "Guardians notified · live tracking on" : "SMS will be sent when connection restores"}
+          </p>
         </div>
 
         <div className="relative flex h-56 w-56 items-center justify-center">
