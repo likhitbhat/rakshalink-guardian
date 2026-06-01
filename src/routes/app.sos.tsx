@@ -196,6 +196,11 @@ function SosPage() {
       <div className="text-center">
         <h1 className="font-display text-2xl font-bold">SOS</h1>
         <p className="mt-1 text-sm text-muted-foreground">Press & hold to alert your guardians</p>
+        {!online && (
+          <p className="mt-2 text-xs font-semibold text-primary">
+            Offline — SMS will be sent when connection restores
+          </p>
+        )}
       </div>
 
       <div className="relative flex h-72 w-72 items-center justify-center">
