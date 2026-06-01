@@ -25,6 +25,7 @@ function AppLayout() {
   }, [loading, session, profile, nav]);
 
   useZoneTransitionTracker(user?.id);
+  useBackgroundLocationTracking(user?.id);
 
   if (loading || !session) {
     return (
