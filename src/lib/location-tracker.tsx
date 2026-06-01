@@ -32,6 +32,24 @@ export function useTrackingStatus(): TrackingStatus {
   );
 }
 
+// ---- Last successful GPS update timestamp ----
+let lastUpdateAt = 0; // epoch ms
+const updateListeners = new Set<() => void>();
+function setLastUpdate(ts: number) {
+  lastUpdateAt = ts;
+  updateListeners.forEach((l) => l());
+}
+export function useLastLocationUpdate(): number {
+  return useSyncExternalStore(
+    (cb) => {
+      updateListeners.add(cb);
+      return () => updateListeners.delete(cb);
+    },
+    () => lastUpdateAt,
+    () => 0,
+  );
+}
+
 async function readBattery(): Promise<number> {
   try {
     const nav = navigator as Navigator & { getBattery?: () => Promise<{ level: number }> };
@@ -92,6 +110,7 @@ export function useBackgroundLocationTracking(userId: string | undefined) {
       cacheLastLocation(lastLoc);
       const battery = await readBattery();
       await supabase.from("live_locations").insert({ user_id: userId, lat, lng, battery });
+      setLastUpdate(Date.now());
       // Foreground: zone membership may change which interval we should use.
       if (!document.hidden) {
         const next = computeInterval();
