@@ -236,8 +236,20 @@ function FallDetectionCard() {
   );
 }
 
+function formatRelativeTime(ts: number): string {
+  if (!ts) return "Never";
+  const sec = Math.floor((Date.now() - ts) / 1000);
+  if (sec < 60) return `${sec}s ago`;
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+  return `${Math.floor(hr / 24)}d ago`;
+}
+
 function LocationTrackingCard() {
   const status = useTrackingStatus();
+  const lastUpdate = useLastLocationUpdate();
   const { prefs } = usePreferences();
 
   const meta =
@@ -261,6 +273,12 @@ function LocationTrackingCard() {
           <Activity className="h-3 w-3" /> {meta.label}
         </span>
       </div>
+      {lastUpdate > 0 && (
+        <div className="mt-3 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <CheckCircle2 className="h-3 w-3 text-success" />
+          Last GPS update: <span className="font-medium text-foreground">{formatRelativeTime(lastUpdate)}</span>
+        </div>
+      )}
     </div>
   );
 }
