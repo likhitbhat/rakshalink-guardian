@@ -19,6 +19,7 @@ export const Route = createFileRoute("/")({
 
 
 function Landing() {
+  const { canInstall, promptInstall } = useInstallPrompt();
   return (
     <div className="mx-auto min-h-screen w-full max-w-md px-6 pb-10 pt-12">
       <div className="absolute right-4 top-4"><ThemeToggle /></div>
