@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useLiveLocation } from "@/lib/use-live-location";
 import { sendEmergencySms } from "@/lib/sms.functions";
+import { useOnlineStatus, queueOfflineAlert, cacheLastLocation } from "@/lib/offline";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/sos")({
