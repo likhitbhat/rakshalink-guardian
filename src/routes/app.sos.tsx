@@ -98,6 +98,18 @@ function SosPage() {
   async function triggerSos() {
     if (!user) return;
     const loc = await getFreshLocation();
+    cacheLastLocation(loc);
+
+    // Offline: queue the alert locally — OfflineSync flushes it on reconnect.
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      queueOfflineAlert({ type: "sos", lat: loc.lat, lng: loc.lng });
+      setActiveAlert("offline-queued");
+      setSeconds(0);
+      toast.success("Emergency queued offline · will send when connection restores");
+      if ("vibrate" in navigator) navigator.vibrate?.([200, 100, 200, 100, 400]);
+      return;
+    }
+
     const { data, error } = await supabase
       .from("emergency_alerts")
       .insert({ user_id: user.id, type: "sos", status: "active", lat: loc.lat, lng: loc.lng })
