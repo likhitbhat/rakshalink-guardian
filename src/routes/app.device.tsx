@@ -76,6 +76,10 @@ function DevicePage() {
 
       <FallDetectionCard />
 
+      <LocationTrackingCard />
+
+
+
 
       {paired ? (
         <div className="glass-strong relative mt-6 overflow-hidden rounded-3xl p-6">
