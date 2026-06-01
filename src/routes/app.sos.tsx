@@ -141,7 +141,9 @@ function SosPage() {
 
   async function cancel() {
     if (!activeAlert) return;
-    await supabase.from("emergency_alerts").update({ status: "cancelled", ended_at: new Date().toISOString() }).eq("id", activeAlert);
+    if (activeAlert !== "offline-queued") {
+      await supabase.from("emergency_alerts").update({ status: "cancelled", ended_at: new Date().toISOString() }).eq("id", activeAlert);
+    }
     if (holdRef.current) clearInterval(holdRef.current);
     triggeringRef.current = false;
     setActiveAlert(null);
