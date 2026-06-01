@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useLiveLocation } from "@/lib/use-live-location";
 import { sendEmergencySms } from "@/lib/sms.functions";
+import { useOnlineStatus, queueOfflineAlert, cacheLastLocation } from "@/lib/offline";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/sos")({
@@ -18,6 +19,7 @@ function SosPage() {
   const liveLocRef = useRef(liveLoc);
   liveLocRef.current = liveLoc;
   const sendSms = useServerFn(sendEmergencySms);
+  const online = useOnlineStatus();
   const [holding, setHolding] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [activeAlert, setActiveAlert] = useState<string | null>(null);
@@ -96,6 +98,18 @@ function SosPage() {
   async function triggerSos() {
     if (!user) return;
     const loc = await getFreshLocation();
+    cacheLastLocation(loc);
+
+    // Offline: queue the alert locally — OfflineSync flushes it on reconnect.
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      queueOfflineAlert({ type: "sos", lat: loc.lat, lng: loc.lng });
+      setActiveAlert("offline-queued");
+      setSeconds(0);
+      toast.success("Emergency queued offline · will send when connection restores");
+      if ("vibrate" in navigator) navigator.vibrate?.([200, 100, 200, 100, 400]);
+      return;
+    }
+
     const { data, error } = await supabase
       .from("emergency_alerts")
       .insert({ user_id: user.id, type: "sos", status: "active", lat: loc.lat, lng: loc.lng })
@@ -127,7 +141,9 @@ function SosPage() {
 
   async function cancel() {
     if (!activeAlert) return;
-    await supabase.from("emergency_alerts").update({ status: "cancelled", ended_at: new Date().toISOString() }).eq("id", activeAlert);
+    if (activeAlert !== "offline-queued") {
+      await supabase.from("emergency_alerts").update({ status: "cancelled", ended_at: new Date().toISOString() }).eq("id", activeAlert);
+    }
     if (holdRef.current) clearInterval(holdRef.current);
     triggeringRef.current = false;
     setActiveAlert(null);
@@ -144,7 +160,9 @@ function SosPage() {
             <span className="h-2 w-2 animate-ping rounded-full bg-primary" /> Emergency active
           </span>
           <h1 className="mt-4 font-display text-5xl font-bold text-primary">{format(seconds)}</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Guardians notified · live tracking on</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {online ? "Guardians notified · live tracking on" : "SMS will be sent when connection restores"}
+          </p>
         </div>
 
         <div className="relative flex h-56 w-56 items-center justify-center">
@@ -178,6 +196,11 @@ function SosPage() {
       <div className="text-center">
         <h1 className="font-display text-2xl font-bold">SOS</h1>
         <p className="mt-1 text-sm text-muted-foreground">Press & hold to alert your guardians</p>
+        {!online && (
+          <p className="mt-2 text-xs font-semibold text-primary">
+            Offline — SMS will be sent when connection restores
+          </p>
+        )}
       </div>
 
       <div className="relative flex h-72 w-72 items-center justify-center">

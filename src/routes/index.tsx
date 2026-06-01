@@ -1,8 +1,9 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { Shield, MapPin, Bell, Bluetooth, Zap, Heart } from "lucide-react";
+import { Shield, MapPin, Bell, Bluetooth, Zap, Heart, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { resolvePostAuthPath } from "@/lib/post-auth";
 import { ThemeToggle } from "@/lib/theme";
+import { useInstallPrompt } from "@/lib/pwa";
 
 export const Route = createFileRoute("/")({
   beforeLoad: async () => {
@@ -18,6 +19,7 @@ export const Route = createFileRoute("/")({
 
 
 function Landing() {
+  const { canInstall, promptInstall } = useInstallPrompt();
   return (
     <div className="mx-auto min-h-screen w-full max-w-md px-6 pb-10 pt-12">
       <div className="absolute right-4 top-4"><ThemeToggle /></div>
@@ -73,6 +75,14 @@ function Landing() {
         >
           I already have an account
         </Link>
+        {canInstall && (
+          <button
+            onClick={promptInstall}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-accent/40 bg-accent/10 py-4 text-center font-semibold text-accent backdrop-blur transition hover:bg-accent/20"
+          >
+            <Download className="h-4 w-4" /> Install App
+          </button>
+        )}
       </div>
 
       <p className="mt-6 text-center text-[11px] text-muted-foreground">

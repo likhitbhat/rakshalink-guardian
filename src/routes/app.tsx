@@ -5,6 +5,7 @@ import { AppShell } from "@/components/AppShell";
 import { Shield } from "lucide-react";
 import { useZoneTransitionTracker } from "@/lib/zone-tracker";
 import { FallDetectionProvider } from "@/lib/fall-detection";
+import { OfflineSync } from "@/components/OfflineSync";
 
 export const Route = createFileRoute("/app")({
   component: AppLayout,
@@ -34,6 +35,7 @@ function AppLayout() {
 
   return (
     <FallDetectionProvider>
+      <OfflineSync userId={user?.id} />
       <AppShell>
         <Outlet />
       </AppShell>
