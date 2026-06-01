@@ -4,7 +4,7 @@ import { Bluetooth, Battery, Signal, RefreshCw, CheckCircle2, Loader2, Cpu, Acti
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { useFallDetection } from "@/lib/fall-detection";
-import { useTrackingStatus } from "@/lib/location-tracker";
+import { useTrackingStatus, useLastLocationUpdate } from "@/lib/location-tracker";
 import { usePreferences } from "@/lib/preferences";
 import { toast } from "sonner";
 
