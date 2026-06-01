@@ -75,6 +75,14 @@ function Landing() {
         >
           I already have an account
         </Link>
+        {canInstall && (
+          <button
+            onClick={promptInstall}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-accent/40 bg-accent/10 py-4 text-center font-semibold text-accent backdrop-blur transition hover:bg-accent/20"
+          >
+            <Download className="h-4 w-4" /> Install App
+          </button>
+        )}
       </div>
 
       <p className="mt-6 text-center text-[11px] text-muted-foreground">
