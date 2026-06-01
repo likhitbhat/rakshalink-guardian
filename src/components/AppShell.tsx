@@ -3,6 +3,7 @@ import { Home, MapPin, Shield, Bell, Settings, Bluetooth, Users } from "lucide-r
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/lib/theme";
+import { OfflineBanner } from "@/components/OfflineBanner";
 
 const userNav = [
   { to: "/app", label: "Home", icon: Home },
