@@ -26,6 +26,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-md flex-col">
+      <OfflineBanner />
       <div className="fixed right-3 top-3 z-50"><ThemeToggle /></div>
       <main className="flex-1 pb-24">{children}</main>
       <nav className="fixed bottom-0 left-1/2 z-40 w-full max-w-md -translate-x-1/2 px-3 pb-3">
