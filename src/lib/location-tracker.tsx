@@ -110,6 +110,7 @@ export function useBackgroundLocationTracking(userId: string | undefined) {
       cacheLastLocation(lastLoc);
       const battery = await readBattery();
       await supabase.from("live_locations").insert({ user_id: userId, lat, lng, battery });
+      setLastUpdate(Date.now());
       // Foreground: zone membership may change which interval we should use.
       if (!document.hidden) {
         const next = computeInterval();
