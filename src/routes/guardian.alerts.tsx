@@ -90,6 +90,19 @@ function GuardianAlerts() {
     };
   }, [user]);
 
+  // When opened from a push notification (?focus=<id>), scroll to and briefly
+  // highlight the referenced alert once it's present in the feed.
+  useEffect(() => {
+    if (!focus || !alerts.some((a) => a.id === focus)) return;
+    setHighlightId(focus);
+    const el = cardRefs.current[focus];
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const t = setTimeout(() => setHighlightId(null), 3500);
+    return () => clearTimeout(t);
+  }, [focus, alerts]);
+
+
+
   const clearHistory = async () => {
     if (!user || !wearerIds.length) return;
     setClearing(true);
