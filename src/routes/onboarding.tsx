@@ -89,6 +89,8 @@ function OnboardingPage() {
       .eq("id", user.id);
     setBusy(false);
     if (error) return toast.error(error.message);
+    // Step 1: ask for notification permission so guardians can be alerted.
+    void subscribeToPush();
     setStep(2);
   }
 
