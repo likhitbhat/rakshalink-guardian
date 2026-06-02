@@ -4,6 +4,9 @@ import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Phone, Trash2, User } from "lucide-react";
+import { SkeletonAvatar, Skeleton, SkeletonBadge } from "@/components/ui/skeleton";
+import { ErrorCard, EmptyState } from "@/components/StateCards";
+import { useMinLoading } from "@/lib/use-min-loading";
 import { toast } from "sonner";
 
 
@@ -16,11 +19,17 @@ function ContactsPage() {
   const [contacts, setContacts] = useState<any[]>([]);
   const [adding, setAdding] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", relation: "" });
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const showSkeleton = useMinLoading(loading);
 
   async function load() {
     if (!user) return;
-    const { data } = await supabase.from("emergency_contacts").select("*").eq("user_id", user.id).order("created_at");
+    setLoadError(false);
+    const { data, error } = await supabase.from("emergency_contacts").select("*").eq("user_id", user.id).order("created_at");
+    if (error) setLoadError(true);
     setContacts(data ?? []);
+    setLoading(false);
   }
   useEffect(() => {
     load();
