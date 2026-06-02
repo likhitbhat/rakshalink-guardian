@@ -89,6 +89,12 @@ function Dashboard() {
           ) : (
             <StatusBadge variant="safe" pulse>You are safe</StatusBadge>
           )}
+          {showSkeleton ? (
+            <div className="mt-4 flex items-center gap-3">
+              <Skeleton className="h-16 w-16 rounded-full" />
+              <SkeletonText lines={2} className="flex-1" />
+            </div>
+          ) : (
           <div className="mt-4 flex items-end gap-2">
             {activeAlert ? (
               <>
@@ -102,6 +108,7 @@ function Dashboard() {
               </>
             )}
           </div>
+          )}
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <MapPin className="h-3.5 w-3.5 text-accent" />
             {loc.lat.toFixed(4)}, {loc.lng.toFixed(4)} ·{" "}
