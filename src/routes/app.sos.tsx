@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useLiveLocation } from "@/lib/use-live-location";
 import { sendEmergencySms } from "@/lib/sms.functions";
+import { notifyGuardians } from "@/lib/push.functions";
 import { useOnlineStatus, queueOfflineAlert, cacheLastLocation } from "@/lib/offline";
 import { toast } from "sonner";
 
@@ -19,6 +20,7 @@ function SosPage() {
   const liveLocRef = useRef(liveLoc);
   liveLocRef.current = liveLoc;
   const sendSms = useServerFn(sendEmergencySms);
+  const pushGuardians = useServerFn(notifyGuardians);
   const online = useOnlineStatus();
   const [holding, setHolding] = useState(false);
   const [countdown, setCountdown] = useState(0);
@@ -131,6 +133,15 @@ function SosPage() {
         if (res.total === 0) toast("No emergency contacts on file");
       })
       .catch((e) => toast.error(`SMS error: ${e?.message ?? "unknown"}`));
+    // push notification to linked guardians (best-effort)
+    pushGuardians({
+      data: {
+        type: "sos",
+        title: "🚨 SOS Emergency",
+        body: "A RakshaLink wearer triggered an SOS alert. Tap to view.",
+        alertId: data.id,
+      },
+    }).catch(() => undefined);
     // live location pings — also push the first fresh fix immediately
     await supabase.from("live_locations").insert({ user_id: user.id, lat: loc.lat, lng: loc.lng, battery: 75 });
     holdRef.current = window.setInterval(async () => {

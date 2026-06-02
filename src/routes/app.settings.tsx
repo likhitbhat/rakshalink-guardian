@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useTheme } from "@/lib/theme";
 import { usePreferences, LANGUAGES, type LanguagePref } from "@/lib/preferences";
 import { usePushPermission, describePermission } from "@/lib/push-notifications";
+import { subscribeToPush, unsubscribeFromPush } from "@/lib/web-push";
 import { StatusBadge } from "@/components/StatusBadge";
 import { inviteGuardian, listMyGuardians, revokeGuardian } from "@/lib/guardians.functions";
 import { sendTransactionalEmail } from "@/lib/email/send";
@@ -339,6 +340,7 @@ function SettingsPage() {
                     const result = permission === "granted" ? "granted" : await requestPush();
                     if (result === "granted") {
                       update("notifications", true);
+                      subscribeToPush();
                       sendTest();
                       toast.success("Notifications enabled");
                     } else if (result === "denied") {
@@ -348,6 +350,7 @@ function SettingsPage() {
                     }
                   } else {
                     update("notifications", false);
+                    unsubscribeFromPush();
                     toast.success("Notifications muted");
                   }
                 }}

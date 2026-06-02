@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useLiveLocation } from "@/lib/use-live-location";
 import { sendEmergencySms } from "@/lib/sms.functions";
+import { notifyGuardians } from "@/lib/push.functions";
 import { toast } from "sonner";
 
 const GRAVITY = 9.81;
@@ -58,6 +59,7 @@ export function FallDetectionProvider({ children }: { children: ReactNode }) {
   const locRef = useRef(loc);
   locRef.current = loc;
   const sendSms = useServerFn(sendEmergencySms);
+  const pushGuardians = useServerFn(notifyGuardians);
 
   const supported = hasDeviceMotion();
   const [enabled, setEnabledState] = useState(false);
@@ -160,6 +162,16 @@ export function FallDetectionProvider({ children }: { children: ReactNode }) {
         if (res.failed > 0) toast.error(`${res.failed} SMS failed to deliver`);
       })
       .catch((e) => toast.error(`SMS error: ${e?.message ?? "unknown"}`));
+
+    // push notification to linked guardians (best-effort)
+    pushGuardians({
+      data: {
+        type: "fall",
+        title: "⚠️ Fall Detected",
+        body: "A possible fall was detected for a RakshaLink wearer. Tap to view.",
+        alertId: data.id,
+      },
+    }).catch(() => undefined);
 
     // Live location pings so guardians can track in real time
     await supabase.from("live_locations").insert({ user_id: user.id, lat: loc.lat, lng: loc.lng, battery: 75 });
