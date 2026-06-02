@@ -133,6 +133,15 @@ function SosPage() {
         if (res.total === 0) toast("No emergency contacts on file");
       })
       .catch((e) => toast.error(`SMS error: ${e?.message ?? "unknown"}`));
+    // push notification to linked guardians (best-effort)
+    pushGuardians({
+      data: {
+        type: "sos",
+        title: "🚨 SOS Emergency",
+        body: "A RakshaLink wearer triggered an SOS alert. Tap to view.",
+        alertId: data.id,
+      },
+    }).catch(() => undefined);
     // live location pings — also push the first fresh fix immediately
     await supabase.from("live_locations").insert({ user_id: user.id, lat: loc.lat, lng: loc.lng, battery: 75 });
     holdRef.current = window.setInterval(async () => {
