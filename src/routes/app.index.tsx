@@ -161,8 +161,8 @@ function Dashboard() {
           <p className="font-display text-2xl font-bold">{deviceBattery != null ? `${deviceBattery}%` : "—"}</p>
           <p className="text-[11px] text-muted-foreground">Device battery</p>
         </div>
-      )}
       </div>
+      )}
 
 
       {/* Device row */}
