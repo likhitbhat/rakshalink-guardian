@@ -8,6 +8,10 @@ export type Preferences = {
   notifications: boolean;
   quietHours: boolean;
   shareLocation: boolean;
+  notifySos: boolean;
+  notifyFall: boolean;
+  notifyZone: boolean;
+  notifyBattery: boolean;
 };
 
 const KEY = "raksha:prefs:v1";
@@ -17,6 +21,10 @@ const DEFAULTS: Preferences = {
   notifications: true,
   quietHours: false,
   shareLocation: true,
+  notifySos: true,
+  notifyFall: true,
+  notifyZone: true,
+  notifyBattery: true,
 };
 
 export const LANGUAGES: { value: LanguagePref; label: string }[] = [
