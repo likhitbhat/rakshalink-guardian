@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -21,10 +21,14 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/guardian/alerts")({
   component: GuardianAlerts,
+  validateSearch: (search: Record<string, unknown>): { focus?: string } => ({
+    focus: typeof search.focus === "string" ? search.focus : undefined,
+  }),
 });
 
 function GuardianAlerts() {
   const { user } = useAuth();
+  const { focus } = Route.useSearch();
   const [alerts, setAlerts] = useState<any[]>([]);
   const [names, setNames] = useState<Record<string, string>>({});
   const [clearing, setClearing] = useState(false);
@@ -32,6 +36,8 @@ function GuardianAlerts() {
   const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
   const [openNote, setOpenNote] = useState<string | null>(null);
   const [savingNote, setSavingNote] = useState(false);
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const addNote = async (alertId: string) => {
     const note = (noteDrafts[alertId] ?? "").trim();
