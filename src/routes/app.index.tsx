@@ -166,6 +166,16 @@ function Dashboard() {
 
 
       {/* Device row */}
+      {showSkeleton ? (
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          {[0, 1].map((i) => (
+            <div key={i} className="glass rounded-2xl p-4">
+              <Skeleton className="mb-2 h-5 w-5 rounded" />
+              <SkeletonText lines={3} className="mt-2" />
+            </div>
+          ))}
+        </div>
+      ) : (
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Link to="/app/device" className="glass rounded-2xl p-4">
           <Bluetooth className="mb-2 h-5 w-5 text-accent" />
@@ -174,6 +184,7 @@ function Dashboard() {
         </Link>
         <BatteryWidget userId={user?.id} isOwn lowPower={!!activeZone} />
       </div>
+      )}
 
       {/* Quick actions */}
       <h2 className="mb-2 mt-6 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Quick actions</h2>
