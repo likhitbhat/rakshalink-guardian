@@ -163,6 +163,16 @@ export function FallDetectionProvider({ children }: { children: ReactNode }) {
       })
       .catch((e) => toast.error(`SMS error: ${e?.message ?? "unknown"}`));
 
+    // push notification to linked guardians (best-effort)
+    pushGuardians({
+      data: {
+        type: "fall",
+        title: "⚠️ Fall Detected",
+        body: "A possible fall was detected for a RakshaLink wearer. Tap to view.",
+        alertId: data.id,
+      },
+    }).catch(() => undefined);
+
     // Live location pings so guardians can track in real time
     await supabase.from("live_locations").insert({ user_id: user.id, lat: loc.lat, lng: loc.lng, battery: 75 });
     pingRef.current = window.setInterval(async () => {
