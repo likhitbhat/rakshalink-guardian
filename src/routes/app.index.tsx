@@ -24,6 +24,8 @@ function Dashboard() {
   const [activeAlert, setActiveAlert] = useState<{ id: string; type: string; started_at: string } | null>(null);
   const [monthAlertCount, setMonthAlertCount] = useState(0);
   const [deviceBattery, setDeviceBattery] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const showSkeleton = useMinLoading(loading);
 
   useEffect(() => {
     if (!user) return;
@@ -43,6 +45,7 @@ function Dashboard() {
       setActiveAlert(alerts.find((x: any) => x.status === "active") ?? null);
       setMonthAlertCount(m.count ?? 0);
       setDeviceBattery((d.data as any)?.[0]?.battery ?? null);
+      setLoading(false);
     };
     load();
     const ch = supabase
