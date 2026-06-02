@@ -175,41 +175,7 @@ function SosPage() {
 
   if (activeAlert) {
     return (
-      <div className="relative flex min-h-screen flex-col items-center justify-between px-6 pb-32 pt-10">
-        <div className="absolute inset-0 -z-10 animate-pulse bg-gradient-to-b from-primary/20 via-transparent to-transparent" />
-        <div className="text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-primary">
-            <span className="h-2 w-2 animate-ping rounded-full bg-primary" /> Emergency active
-          </span>
-          <h1 className="mt-4 font-display text-5xl font-bold text-primary">{format(seconds)}</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {online ? "Guardians notified · live tracking on" : "SMS will be sent when connection restores"}
-          </p>
-        </div>
-
-        <div className="relative flex h-56 w-56 items-center justify-center">
-          <div className="absolute inset-0 rounded-full bg-primary/30 blur-3xl" />
-          <div className="absolute inset-4 rounded-full border-2 border-primary/40" />
-          <div className="pulse-ring absolute inset-12 rounded-full" />
-          <div className="relative flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br from-primary to-[oklch(0.45_0.22_15)] shadow-[var(--shadow-glow-red)]">
-            <Shield className="h-12 w-12 text-primary-foreground" />
-          </div>
-        </div>
-
-        <div className="w-full space-y-3">
-          <div className="grid grid-cols-3 gap-2">
-            <ActionPill icon={Phone} label="Call 100" />
-            <ActionPill icon={Mic} label="Recording" />
-            <ActionPill icon={MapPin} label="Sharing" />
-          </div>
-          <button
-            onClick={cancel}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card/60 py-4 font-semibold backdrop-blur"
-          >
-            <X className="h-4 w-4" /> Cancel emergency
-          </button>
-        </div>
-      </div>
+      <SosActiveScreen startSeconds={seconds} guardianCount={guardianCount} onCancel={cancel} />
     );
   }
 
