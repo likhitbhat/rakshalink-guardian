@@ -227,15 +227,6 @@ function SosPage() {
     </div>
   );
 }
-
-function ActionPill({ icon: Icon, label }: { icon: any; label: string }) {
-  return (
-    <div className="glass flex flex-col items-center gap-1 rounded-2xl py-3">
-      <Icon className="h-4 w-4 text-accent" />
-      <span className="text-[10px] font-medium">{label}</span>
-    </div>
-  );
-}
 function Step({ icon: Icon, text }: { icon: any; text: string }) {
   return (
     <div className="flex items-center gap-2 rounded-xl bg-background/40 p-2">
