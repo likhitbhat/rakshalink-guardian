@@ -1,13 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Shield, Phone, X, Mic, MapPin, Volume2 } from "lucide-react";
+import { Shield, Phone, Mic, MapPin, Volume2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useLiveLocation } from "@/lib/use-live-location";
 import { sendEmergencySms } from "@/lib/sms.functions";
 import { notifyGuardians } from "@/lib/push.functions";
 import { useOnlineStatus, queueOfflineAlert, cacheLastLocation } from "@/lib/offline";
+import { SosActiveScreen } from "@/components/SosActiveScreen";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/sos")({
@@ -26,6 +27,7 @@ function SosPage() {
   const [countdown, setCountdown] = useState(0);
   const [activeAlert, setActiveAlert] = useState<string | null>(null);
   const [seconds, setSeconds] = useState(0);
+  const [guardianCount, setGuardianCount] = useState(0);
   const holdRef = useRef<number | null>(null);
   const triggeringRef = useRef(false);
 
@@ -70,6 +72,13 @@ function SosPage() {
         setActiveAlert(data.id);
         setSeconds(Math.floor((Date.now() - new Date(data.started_at).getTime()) / 1000));
       });
+    // Count active linked guardians for the live "notified" display
+    supabase
+      .from("guardian_links")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .then(({ count }) => setGuardianCount(count ?? 0));
   }, [user]);
 
   // Active timer
@@ -141,7 +150,9 @@ function SosPage() {
         body: "A RakshaLink wearer triggered an SOS alert. Tap to view.",
         alertId: data.id,
       },
-    }).catch(() => undefined);
+    })
+      .then((res) => setGuardianCount(res?.recipients ?? 0))
+      .catch(() => undefined);
     // live location pings — also push the first fresh fix immediately
     await supabase.from("live_locations").insert({ user_id: user.id, lat: loc.lat, lng: loc.lng, battery: 75 });
     holdRef.current = window.setInterval(async () => {
@@ -164,41 +175,7 @@ function SosPage() {
 
   if (activeAlert) {
     return (
-      <div className="relative flex min-h-screen flex-col items-center justify-between px-6 pb-32 pt-10">
-        <div className="absolute inset-0 -z-10 animate-pulse bg-gradient-to-b from-primary/20 via-transparent to-transparent" />
-        <div className="text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-primary">
-            <span className="h-2 w-2 animate-ping rounded-full bg-primary" /> Emergency active
-          </span>
-          <h1 className="mt-4 font-display text-5xl font-bold text-primary">{format(seconds)}</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {online ? "Guardians notified · live tracking on" : "SMS will be sent when connection restores"}
-          </p>
-        </div>
-
-        <div className="relative flex h-56 w-56 items-center justify-center">
-          <div className="absolute inset-0 rounded-full bg-primary/30 blur-3xl" />
-          <div className="absolute inset-4 rounded-full border-2 border-primary/40" />
-          <div className="pulse-ring absolute inset-12 rounded-full" />
-          <div className="relative flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br from-primary to-[oklch(0.45_0.22_15)] shadow-[var(--shadow-glow-red)]">
-            <Shield className="h-12 w-12 text-primary-foreground" />
-          </div>
-        </div>
-
-        <div className="w-full space-y-3">
-          <div className="grid grid-cols-3 gap-2">
-            <ActionPill icon={Phone} label="Call 100" />
-            <ActionPill icon={Mic} label="Recording" />
-            <ActionPill icon={MapPin} label="Sharing" />
-          </div>
-          <button
-            onClick={cancel}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card/60 py-4 font-semibold backdrop-blur"
-          >
-            <X className="h-4 w-4" /> Cancel emergency
-          </button>
-        </div>
-      </div>
+      <SosActiveScreen startSeconds={seconds} guardianCount={guardianCount} onCancel={cancel} />
     );
   }
 
@@ -250,15 +227,6 @@ function SosPage() {
     </div>
   );
 }
-
-function ActionPill({ icon: Icon, label }: { icon: any; label: string }) {
-  return (
-    <div className="glass flex flex-col items-center gap-1 rounded-2xl py-3">
-      <Icon className="h-4 w-4 text-accent" />
-      <span className="text-[10px] font-medium">{label}</span>
-    </div>
-  );
-}
 function Step({ icon: Icon, text }: { icon: any; text: string }) {
   return (
     <div className="flex items-center gap-2 rounded-xl bg-background/40 p-2">
@@ -267,8 +235,4 @@ function Step({ icon: Icon, text }: { icon: any; text: string }) {
     </div>
   );
 }
-function format(s: number) {
-  const m = Math.floor(s / 60).toString().padStart(2, "0");
-  const ss = (s % 60).toString().padStart(2, "0");
-  return `${m}:${ss}`;
-}
+
