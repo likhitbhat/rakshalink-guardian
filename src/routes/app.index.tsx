@@ -215,23 +215,35 @@ function Dashboard() {
         <Link to="/app/history" className="text-xs text-accent">View all</Link>
       </div>
       <div className="mt-2 space-y-2">
-        {recentAlerts.length === 0 && (
+        {showSkeleton ? (
+          [0, 1, 2].map((i) => (
+            <div key={i} className="glass flex items-center gap-3 rounded-2xl p-3">
+              <Skeleton className="h-4 w-4 rounded" />
+              <div className="flex-1">
+                <Skeleton className="h-3.5 w-24" />
+                <Skeleton className="mt-1.5 h-2.5 w-32" />
+              </div>
+              <SkeletonBadge />
+            </div>
+          ))
+        ) : recentAlerts.length === 0 ? (
           <div className="glass rounded-2xl p-4 text-center text-xs text-muted-foreground">
             No emergencies — stay safe out there.
           </div>
-        )}
-        {recentAlerts.map((a) => (
-          <div key={a.id} className="glass flex items-center gap-3 rounded-2xl p-3">
-            <Bell className="h-4 w-4 text-primary" />
-            <div className="flex-1">
-              <p className="text-sm font-medium capitalize">{a.type} alert</p>
-              <p className="text-[11px] text-muted-foreground">
-                {new Date(a.started_at).toLocaleString()}
-              </p>
+        ) : (
+          recentAlerts.map((a) => (
+            <div key={a.id} className="glass flex items-center gap-3 rounded-2xl p-3 fade-in-content">
+              <Bell className="h-4 w-4 text-primary" />
+              <div className="flex-1">
+                <p className="text-sm font-medium capitalize">{a.type} alert</p>
+                <p className="text-[11px] text-muted-foreground">
+                  {new Date(a.started_at).toLocaleString()}
+                </p>
+              </div>
+              <StatusBadge variant={a.status === "active" ? "danger" : "muted"}>{a.status}</StatusBadge>
             </div>
-            <StatusBadge variant={a.status === "active" ? "danger" : "muted"}>{a.status}</StatusBadge>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
