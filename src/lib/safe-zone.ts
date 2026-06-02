@@ -42,7 +42,7 @@ export function useSafeZones(userId: string | undefined) {
     let cancelled = false;
     supabase
       .from("safe_zones")
-      .select("id, name, lat, lng, radius_m")
+      .select("id, name, lat, lng, radius_m, notify_enter, notify_exit")
       .eq("user_id", userId)
       .then(({ data }) => {
         if (!cancelled) setZones((data as any) ?? []);
@@ -55,7 +55,7 @@ export function useSafeZones(userId: string | undefined) {
         () => {
           supabase
             .from("safe_zones")
-            .select("id, name, lat, lng, radius_m")
+            .select("id, name, lat, lng, radius_m, notify_enter, notify_exit")
             .eq("user_id", userId)
             .then(({ data }) => setZones((data as any) ?? []));
         },
