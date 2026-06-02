@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ChevronLeft, MapPin, ShieldCheck, Bell, Settings2, UserMinus, Battery } from "lucide-react";
+import { ChevronLeft, MapPin, ShieldCheck, Bell, Settings2, UserMinus, Battery, AlertTriangle } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { BatteryWidget } from "@/components/BatteryWidget";
 import { findContainingZone, type SafeZone } from "@/lib/safe-zone";
