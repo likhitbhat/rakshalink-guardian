@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Bluetooth, MapPin, Phone, Shield, Bell, ChevronRight, Activity, Mic, Timer, Leaf } from "lucide-react";
 import { useLiveLocation } from "@/lib/use-live-location";
 import { useSafeZones, findContainingZone } from "@/lib/safe-zone";
+import { Skeleton, SkeletonText, SkeletonBadge } from "@/components/ui/skeleton";
+import { useMinLoading } from "@/lib/use-min-loading";
 
 export const Route = createFileRoute("/app/")({
   component: Dashboard,
