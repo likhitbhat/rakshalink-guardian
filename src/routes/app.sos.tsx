@@ -235,8 +235,4 @@ function Step({ icon: Icon, text }: { icon: any; text: string }) {
     </div>
   );
 }
-function format(s: number) {
-  const m = Math.floor(s / 60).toString().padStart(2, "0");
-  const ss = (s % 60).toString().padStart(2, "0");
-  return `${m}:${ss}`;
-}
+
