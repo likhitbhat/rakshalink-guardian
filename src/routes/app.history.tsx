@@ -22,6 +22,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Skeleton, SkeletonBadge } from "@/components/ui/skeleton";
+import { ErrorCard } from "@/components/StateCards";
+import { useMinLoading } from "@/lib/use-min-loading";
 import { toast } from "sonner";
 
 const LAST_CLEARED_COOKIE = "raksha_history_last_cleared";
@@ -150,6 +153,9 @@ function HistoryPage() {
   const [clearing, setClearing] = useState(false);
   const [filter, setFilter] = useState<HistoryFilter>("all");
   const [resolving, setResolving] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const showSkeleton = useMinLoading(loading);
 
   const markResolved = async (id: string) => {
     if (!user) return;
@@ -170,13 +176,18 @@ function HistoryPage() {
 
   const load = () => {
     if (!user) return;
+    setLoadError(false);
     supabase
       .from("emergency_alerts")
       .select("*")
       .eq("user_id", user.id)
       .eq("hidden_by_owner", false)
       .order("started_at", { ascending: false })
-      .then(({ data }) => setAlerts(data ?? []));
+      .then(({ data, error }) => {
+        if (error) setLoadError(true);
+        setAlerts(data ?? []);
+        setLoading(false);
+      });
   };
 
   useEffect(() => {
@@ -363,7 +374,27 @@ function HistoryPage() {
       )}
 
       <div className="mt-6 space-y-3">
-        {(() => {
+        {showSkeleton ? (
+          [0, 1, 2, 3, 4].map((i) => (
+            <div key={i} className="relative pl-8">
+              <Skeleton className="absolute left-2 top-3 h-3 w-3 rounded-full" />
+              <div className="glass rounded-2xl p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4 rounded" />
+                    <Skeleton className="h-3.5 w-20" />
+                  </div>
+                  <SkeletonBadge />
+                </div>
+                <Skeleton className="mt-2 h-2.5 w-28" />
+                <Skeleton className="mt-2 h-3 w-40" />
+                <Skeleton className="mt-3 h-8 w-full rounded-xl" />
+              </div>
+            </div>
+          ))
+        ) : loadError ? (
+          <ErrorCard message="Your emergency history couldn't load." onRetry={load} />
+        ) : (() => {
           const sorted = [...alerts].sort((a, b) => {
             if (a.status === "active" && b.status !== "active") return -1;
             if (b.status === "active" && a.status !== "active") return 1;

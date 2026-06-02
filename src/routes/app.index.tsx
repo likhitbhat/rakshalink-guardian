@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Bluetooth, MapPin, Phone, Shield, Bell, ChevronRight, Activity, Mic, Timer, Leaf } from "lucide-react";
 import { useLiveLocation } from "@/lib/use-live-location";
 import { useSafeZones, findContainingZone } from "@/lib/safe-zone";
+import { Skeleton, SkeletonText, SkeletonBadge } from "@/components/ui/skeleton";
+import { useMinLoading } from "@/lib/use-min-loading";
 
 export const Route = createFileRoute("/app/")({
   component: Dashboard,
@@ -22,6 +24,8 @@ function Dashboard() {
   const [activeAlert, setActiveAlert] = useState<{ id: string; type: string; started_at: string } | null>(null);
   const [monthAlertCount, setMonthAlertCount] = useState(0);
   const [deviceBattery, setDeviceBattery] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const showSkeleton = useMinLoading(loading);
 
   useEffect(() => {
     if (!user) return;
@@ -41,6 +45,7 @@ function Dashboard() {
       setActiveAlert(alerts.find((x: any) => x.status === "active") ?? null);
       setMonthAlertCount(m.count ?? 0);
       setDeviceBattery((d.data as any)?.[0]?.battery ?? null);
+      setLoading(false);
     };
     load();
     const ch = supabase
@@ -84,6 +89,12 @@ function Dashboard() {
           ) : (
             <StatusBadge variant="safe" pulse>You are safe</StatusBadge>
           )}
+          {showSkeleton ? (
+            <div className="mt-4 flex items-center gap-3">
+              <Skeleton className="h-16 w-16 rounded-full" />
+              <SkeletonText lines={2} className="flex-1" />
+            </div>
+          ) : (
           <div className="mt-4 flex items-end gap-2">
             {activeAlert ? (
               <>
@@ -97,6 +108,7 @@ function Dashboard() {
               </>
             )}
           </div>
+          )}
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <MapPin className="h-3.5 w-3.5 text-accent" />
             {loc.lat.toFixed(4)}, {loc.lng.toFixed(4)} ·{" "}
@@ -122,6 +134,17 @@ function Dashboard() {
       </div>
 
       {/* Quick stats */}
+      {showSkeleton ? (
+        <div className="mt-4 grid grid-cols-3 gap-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="glass rounded-2xl p-4">
+              <Skeleton className="mb-2 h-5 w-5 rounded" />
+              <SkeletonBadge className="h-6 w-12" />
+              <Skeleton className="mt-2 h-2.5 w-16" />
+            </div>
+          ))}
+        </div>
+      ) : (
       <div className="mt-4 grid grid-cols-3 gap-3">
         <div className="glass rounded-2xl p-4">
           <Bell className="mb-2 h-5 w-5 text-primary" />
@@ -139,9 +162,20 @@ function Dashboard() {
           <p className="text-[11px] text-muted-foreground">Device battery</p>
         </div>
       </div>
+      )}
 
 
       {/* Device row */}
+      {showSkeleton ? (
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          {[0, 1].map((i) => (
+            <div key={i} className="glass rounded-2xl p-4">
+              <Skeleton className="mb-2 h-5 w-5 rounded" />
+              <SkeletonText lines={3} className="mt-2" />
+            </div>
+          ))}
+        </div>
+      ) : (
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Link to="/app/device" className="glass rounded-2xl p-4">
           <Bluetooth className="mb-2 h-5 w-5 text-accent" />
@@ -150,6 +184,7 @@ function Dashboard() {
         </Link>
         <BatteryWidget userId={user?.id} isOwn lowPower={!!activeZone} />
       </div>
+      )}
 
       {/* Quick actions */}
       <h2 className="mb-2 mt-6 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Quick actions</h2>
@@ -180,23 +215,35 @@ function Dashboard() {
         <Link to="/app/history" className="text-xs text-accent">View all</Link>
       </div>
       <div className="mt-2 space-y-2">
-        {recentAlerts.length === 0 && (
+        {showSkeleton ? (
+          [0, 1, 2].map((i) => (
+            <div key={i} className="glass flex items-center gap-3 rounded-2xl p-3">
+              <Skeleton className="h-4 w-4 rounded" />
+              <div className="flex-1">
+                <Skeleton className="h-3.5 w-24" />
+                <Skeleton className="mt-1.5 h-2.5 w-32" />
+              </div>
+              <SkeletonBadge />
+            </div>
+          ))
+        ) : recentAlerts.length === 0 ? (
           <div className="glass rounded-2xl p-4 text-center text-xs text-muted-foreground">
             No emergencies — stay safe out there.
           </div>
-        )}
-        {recentAlerts.map((a) => (
-          <div key={a.id} className="glass flex items-center gap-3 rounded-2xl p-3">
-            <Bell className="h-4 w-4 text-primary" />
-            <div className="flex-1">
-              <p className="text-sm font-medium capitalize">{a.type} alert</p>
-              <p className="text-[11px] text-muted-foreground">
-                {new Date(a.started_at).toLocaleString()}
-              </p>
+        ) : (
+          recentAlerts.map((a) => (
+            <div key={a.id} className="glass flex items-center gap-3 rounded-2xl p-3 fade-in-content">
+              <Bell className="h-4 w-4 text-primary" />
+              <div className="flex-1">
+                <p className="text-sm font-medium capitalize">{a.type} alert</p>
+                <p className="text-[11px] text-muted-foreground">
+                  {new Date(a.started_at).toLocaleString()}
+                </p>
+              </div>
+              <StatusBadge variant={a.status === "active" ? "danger" : "muted"}>{a.status}</StatusBadge>
             </div>
-            <StatusBadge variant={a.status === "active" ? "danger" : "muted"}>{a.status}</StatusBadge>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

@@ -4,6 +4,9 @@ import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Phone, Trash2, User } from "lucide-react";
+import { SkeletonAvatar, Skeleton, SkeletonBadge } from "@/components/ui/skeleton";
+import { ErrorCard, EmptyState } from "@/components/StateCards";
+import { useMinLoading } from "@/lib/use-min-loading";
 import { toast } from "sonner";
 
 
@@ -16,11 +19,17 @@ function ContactsPage() {
   const [contacts, setContacts] = useState<any[]>([]);
   const [adding, setAdding] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", relation: "" });
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const showSkeleton = useMinLoading(loading);
 
   async function load() {
     if (!user) return;
-    const { data } = await supabase.from("emergency_contacts").select("*").eq("user_id", user.id).order("created_at");
+    setLoadError(false);
+    const { data, error } = await supabase.from("emergency_contacts").select("*").eq("user_id", user.id).order("created_at");
+    if (error) setLoadError(true);
     setContacts(data ?? []);
+    setLoading(false);
   }
   useEffect(() => {
     load();
@@ -58,10 +67,23 @@ function ContactsPage() {
       </div>
 
       <div className="mt-6 space-y-2">
+        {showSkeleton ? (
+          [0, 1, 2, 3].map((i) => (
+            <div key={i} className="glass flex items-center gap-3 rounded-2xl p-4">
+              <SkeletonAvatar size={40} />
+              <div className="flex-1">
+                <Skeleton className="h-3.5 w-28" />
+                <Skeleton className="mt-1.5 h-2.5 w-36" />
+              </div>
+              <SkeletonBadge className="w-8" />
+            </div>
+          ))
+        ) : loadError ? (
+          <ErrorCard message="Your contacts couldn't load." onRetry={load} />
+        ) : (
+          <>
         {contacts.length === 0 && !adding && (
-          <div className="glass rounded-2xl p-6 text-center text-sm text-muted-foreground">
-            No contacts yet. Add at least one trusted person.
-          </div>
+          <EmptyState icon={User} title="No contacts yet" message="Add at least one trusted person to be alerted on SOS." />
         )}
         {contacts.map((c) => (
           <div key={c.id} className="glass flex items-center gap-3 rounded-2xl p-4">
@@ -86,6 +108,9 @@ function ContactsPage() {
             </button>
           </div>
         ))}
+          </>
+        )}
+
 
         {adding && (
           <div className="glass-strong space-y-2 rounded-2xl p-4">
