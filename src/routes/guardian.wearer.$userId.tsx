@@ -172,6 +172,28 @@ function WearerManagePage() {
         </Link>
       </div>
 
+      <h2 className="mb-2 mt-6 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">False alarm history</h2>
+      <div className="glass-strong rounded-2xl p-4">
+        <div className="flex items-center justify-between">
+          <span className="flex items-center gap-2 text-sm font-semibold">
+            <AlertTriangle className="h-4 w-4 text-primary" /> Reported false alarms
+          </span>
+          <span className="font-display text-lg font-bold">{profile?.false_alarm_count ?? 0}</span>
+        </div>
+        {falseAlarms.length > 0 ? (
+          <ul className="mt-3 space-y-2">
+            {falseAlarms.map((fa) => (
+              <li key={fa.id} className="flex items-center justify-between rounded-xl bg-background/40 px-3 py-2 text-xs">
+                <span className="text-muted-foreground">Marked false alarm</span>
+                <span className="tabular-nums">{new Date(fa.started_at).toLocaleString()}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 text-[11px] text-muted-foreground">No false alarms reported.</p>
+        )}
+      </div>
+
       <button
         onClick={unlink}
         className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl border border-primary/40 bg-primary/10 py-3 text-sm font-semibold text-primary"
