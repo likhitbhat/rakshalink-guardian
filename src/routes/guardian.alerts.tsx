@@ -156,8 +156,18 @@ function GuardianAlerts() {
         {alerts.map((a) => (
           <div
             key={a.id}
-            className={`glass flex items-start gap-3 rounded-2xl p-4 ${a.status === "active" ? "border-primary/50 bg-primary/10" : ""}`}
+            ref={(el) => {
+              cardRefs.current[a.id] = el;
+            }}
+            className={`glass flex items-start gap-3 rounded-2xl p-4 transition-all ${
+              highlightId === a.id
+                ? "ring-2 ring-accent shadow-lg shadow-accent/20"
+                : a.status === "active"
+                  ? "border-primary/50 bg-primary/10"
+                  : ""
+            }`}
           >
+
             <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${a.status === "active" ? "bg-primary/20 text-primary" : "bg-muted/30 text-muted-foreground"}`}>
               <AlertTriangle className="h-4 w-4" />
             </div>
