@@ -108,6 +108,9 @@ function ContactsPage() {
             </button>
           </div>
         ))}
+          </>
+        )}
+
 
         {adding && (
           <div className="glass-strong space-y-2 rounded-2xl p-4">
