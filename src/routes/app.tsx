@@ -7,6 +7,7 @@ import { useZoneTransitionTracker } from "@/lib/zone-tracker";
 import { useBackgroundLocationTracking } from "@/lib/location-tracker";
 import { FallDetectionProvider } from "@/lib/fall-detection";
 import { OfflineSync } from "@/components/OfflineSync";
+import { SessionTimeout } from "@/components/SessionTimeout";
 
 export const Route = createFileRoute("/app")({
   component: AppLayout,
@@ -38,6 +39,7 @@ function AppLayout() {
   return (
     <FallDetectionProvider>
       <OfflineSync userId={user?.id} />
+      <SessionTimeout />
       <AppShell>
         <Outlet />
       </AppShell>
