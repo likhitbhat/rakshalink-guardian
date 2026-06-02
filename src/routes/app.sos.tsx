@@ -20,6 +20,7 @@ function SosPage() {
   const liveLocRef = useRef(liveLoc);
   liveLocRef.current = liveLoc;
   const sendSms = useServerFn(sendEmergencySms);
+  const pushGuardians = useServerFn(notifyGuardians);
   const online = useOnlineStatus();
   const [holding, setHolding] = useState(false);
   const [countdown, setCountdown] = useState(0);
