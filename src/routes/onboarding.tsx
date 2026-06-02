@@ -4,6 +4,7 @@ import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { getMockLocation } from "@/lib/mock-location";
+import { subscribeToPush } from "@/lib/web-push";
 import { toast } from "sonner";
 import {
   Shield,
