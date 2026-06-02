@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { resolvePostAuthPath } from "@/lib/post-auth";
 import { toast } from "sonner";
-import { Shield, Mail, Lock, User, Phone, Loader2, Users } from "lucide-react";
+import { Shield, Mail, Lock, User, Phone, Loader2, Users, MailCheck } from "lucide-react";
 
 export const Route = createFileRoute("/auth/register")({
   component: RegisterPage,
@@ -16,6 +16,8 @@ function RegisterPage() {
   const [role, setRole] = useState<"user" | "guardian">("user");
   const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [resending, setResending] = useState(false);
   const nav = useNavigate();
 
   function describeError(message: string): string {
