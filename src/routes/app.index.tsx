@@ -134,6 +134,17 @@ function Dashboard() {
       </div>
 
       {/* Quick stats */}
+      {showSkeleton ? (
+        <div className="mt-4 grid grid-cols-3 gap-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="glass rounded-2xl p-4">
+              <Skeleton className="mb-2 h-5 w-5 rounded" />
+              <SkeletonBadge className="h-6 w-12" />
+              <Skeleton className="mt-2 h-2.5 w-16" />
+            </div>
+          ))}
+        </div>
+      ) : (
       <div className="mt-4 grid grid-cols-3 gap-3">
         <div className="glass rounded-2xl p-4">
           <Bell className="mb-2 h-5 w-5 text-primary" />
@@ -150,6 +161,7 @@ function Dashboard() {
           <p className="font-display text-2xl font-bold">{deviceBattery != null ? `${deviceBattery}%` : "—"}</p>
           <p className="text-[11px] text-muted-foreground">Device battery</p>
         </div>
+      )}
       </div>
 
 
