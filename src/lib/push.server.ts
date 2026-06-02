@@ -118,7 +118,7 @@ async function encryptPayload(
 
   const uaKey = await crypto.subtle.importKey(
     "raw",
-    uaPublic,
+    ab(uaPublic),
     { name: "ECDH", namedCurve: "P-256" },
     false,
     [],
@@ -140,11 +140,11 @@ async function encryptPayload(
   const cek = await hkdf(salt, ikm, enc.encode("Content-Encoding: aes128gcm\0"), 16);
   const nonce = await hkdf(salt, ikm, enc.encode("Content-Encoding: nonce\0"), 12);
 
-  const aesKey = await crypto.subtle.importKey("raw", cek, { name: "AES-GCM" }, false, ["encrypt"]);
+  const aesKey = await crypto.subtle.importKey("raw", ab(cek), { name: "AES-GCM" }, false, ["encrypt"]);
   // Single record: append 0x02 padding-delimiter, no extra padding.
   const plaintext = concat(payload, new Uint8Array([0x02]));
   const ciphertext = new Uint8Array(
-    await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce }, aesKey, plaintext),
+    await crypto.subtle.encrypt({ name: "AES-GCM", iv: ab(nonce) }, aesKey, ab(plaintext)),
   );
 
   // aes128gcm header: salt(16) | rs(4) | idlen(1) | keyid(server pub 65)
@@ -184,7 +184,7 @@ export async function sendWebPush(
       TTL: "86400",
       Urgency: "high",
     },
-    body,
+    body: ab(body),
   });
 
   return {
