@@ -153,6 +153,9 @@ function HistoryPage() {
   const [clearing, setClearing] = useState(false);
   const [filter, setFilter] = useState<HistoryFilter>("all");
   const [resolving, setResolving] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const showSkeleton = useMinLoading(loading);
 
   const markResolved = async (id: string) => {
     if (!user) return;
@@ -173,13 +176,18 @@ function HistoryPage() {
 
   const load = () => {
     if (!user) return;
+    setLoadError(false);
     supabase
       .from("emergency_alerts")
       .select("*")
       .eq("user_id", user.id)
       .eq("hidden_by_owner", false)
       .order("started_at", { ascending: false })
-      .then(({ data }) => setAlerts(data ?? []));
+      .then(({ data, error }) => {
+        if (error) setLoadError(true);
+        setAlerts(data ?? []);
+        setLoading(false);
+      });
   };
 
   useEffect(() => {
