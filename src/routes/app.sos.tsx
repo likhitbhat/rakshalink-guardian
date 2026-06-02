@@ -150,7 +150,9 @@ function SosPage() {
         body: "A RakshaLink wearer triggered an SOS alert. Tap to view.",
         alertId: data.id,
       },
-    }).catch(() => undefined);
+    })
+      .then((res) => setGuardianCount(res?.recipients ?? 0))
+      .catch(() => undefined);
     // live location pings — also push the first fresh fix immediately
     await supabase.from("live_locations").insert({ user_id: user.id, lat: loc.lat, lng: loc.lng, battery: 75 });
     holdRef.current = window.setInterval(async () => {
