@@ -39,6 +39,7 @@ function AppLayout() {
   return (
     <FallDetectionProvider>
       <OfflineSync userId={user?.id} />
+      <SessionTimeout />
       <AppShell>
         <Outlet />
       </AppShell>
