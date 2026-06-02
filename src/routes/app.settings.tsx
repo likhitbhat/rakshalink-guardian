@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Bell, Shield, Phone, History, MapPin, LogOut, ChevronRight, Moon, Sun, Globe, Copy, Users, BellRing, Eye, MapPinned, UserPlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTheme } from "@/lib/theme";
-import { usePreferences, LANGUAGES, type LanguagePref, type Preferences } from "@/lib/preferences";
+import { usePreferences, LANGUAGES, type LanguagePref } from "@/lib/preferences";
 import { usePushPermission, describePermission } from "@/lib/push-notifications";
 import { subscribeToPush, unsubscribeFromPush } from "@/lib/web-push";
 import { StatusBadge } from "@/components/StatusBadge";
