@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type SafeZone = { id: string; name: string; lat: number; lng: number; radius_m: number };
+export type SafeZone = {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  radius_m: number;
+  notify_enter?: boolean;
+  notify_exit?: boolean;
+};
 
 // Haversine distance in meters
 export function distanceMeters(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
