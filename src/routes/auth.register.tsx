@@ -46,8 +46,8 @@ function RegisterPage() {
         return;
       }
       if (!data.session) {
-        toast.success("Account created — check your email to verify, then sign in");
-        nav({ to: "/auth/login" });
+        setSent(true);
+        toast.success("Account created — check your email to verify");
         return;
       }
       toast.success("Account created — welcome to RakshaLink");
