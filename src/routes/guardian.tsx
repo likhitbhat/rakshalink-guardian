@@ -25,6 +25,7 @@ function GuardianLayout() {
   }
   return (
     <AppShell>
+      <SessionTimeout />
       <Outlet />
     </AppShell>
   );
