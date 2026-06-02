@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useTheme } from "@/lib/theme";
 import { usePreferences, LANGUAGES, type LanguagePref } from "@/lib/preferences";
 import { usePushPermission, describePermission } from "@/lib/push-notifications";
+import { subscribeToPush, unsubscribeFromPush } from "@/lib/web-push";
 import { StatusBadge } from "@/components/StatusBadge";
 import { inviteGuardian, listMyGuardians, revokeGuardian } from "@/lib/guardians.functions";
 import { sendTransactionalEmail } from "@/lib/email/send";
