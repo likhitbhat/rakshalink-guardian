@@ -270,6 +270,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          false_alarm_count: number
           full_name: string | null
           id: string
           phone: string | null
@@ -280,6 +281,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          false_alarm_count?: number
           full_name?: string | null
           id: string
           phone?: string | null
@@ -290,6 +292,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          false_alarm_count?: number
           full_name?: string | null
           id?: string
           phone?: string | null
@@ -368,6 +371,30 @@ export type Database = {
         }
         Relationships: []
       }
+      sos_attempts: {
+        Row: {
+          alert_id: string | null
+          created_at: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          alert_id?: string | null
+          created_at?: string
+          id?: string
+          status: string
+          user_id: string
+        }
+        Update: {
+          alert_id?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -396,6 +423,7 @@ export type Database = {
         Row: {
           created_at: string
           language: string
+          last_sos_at: string | null
           notifications: boolean
           notify_battery: boolean
           notify_fall: boolean
@@ -410,6 +438,7 @@ export type Database = {
         Insert: {
           created_at?: string
           language?: string
+          last_sos_at?: string | null
           notifications?: boolean
           notify_battery?: boolean
           notify_fall?: boolean
@@ -424,6 +453,7 @@ export type Database = {
         Update: {
           created_at?: string
           language?: string
+          last_sos_at?: string | null
           notifications?: boolean
           notify_battery?: boolean
           notify_fall?: boolean
