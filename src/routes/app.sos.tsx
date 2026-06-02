@@ -8,6 +8,7 @@ import { useLiveLocation } from "@/lib/use-live-location";
 import { sendEmergencySms } from "@/lib/sms.functions";
 import { notifyGuardians } from "@/lib/push.functions";
 import { useOnlineStatus, queueOfflineAlert, cacheLastLocation } from "@/lib/offline";
+import { SosActiveScreen } from "@/components/SosActiveScreen";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/sos")({
