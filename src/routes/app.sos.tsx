@@ -27,6 +27,7 @@ function SosPage() {
   const [countdown, setCountdown] = useState(0);
   const [activeAlert, setActiveAlert] = useState<string | null>(null);
   const [seconds, setSeconds] = useState(0);
+  const [guardianCount, setGuardianCount] = useState(0);
   const holdRef = useRef<number | null>(null);
   const triggeringRef = useRef(false);
 
