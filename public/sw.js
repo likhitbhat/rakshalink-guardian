@@ -70,3 +70,41 @@ self.addEventListener("fetch", (event) => {
     ),
   );
 });
+
+// ---- Web Push notifications ----
+self.addEventListener("push", (event) => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch (e) {
+    payload = { title: "RakshaLink", body: event.data ? event.data.text() : "New alert" };
+  }
+  const title = payload.title || "RakshaLink";
+  const options = {
+    body: payload.body || "You have a new alert.",
+    icon: "/icon-192.png",
+    badge: "/icon-192.png",
+    tag: payload.tag || "rakshalink-alert",
+    data: { url: payload.url || "/guardian/alerts", alertId: payload.alertId },
+    requireInteraction: payload.tag === "sos" || payload.tag === "fall",
+    vibrate: [200, 100, 200],
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = (event.notification.data && event.notification.data.url) || "/guardian/alerts";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      for (const client of clients) {
+        if ("focus" in client) {
+          client.focus();
+          if ("navigate" in client) client.navigate(target).catch(() => undefined);
+          return;
+        }
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(target);
+    }),
+  );
+});
