@@ -57,6 +57,10 @@ type Row = {
   notifications: boolean;
   quiet_hours: boolean;
   share_location: boolean;
+  notify_sos?: boolean;
+  notify_fall?: boolean;
+  notify_zone?: boolean;
+  notify_battery?: boolean;
   theme?: string | null;
 };
 
@@ -66,6 +70,10 @@ function rowToPrefs(r: Row): Preferences {
     notifications: !!r.notifications,
     quietHours: !!r.quiet_hours,
     shareLocation: !!r.share_location,
+    notifySos: r.notify_sos !== false,
+    notifyFall: r.notify_fall !== false,
+    notifyZone: r.notify_zone !== false,
+    notifyBattery: r.notify_battery !== false,
   };
 }
 
