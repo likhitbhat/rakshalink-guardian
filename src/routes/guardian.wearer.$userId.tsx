@@ -12,7 +12,8 @@ export const Route = createFileRoute("/guardian/wearer/$userId")({
   component: WearerManagePage,
 });
 
-type Profile = { id: string; full_name: string | null; phone: string | null; safety_score: number };
+type Profile = { id: string; full_name: string | null; phone: string | null; safety_score: number; false_alarm_count: number };
+type FalseAlarm = { id: string; started_at: string };
 
 function WearerManagePage() {
   const { userId } = Route.useParams();
@@ -24,15 +25,17 @@ function WearerManagePage() {
   const [linkRow, setLinkRow] = useState<{ id: string; label: string | null } | null>(null);
   const [labelDraft, setLabelDraft] = useState("");
   const [alertsCount, setAlertsCount] = useState(0);
+  const [falseAlarms, setFalseAlarms] = useState<FalseAlarm[]>([]);
 
   async function load() {
     if (!user) return;
-    const [{ data: p }, { data: zs }, { data: locs }, { data: link }, { data: alerts }] = await Promise.all([
-      supabase.from("profiles").select("id, full_name, phone, safety_score").eq("id", userId).maybeSingle(),
+    const [{ data: p }, { data: zs }, { data: locs }, { data: link }, { data: alerts }, { data: fa }] = await Promise.all([
+      supabase.from("profiles").select("id, full_name, phone, safety_score, false_alarm_count").eq("id", userId).maybeSingle(),
       supabase.from("safe_zones").select("id, name, lat, lng, radius_m").eq("user_id", userId),
       supabase.from("live_locations").select("lat, lng").eq("user_id", userId).order("recorded_at", { ascending: false }).limit(1),
       supabase.from("guardian_links").select("id, label").eq("guardian_id", user.id).eq("user_id", userId).maybeSingle(),
       supabase.from("emergency_alerts").select("id", { count: "exact", head: false }).eq("user_id", userId).eq("status", "active"),
+      supabase.from("emergency_alerts").select("id, started_at").eq("user_id", userId).ilike("notes", "false_alarm%").order("started_at", { ascending: false }).limit(10),
     ]);
     setProfile((p as any) ?? null);
     setZones(((zs as any) ?? []) as SafeZone[]);
@@ -40,6 +43,7 @@ function WearerManagePage() {
     setLinkRow((link as any) ?? null);
     setLabelDraft(((link as any)?.label as string) ?? "");
     setAlertsCount((alerts as any[])?.length ?? 0);
+    setFalseAlarms(((fa as any) ?? []) as FalseAlarm[]);
   }
 
   useEffect(() => {
