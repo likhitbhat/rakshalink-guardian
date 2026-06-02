@@ -3,6 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePreferences } from "@/lib/preferences";
 import { useSafeZones, findContainingZone, type SafeZone } from "@/lib/safe-zone";
 import { cacheLastLocation, getCachedLastLocation } from "@/lib/offline";
+import { notifyGuardians } from "@/lib/push.functions";
+
+// Battery level (%) at or below which guardians get a low-battery alert.
+const LOW_BATTERY_THRESHOLD = 20;
 
 export type TrackingStatus = "paused" | "active" | "background";
 
