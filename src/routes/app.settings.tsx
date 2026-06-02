@@ -29,7 +29,8 @@ export const Route = createFileRoute("/app/settings")({
 
 type LinkedWearer = { user_id: string; full_name: string | null };
 
-const NOTIFY_TYPES: { key: keyof Preferences; label: string; desc: string }[] = [
+type NotifyKey = "notifySos" | "notifyFall" | "notifyZone" | "notifyBattery";
+const NOTIFY_TYPES: { key: NotifyKey; label: string; desc: string }[] = [
   { key: "notifySos", label: "SOS alerts", desc: "Emergency SOS is triggered" },
   { key: "notifyFall", label: "Fall detection", desc: "A hard fall is detected" },
   { key: "notifyZone", label: "Safe-zone events", desc: "Entering or leaving a safe zone" },
