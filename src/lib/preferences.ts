@@ -82,7 +82,9 @@ let cloudSyncedUserId: string | null = null;
 async function pullFromCloud(userId: string) {
   const { data, error } = await supabase
     .from("user_preferences")
-    .select("language, notifications, quiet_hours, share_location, theme")
+    .select(
+      "language, notifications, quiet_hours, share_location, notify_sos, notify_fall, notify_zone, notify_battery, theme",
+    )
     .eq("user_id", userId)
     .maybeSingle();
   if (error) return;
@@ -107,6 +109,10 @@ async function pullFromCloud(userId: string) {
       notifications: cur.notifications,
       quiet_hours: cur.quietHours,
       share_location: cur.shareLocation,
+      notify_sos: cur.notifySos,
+      notify_fall: cur.notifyFall,
+      notify_zone: cur.notifyZone,
+      notify_battery: cur.notifyBattery,
       theme,
     });
   }
