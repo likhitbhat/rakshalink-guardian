@@ -299,6 +299,36 @@ export type Database = {
         }
         Relationships: []
       }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       safe_zones: {
         Row: {
           created_at: string
@@ -367,6 +397,10 @@ export type Database = {
           created_at: string
           language: string
           notifications: boolean
+          notify_battery: boolean
+          notify_fall: boolean
+          notify_sos: boolean
+          notify_zone: boolean
           quiet_hours: boolean
           share_location: boolean
           theme: string
@@ -377,6 +411,10 @@ export type Database = {
           created_at?: string
           language?: string
           notifications?: boolean
+          notify_battery?: boolean
+          notify_fall?: boolean
+          notify_sos?: boolean
+          notify_zone?: boolean
           quiet_hours?: boolean
           share_location?: boolean
           theme?: string
@@ -387,6 +425,10 @@ export type Database = {
           created_at?: string
           language?: string
           notifications?: boolean
+          notify_battery?: boolean
+          notify_fall?: boolean
+          notify_sos?: boolean
+          notify_zone?: boolean
           quiet_hours?: boolean
           share_location?: boolean
           theme?: string
