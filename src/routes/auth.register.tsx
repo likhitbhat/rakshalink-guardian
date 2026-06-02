@@ -81,6 +81,55 @@ function RegisterPage() {
     }
   }
 
+  async function resendVerification() {
+    if (!form.email) return toast.error("Enter your email first");
+    setResending(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: form.email,
+      options: { emailRedirectTo: `${window.location.origin}/app` },
+    });
+    setResending(false);
+    if (error) return toast.error(describeError(error.message));
+    toast.success("Verification email sent — check your inbox");
+  }
+
+  if (sent) {
+    return (
+      <div>
+        <Link to="/" className="mb-6 flex items-center gap-2 text-accent">
+          <Shield className="h-5 w-5" />
+          <span className="font-display font-semibold">RakshaLink</span>
+        </Link>
+        <div className="mx-auto mt-6 flex h-16 w-16 items-center justify-center rounded-full bg-accent/15">
+          <MailCheck className="h-8 w-8 text-accent" />
+        </div>
+        <h1 className="mt-5 text-3xl font-bold">Check your email</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          We sent a verification link to{" "}
+          <span className="font-semibold text-foreground">{form.email}</span>. Click it to activate
+          your account, then sign in.
+        </p>
+        <button
+          type="button"
+          onClick={resendVerification}
+          disabled={resending}
+          className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl border border-accent/40 bg-accent/10 py-3.5 text-sm font-semibold text-accent disabled:opacity-60"
+        >
+          {resending ? <Loader2 className="h-4 w-4 animate-spin" /> : <MailCheck className="h-4 w-4" />}
+          Resend verification email
+        </button>
+        <button
+          type="button"
+          onClick={() => nav({ to: "/auth/login" })}
+          className="mt-3 w-full rounded-2xl bg-gradient-to-r from-primary to-[oklch(0.5_0.22_15)] py-4 font-semibold text-primary-foreground shadow-[var(--shadow-glow-red)]"
+        >
+          Go to sign in
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div>
       <Link to="/" className="mb-6 flex items-center gap-2 text-accent">
