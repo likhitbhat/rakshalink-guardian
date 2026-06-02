@@ -59,6 +59,7 @@ export function FallDetectionProvider({ children }: { children: ReactNode }) {
   const locRef = useRef(loc);
   locRef.current = loc;
   const sendSms = useServerFn(sendEmergencySms);
+  const pushGuardians = useServerFn(notifyGuardians);
 
   const supported = hasDeviceMotion();
   const [enabled, setEnabledState] = useState(false);
