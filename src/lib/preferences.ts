@@ -160,7 +160,15 @@ export function usePreferences() {
     if (key === "language" && typeof document !== "undefined") document.documentElement.lang = next.language;
     broadcast(next);
     if (cloudSyncedUserId) {
-      const col = key === "quietHours" ? "quiet_hours" : key === "shareLocation" ? "share_location" : key;
+      const COLS: Partial<Record<keyof Preferences, string>> = {
+        quietHours: "quiet_hours",
+        shareLocation: "share_location",
+        notifySos: "notify_sos",
+        notifyFall: "notify_fall",
+        notifyZone: "notify_zone",
+        notifyBattery: "notify_battery",
+      };
+      const col = COLS[key] ?? (key as string);
       pushField(cloudSyncedUserId, { [col]: value });
     }
   }, []);
