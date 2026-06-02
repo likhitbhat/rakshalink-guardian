@@ -28,6 +28,14 @@ export const Route = createFileRoute("/app/settings")({
 });
 
 type LinkedWearer = { user_id: string; full_name: string | null };
+
+type NotifyKey = "notifySos" | "notifyFall" | "notifyZone" | "notifyBattery";
+const NOTIFY_TYPES: { key: NotifyKey; label: string; desc: string }[] = [
+  { key: "notifySos", label: "SOS alerts", desc: "Emergency SOS is triggered" },
+  { key: "notifyFall", label: "Fall detection", desc: "A hard fall is detected" },
+  { key: "notifyZone", label: "Safe-zone events", desc: "Entering or leaving a safe zone" },
+  { key: "notifyBattery", label: "Low battery", desc: "Device battery runs low" },
+];
 type GuardianRow = { id: string; status: string; guardianName: string | null; guardianEmail: string | null };
 
 function SettingsPage() {
@@ -393,7 +401,25 @@ function SettingsPage() {
                 Send a test notification
               </button>
             )}
+            {permission === "granted" && prefs.notifications && (
+              <div className="mt-3 space-y-2 rounded-xl border border-border/50 bg-background/40 p-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Alert types
+                </p>
+                {NOTIFY_TYPES.map((t) => (
+                  <div key={t.key} className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <p className="text-xs">{t.label}</p>
+                      <p className="text-[10px] text-muted-foreground">{t.desc}</p>
+                    </div>
+                    <Toggle on={prefs[t.key]} onChange={(v) => update(t.key, v)} />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+
+
 
 
           {/* Quiet hours (guardian) or Privacy/share location (wearer) */}

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -21,10 +21,14 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/guardian/alerts")({
   component: GuardianAlerts,
+  validateSearch: (search: Record<string, unknown>): { focus?: string } => ({
+    focus: typeof search.focus === "string" ? search.focus : undefined,
+  }),
 });
 
 function GuardianAlerts() {
   const { user } = useAuth();
+  const { focus } = Route.useSearch();
   const [alerts, setAlerts] = useState<any[]>([]);
   const [names, setNames] = useState<Record<string, string>>({});
   const [clearing, setClearing] = useState(false);
@@ -32,6 +36,8 @@ function GuardianAlerts() {
   const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
   const [openNote, setOpenNote] = useState<string | null>(null);
   const [savingNote, setSavingNote] = useState(false);
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const addNote = async (alertId: string) => {
     const note = (noteDrafts[alertId] ?? "").trim();
@@ -83,6 +89,19 @@ function GuardianAlerts() {
       supabase.removeChannel(ch);
     };
   }, [user]);
+
+  // When opened from a push notification (?focus=<id>), scroll to and briefly
+  // highlight the referenced alert once it's present in the feed.
+  useEffect(() => {
+    if (!focus || !alerts.some((a) => a.id === focus)) return;
+    setHighlightId(focus);
+    const el = cardRefs.current[focus];
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const t = setTimeout(() => setHighlightId(null), 3500);
+    return () => clearTimeout(t);
+  }, [focus, alerts]);
+
+
 
   const clearHistory = async () => {
     if (!user || !wearerIds.length) return;
@@ -137,8 +156,18 @@ function GuardianAlerts() {
         {alerts.map((a) => (
           <div
             key={a.id}
-            className={`glass flex items-start gap-3 rounded-2xl p-4 ${a.status === "active" ? "border-primary/50 bg-primary/10" : ""}`}
+            ref={(el) => {
+              cardRefs.current[a.id] = el;
+            }}
+            className={`glass flex items-start gap-3 rounded-2xl p-4 transition-all ${
+              highlightId === a.id
+                ? "ring-2 ring-accent shadow-lg shadow-accent/20"
+                : a.status === "active"
+                  ? "border-primary/50 bg-primary/10"
+                  : ""
+            }`}
           >
+
             <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${a.status === "active" ? "bg-primary/20 text-primary" : "bg-muted/30 text-muted-foreground"}`}>
               <AlertTriangle className="h-4 w-4" />
             </div>

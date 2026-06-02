@@ -4,6 +4,7 @@ import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { getMockLocation } from "@/lib/mock-location";
+import { subscribeToPush } from "@/lib/web-push";
 import { toast } from "sonner";
 import {
   Shield,
@@ -89,6 +90,8 @@ function OnboardingPage() {
       .eq("id", user.id);
     setBusy(false);
     if (error) return toast.error(error.message);
+    // Step 1: ask for notification permission so guardians can be alerted.
+    void subscribeToPush();
     setStep(2);
   }
 

@@ -8,6 +8,10 @@ export type Preferences = {
   notifications: boolean;
   quietHours: boolean;
   shareLocation: boolean;
+  notifySos: boolean;
+  notifyFall: boolean;
+  notifyZone: boolean;
+  notifyBattery: boolean;
 };
 
 const KEY = "raksha:prefs:v1";
@@ -17,6 +21,10 @@ const DEFAULTS: Preferences = {
   notifications: true,
   quietHours: false,
   shareLocation: true,
+  notifySos: true,
+  notifyFall: true,
+  notifyZone: true,
+  notifyBattery: true,
 };
 
 export const LANGUAGES: { value: LanguagePref; label: string }[] = [
@@ -49,6 +57,10 @@ type Row = {
   notifications: boolean;
   quiet_hours: boolean;
   share_location: boolean;
+  notify_sos?: boolean;
+  notify_fall?: boolean;
+  notify_zone?: boolean;
+  notify_battery?: boolean;
   theme?: string | null;
 };
 
@@ -58,6 +70,10 @@ function rowToPrefs(r: Row): Preferences {
     notifications: !!r.notifications,
     quietHours: !!r.quiet_hours,
     shareLocation: !!r.share_location,
+    notifySos: r.notify_sos !== false,
+    notifyFall: r.notify_fall !== false,
+    notifyZone: r.notify_zone !== false,
+    notifyBattery: r.notify_battery !== false,
   };
 }
 
@@ -66,7 +82,9 @@ let cloudSyncedUserId: string | null = null;
 async function pullFromCloud(userId: string) {
   const { data, error } = await supabase
     .from("user_preferences")
-    .select("language, notifications, quiet_hours, share_location, theme")
+    .select(
+      "language, notifications, quiet_hours, share_location, notify_sos, notify_fall, notify_zone, notify_battery, theme",
+    )
     .eq("user_id", userId)
     .maybeSingle();
   if (error) return;
@@ -91,6 +109,10 @@ async function pullFromCloud(userId: string) {
       notifications: cur.notifications,
       quiet_hours: cur.quietHours,
       share_location: cur.shareLocation,
+      notify_sos: cur.notifySos,
+      notify_fall: cur.notifyFall,
+      notify_zone: cur.notifyZone,
+      notify_battery: cur.notifyBattery,
       theme,
     });
   }
@@ -138,7 +160,15 @@ export function usePreferences() {
     if (key === "language" && typeof document !== "undefined") document.documentElement.lang = next.language;
     broadcast(next);
     if (cloudSyncedUserId) {
-      const col = key === "quietHours" ? "quiet_hours" : key === "shareLocation" ? "share_location" : key;
+      const COLS: Partial<Record<keyof Preferences, string>> = {
+        quietHours: "quiet_hours",
+        shareLocation: "share_location",
+        notifySos: "notify_sos",
+        notifyFall: "notify_fall",
+        notifyZone: "notify_zone",
+        notifyBattery: "notify_battery",
+      };
+      const col = COLS[key] ?? (key as string);
       pushField(cloudSyncedUserId, { [col]: value });
     }
   }, []);

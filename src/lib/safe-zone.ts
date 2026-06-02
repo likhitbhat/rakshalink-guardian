@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type SafeZone = { id: string; name: string; lat: number; lng: number; radius_m: number };
+export type SafeZone = {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  radius_m: number;
+  notify_enter?: boolean;
+  notify_exit?: boolean;
+};
 
 // Haversine distance in meters
 export function distanceMeters(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
@@ -34,7 +42,7 @@ export function useSafeZones(userId: string | undefined) {
     let cancelled = false;
     supabase
       .from("safe_zones")
-      .select("id, name, lat, lng, radius_m")
+      .select("id, name, lat, lng, radius_m, notify_enter, notify_exit")
       .eq("user_id", userId)
       .then(({ data }) => {
         if (!cancelled) setZones((data as any) ?? []);
@@ -47,7 +55,7 @@ export function useSafeZones(userId: string | undefined) {
         () => {
           supabase
             .from("safe_zones")
-            .select("id, name, lat, lng, radius_m")
+            .select("id, name, lat, lng, radius_m, notify_enter, notify_exit")
             .eq("user_id", userId)
             .then(({ data }) => setZones((data as any) ?? []));
         },

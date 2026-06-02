@@ -3,6 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePreferences } from "@/lib/preferences";
 import { useSafeZones, findContainingZone, type SafeZone } from "@/lib/safe-zone";
 import { cacheLastLocation, getCachedLastLocation } from "@/lib/offline";
+import { notifyGuardians } from "@/lib/push.functions";
+
+// Battery level (%) at or below which guardians get a low-battery alert.
+const LOW_BATTERY_THRESHOLD = 20;
 
 export type TrackingStatus = "paused" | "active" | "background";
 
@@ -98,11 +102,90 @@ export function useBackgroundLocationTracking(userId: string | undefined) {
     let currentInterval = ACTIVE_MS;
     let lastLoc = getCachedLastLocation();
     let disposed = false;
+    // Zone-transition tracking. `undefined` means "not yet initialised" so we
+    // don't fire a spurious enter/exit on the very first GPS fix.
+    let prevZoneId: string | null | undefined = undefined;
+    // Low-battery alert is sent once per descent below the threshold; it re-arms
+    // when the battery climbs back above the threshold (e.g. after charging).
+    let lowBatteryArmed = true;
 
     const computeInterval = () => {
       if (document.hidden) return BACKGROUND_MS;
       const inZone = findContainingZone(lastLoc, zonesRef.current);
       return inZone ? SAFE_ZONE_MS : ACTIVE_MS;
+    };
+
+    const handleZoneTransition = async (lat: number, lng: number) => {
+      const zone = findContainingZone(lastLoc, zonesRef.current);
+      const zoneId = zone?.id ?? null;
+      if (prevZoneId === undefined) {
+        prevZoneId = zoneId; // initialise silently
+        return;
+      }
+      if (zoneId === prevZoneId) return;
+
+      // Exited the previous zone.
+      if (prevZoneId !== null) {
+        const left = zonesRef.current.find((z) => z.id === prevZoneId);
+        if (left && left.notify_exit !== false) {
+          await emitZoneEvent("exit", left, lat, lng);
+        }
+      }
+      // Entered a new zone.
+      if (zoneId !== null && zone && zone.notify_enter !== false) {
+        await emitZoneEvent("enter", zone, lat, lng);
+      }
+      prevZoneId = zoneId;
+    };
+
+    const emitZoneEvent = async (
+      event: "enter" | "exit",
+      zone: SafeZone,
+      lat: number,
+      lng: number,
+    ) => {
+      try {
+        await supabase.from("zone_events").insert({
+          user_id: userId,
+          event,
+          zone_id: zone.id,
+          zone_name: zone.name,
+          lat,
+          lng,
+        });
+        await notifyGuardians({
+          data: {
+            type: "zone",
+            title: event === "enter" ? `Entered ${zone.name}` : `Left ${zone.name}`,
+            body:
+              event === "enter"
+                ? `Arrived at the safe zone "${zone.name}".`
+                : `Left the safe zone "${zone.name}".`,
+          },
+        });
+      } catch {
+        /* best-effort */
+      }
+    };
+
+    const handleLowBattery = async (battery: number) => {
+      if (battery > LOW_BATTERY_THRESHOLD) {
+        lowBatteryArmed = true;
+        return;
+      }
+      if (!lowBatteryArmed) return;
+      lowBatteryArmed = false;
+      try {
+        await notifyGuardians({
+          data: {
+            type: "battery",
+            title: "Low battery",
+            body: `Device battery is at ${battery}%. Please charge soon.`,
+          },
+        });
+      } catch {
+        /* best-effort */
+      }
     };
 
     const writeFix = async (lat: number, lng: number) => {
@@ -111,6 +194,9 @@ export function useBackgroundLocationTracking(userId: string | undefined) {
       const battery = await readBattery();
       await supabase.from("live_locations").insert({ user_id: userId, lat, lng, battery });
       setLastUpdate(Date.now());
+      // Notify guardians on safe-zone transitions and low battery.
+      void handleZoneTransition(lat, lng);
+      void handleLowBattery(battery);
       // Foreground: zone membership may change which interval we should use.
       if (!document.hidden) {
         const next = computeInterval();
