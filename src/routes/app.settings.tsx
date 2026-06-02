@@ -340,6 +340,7 @@ function SettingsPage() {
                     const result = permission === "granted" ? "granted" : await requestPush();
                     if (result === "granted") {
                       update("notifications", true);
+                      subscribeToPush();
                       sendTest();
                       toast.success("Notifications enabled");
                     } else if (result === "denied") {
@@ -349,6 +350,7 @@ function SettingsPage() {
                     }
                   } else {
                     update("notifications", false);
+                    unsubscribeFromPush();
                     toast.success("Notifications muted");
                   }
                 }}
