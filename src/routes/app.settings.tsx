@@ -28,6 +28,13 @@ export const Route = createFileRoute("/app/settings")({
 });
 
 type LinkedWearer = { user_id: string; full_name: string | null };
+
+const NOTIFY_TYPES: { key: keyof Preferences; label: string; desc: string }[] = [
+  { key: "notifySos", label: "SOS alerts", desc: "Emergency SOS is triggered" },
+  { key: "notifyFall", label: "Fall detection", desc: "A hard fall is detected" },
+  { key: "notifyZone", label: "Safe-zone events", desc: "Entering or leaving a safe zone" },
+  { key: "notifyBattery", label: "Low battery", desc: "Device battery runs low" },
+];
 type GuardianRow = { id: string; status: string; guardianName: string | null; guardianEmail: string | null };
 
 function SettingsPage() {
