@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { AppShell } from "@/components/AppShell";
+import { SessionTimeout } from "@/components/SessionTimeout";
 import { Shield } from "lucide-react";
 
 export const Route = createFileRoute("/guardian")({
