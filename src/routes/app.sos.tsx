@@ -72,6 +72,13 @@ function SosPage() {
         setActiveAlert(data.id);
         setSeconds(Math.floor((Date.now() - new Date(data.started_at).getTime()) / 1000));
       });
+    // Count active linked guardians for the live "notified" display
+    supabase
+      .from("guardian_links")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .then(({ count }) => setGuardianCount(count ?? 0));
   }, [user]);
 
   // Active timer
