@@ -29,6 +29,12 @@ function bytesToB64url(bytes: Uint8Array): string {
   return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
+// Copy into a standalone ArrayBuffer so Web Crypto / fetch accept it under
+// strict TS (avoids the SharedArrayBuffer union on Uint8Array.buffer).
+function ab(u: Uint8Array): ArrayBuffer {
+  return u.buffer.slice(u.byteOffset, u.byteOffset + u.byteLength) as ArrayBuffer;
+}
+
 function concat(...arrs: Uint8Array[]): Uint8Array {
   const len = arrs.reduce((n, a) => n + a.length, 0);
   const out = new Uint8Array(len);
