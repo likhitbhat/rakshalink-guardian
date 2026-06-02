@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ChevronLeft, MapPin, ShieldCheck, Bell, Settings2, UserMinus, Battery } from "lucide-react";
+import { ChevronLeft, MapPin, ShieldCheck, Bell, Settings2, UserMinus, Battery, AlertTriangle } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { BatteryWidget } from "@/components/BatteryWidget";
 import { findContainingZone, type SafeZone } from "@/lib/safe-zone";
@@ -12,7 +12,8 @@ export const Route = createFileRoute("/guardian/wearer/$userId")({
   component: WearerManagePage,
 });
 
-type Profile = { id: string; full_name: string | null; phone: string | null; safety_score: number };
+type Profile = { id: string; full_name: string | null; phone: string | null; safety_score: number; false_alarm_count: number };
+type FalseAlarm = { id: string; started_at: string };
 
 function WearerManagePage() {
   const { userId } = Route.useParams();
@@ -24,15 +25,17 @@ function WearerManagePage() {
   const [linkRow, setLinkRow] = useState<{ id: string; label: string | null } | null>(null);
   const [labelDraft, setLabelDraft] = useState("");
   const [alertsCount, setAlertsCount] = useState(0);
+  const [falseAlarms, setFalseAlarms] = useState<FalseAlarm[]>([]);
 
   async function load() {
     if (!user) return;
-    const [{ data: p }, { data: zs }, { data: locs }, { data: link }, { data: alerts }] = await Promise.all([
-      supabase.from("profiles").select("id, full_name, phone, safety_score").eq("id", userId).maybeSingle(),
+    const [{ data: p }, { data: zs }, { data: locs }, { data: link }, { data: alerts }, { data: fa }] = await Promise.all([
+      supabase.from("profiles").select("id, full_name, phone, safety_score, false_alarm_count").eq("id", userId).maybeSingle(),
       supabase.from("safe_zones").select("id, name, lat, lng, radius_m").eq("user_id", userId),
       supabase.from("live_locations").select("lat, lng").eq("user_id", userId).order("recorded_at", { ascending: false }).limit(1),
       supabase.from("guardian_links").select("id, label").eq("guardian_id", user.id).eq("user_id", userId).maybeSingle(),
       supabase.from("emergency_alerts").select("id", { count: "exact", head: false }).eq("user_id", userId).eq("status", "active"),
+      supabase.from("emergency_alerts").select("id, started_at").eq("user_id", userId).ilike("notes", "false_alarm%").order("started_at", { ascending: false }).limit(10),
     ]);
     setProfile((p as any) ?? null);
     setZones(((zs as any) ?? []) as SafeZone[]);
@@ -40,6 +43,7 @@ function WearerManagePage() {
     setLinkRow((link as any) ?? null);
     setLabelDraft(((link as any)?.label as string) ?? "");
     setAlertsCount((alerts as any[])?.length ?? 0);
+    setFalseAlarms(((fa as any) ?? []) as FalseAlarm[]);
   }
 
   useEffect(() => {
@@ -166,6 +170,28 @@ function WearerManagePage() {
             <p className="text-[11px] text-muted-foreground">Review SOS and zone events</p>
           </div>
         </Link>
+      </div>
+
+      <h2 className="mb-2 mt-6 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">False alarm history</h2>
+      <div className="glass-strong rounded-2xl p-4">
+        <div className="flex items-center justify-between">
+          <span className="flex items-center gap-2 text-sm font-semibold">
+            <AlertTriangle className="h-4 w-4 text-primary" /> Reported false alarms
+          </span>
+          <span className="font-display text-lg font-bold">{profile?.false_alarm_count ?? 0}</span>
+        </div>
+        {falseAlarms.length > 0 ? (
+          <ul className="mt-3 space-y-2">
+            {falseAlarms.map((fa) => (
+              <li key={fa.id} className="flex items-center justify-between rounded-xl bg-background/40 px-3 py-2 text-xs">
+                <span className="text-muted-foreground">Marked false alarm</span>
+                <span className="tabular-nums">{new Date(fa.started_at).toLocaleString()}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 text-[11px] text-muted-foreground">No false alarms reported.</p>
+        )}
       </div>
 
       <button
