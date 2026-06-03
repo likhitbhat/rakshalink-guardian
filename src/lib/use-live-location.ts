@@ -82,6 +82,7 @@ export function useLiveLocation(): { loc: LiveLocation; status: LiveLocationStat
             accuracy: pos.coords.accuracy,
           };
           saveLastKnown(newLoc);
+          markLocationUpdate();
           setStatus("live");
           setLoc(newLoc);
         },
