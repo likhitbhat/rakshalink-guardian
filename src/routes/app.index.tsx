@@ -9,6 +9,7 @@ import { useLiveLocation } from "@/lib/use-live-location";
 import { useSafeZones, findContainingZone } from "@/lib/safe-zone";
 import { Skeleton, SkeletonText, SkeletonBadge } from "@/components/ui/skeleton";
 import { useMinLoading } from "@/lib/use-min-loading";
+import { SystemStatusPanel, ConnectionBadge } from "@/components/SystemStatusPanel";
 
 export const Route = createFileRoute("/app/")({
   component: Dashboard,
