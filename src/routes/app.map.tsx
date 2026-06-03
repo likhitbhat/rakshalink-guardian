@@ -9,6 +9,7 @@ import { useLiveLocation } from "@/lib/use-live-location";
 import { distanceMeters } from "@/lib/safe-zone";
 import { getNearbyPlaces, type NearbyPlace } from "@/lib/places.functions";
 import { usePreferences } from "@/lib/preferences";
+import { useSystemStatus } from "@/lib/system-status";
 
 export const Route = createFileRoute("/app/map")({
   component: MapPage,
@@ -18,6 +19,7 @@ function MapPage() {
   const { user } = useAuth();
   const { loc, status } = useLiveLocation();
   const { prefs } = usePreferences();
+  const { gps } = useSystemStatus();
   const [path, setPath] = useState<[number, number][]>([]);
   const [showTrail, setShowTrail] = useState(true);
   const zones = useSafeZones(user?.id);
@@ -124,15 +126,25 @@ function MapPage() {
     <div className="px-5 pt-6">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl font-bold">Live tracking</h1>
-        {lowPower ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-2.5 py-0.5 text-[11px] font-medium text-accent">
-            <Leaf className="h-3 w-3" /> Low power
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-background/40 px-2.5 py-0.5 text-[11px] font-medium">
+            <span
+              className={`h-2 w-2 rounded-full ${
+                gps === "good" ? "bg-success" : gps === "stale" ? "bg-warning animate-pulse" : "bg-primary animate-pulse"
+              }`}
+            />
+            {gps === "good" ? "GPS strong" : gps === "stale" ? "GPS weak" : "GPS lost"}
           </span>
-        ) : (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-success/15 px-2.5 py-0.5 text-[11px] font-medium text-success">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" /> Live
-          </span>
-        )}
+          {lowPower ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-2.5 py-0.5 text-[11px] font-medium text-accent">
+              <Leaf className="h-3 w-3" /> Low power
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-success/15 px-2.5 py-0.5 text-[11px] font-medium text-success">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" /> Live
+            </span>
+          )}
+        </div>
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
         {loc.lat.toFixed(5)}, {loc.lng.toFixed(5)} ·{" "}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getMockLocation } from "@/lib/mock-location";
+import { markLocationUpdate } from "@/lib/location-tracker";
 
 const LS_KEY = "rakshalink_last_location";
 
@@ -81,6 +82,7 @@ export function useLiveLocation(): { loc: LiveLocation; status: LiveLocationStat
             accuracy: pos.coords.accuracy,
           };
           saveLastKnown(newLoc);
+          markLocationUpdate();
           setStatus("live");
           setLoc(newLoc);
         },

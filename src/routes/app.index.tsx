@@ -9,6 +9,7 @@ import { useLiveLocation } from "@/lib/use-live-location";
 import { useSafeZones, findContainingZone } from "@/lib/safe-zone";
 import { Skeleton, SkeletonText, SkeletonBadge } from "@/components/ui/skeleton";
 import { useMinLoading } from "@/lib/use-min-loading";
+import { SystemStatusPanel, ConnectionBadge } from "@/components/SystemStatusPanel";
 
 export const Route = createFileRoute("/app/")({
   component: Dashboard,
@@ -75,10 +76,15 @@ function Dashboard() {
           <p className="text-xs uppercase tracking-widest text-muted-foreground">{greeting}</p>
           <h1 className="mt-1 text-2xl font-bold">{profile?.full_name ?? "You"}</h1>
         </div>
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-accent/40 to-primary/30 font-display text-sm font-bold">
-          {(profile?.full_name?.[0] ?? "U").toUpperCase()}
+        <div className="flex items-center gap-3">
+          <ConnectionBadge />
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-accent/40 to-primary/30 font-display text-sm font-bold">
+            {(profile?.full_name?.[0] ?? "U").toUpperCase()}
+          </div>
         </div>
       </div>
+
+      <SystemStatusPanel />
 
       {/* Safety status hero */}
       <div className={`glass-strong relative mt-6 overflow-hidden rounded-3xl p-5 ${activeAlert ? "border border-primary/50" : ""}`}>
