@@ -54,6 +54,11 @@ export function useLastLocationUpdate(): number {
   );
 }
 
+/** Marks a fresh GPS fix (used by foreground live-location consumers). */
+export function markLocationUpdate() {
+  setLastUpdate(Date.now());
+}
+
 async function readBattery(): Promise<number> {
   try {
     const nav = navigator as Navigator & { getBattery?: () => Promise<{ level: number }> };
