@@ -7,6 +7,8 @@ import { useFallDetection } from "@/lib/fall-detection";
 import { useTrackingStatus, useLastLocationUpdate } from "@/lib/location-tracker";
 import { usePreferences } from "@/lib/preferences";
 import { toast } from "sonner";
+import { SystemStatusPanel } from "@/components/SystemStatusPanel";
+import { useSystemStatus } from "@/lib/system-status";
 
 export const Route = createFileRoute("/app/device")({
   component: DevicePage,
