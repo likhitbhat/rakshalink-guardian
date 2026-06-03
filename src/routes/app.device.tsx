@@ -76,6 +76,8 @@ function DevicePage() {
       <h1 className="font-display text-2xl font-bold">Pendant</h1>
       <p className="mt-1 text-sm text-muted-foreground">Pair and monitor your wearable.</p>
 
+      <SystemStatusPanel detailed />
+
       <FallDetectionCard />
 
       <LocationTrackingCard />
