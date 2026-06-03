@@ -9,6 +9,7 @@ import { useLiveLocation } from "@/lib/use-live-location";
 import { distanceMeters } from "@/lib/safe-zone";
 import { getNearbyPlaces, type NearbyPlace } from "@/lib/places.functions";
 import { usePreferences } from "@/lib/preferences";
+import { useSystemStatus } from "@/lib/system-status";
 
 export const Route = createFileRoute("/app/map")({
   component: MapPage,
