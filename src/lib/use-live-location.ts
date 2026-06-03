@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getMockLocation } from "@/lib/mock-location";
+import { markLocationUpdate } from "@/lib/location-tracker";
 
 const LS_KEY = "rakshalink_last_location";
 
