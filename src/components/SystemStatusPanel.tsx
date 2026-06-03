@@ -58,12 +58,14 @@ export function SystemStatusPanel({ detailed = false }: { detailed?: boolean }) 
       tone: (online ? "green" : "red") as "green" | "yellow" | "red",
       title: "Internet",
       value: online ? "Connected" : "Offline mode",
+      spin: false,
     },
     {
       icon: Satellite,
       tone: g.tone,
       title: "GPS signal",
       value: g.label,
+      spin: false,
     },
     {
       icon: realtime === "reconnecting" ? Loader2 : Radio,
@@ -81,6 +83,7 @@ export function SystemStatusPanel({ detailed = false }: { detailed?: boolean }) 
           ? `${battery.level}%${battery.charging ? " · charging" : ""}`
           : "Reading…"
         : "Not supported",
+      spin: false,
     },
   ];
 
