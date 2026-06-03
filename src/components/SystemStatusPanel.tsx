@@ -43,7 +43,7 @@ export function SystemStatusPanel({ detailed = false }: { detailed?: boolean }) 
   const g = gpsMeta[gps];
   const rt = realtimeMeta[realtime];
 
-  const batteryTone =
+  const batteryTone: "green" | "yellow" | "red" =
     battery.level == null
       ? "yellow"
       : battery.level < 10 && !battery.charging
