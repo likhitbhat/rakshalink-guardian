@@ -19,6 +19,7 @@ function MapPage() {
   const { user } = useAuth();
   const { loc, status } = useLiveLocation();
   const { prefs } = usePreferences();
+  const { gps } = useSystemStatus();
   const [path, setPath] = useState<[number, number][]>([]);
   const [showTrail, setShowTrail] = useState(true);
   const zones = useSafeZones(user?.id);
