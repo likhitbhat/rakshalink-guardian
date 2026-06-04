@@ -105,6 +105,14 @@ function SosPage() {
       .eq("status", "active")
       .then(({ count }) => setGuardianCount(count ?? 0));
     supabase
+      .from("emergency_contacts")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("verified", true)
+      .then(({ count }) => {
+        verifiedCountRef.current = count ?? 0;
+      });
+    supabase
       .from("user_preferences")
       .select("last_sos_at")
       .eq("user_id", user.id)
