@@ -197,7 +197,7 @@ function ContactsPage() {
             </div>
 
             {(sms || c.verified_at) && (
-              <div className="mt-2 flex flex-wrap gap-x-3 gap-y-0.5 pl-13 text-[10px] text-muted-foreground">
+              <div className="mt-2 flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground">
                 {sms && <span>{sms}</span>}
                 {c.verified && c.verified_at && (
                   <span>Verified on {new Date(c.verified_at).toLocaleDateString()}</span>
