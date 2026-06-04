@@ -44,7 +44,9 @@ function SosPage() {
   const [autoConfirm, setAutoConfirm] = useState(AUTO_CONFIRM_SECONDS);
   const [falseAlarmFor, setFalseAlarmFor] = useState<string | null>(null);
   const [falseAlarmWarning, setFalseAlarmWarning] = useState(false);
+  const [noVerifiedWarn, setNoVerifiedWarn] = useState(false);
   const lastSosAtRef = useRef<number | null>(null);
+  const verifiedCountRef = useRef<number>(0);
   const holdRef = useRef<number | null>(null);
   const triggeringRef = useRef(false);
 
@@ -102,6 +104,14 @@ function SosPage() {
       .eq("user_id", user.id)
       .eq("status", "active")
       .then(({ count }) => setGuardianCount(count ?? 0));
+    supabase
+      .from("emergency_contacts")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("verified", true)
+      .then(({ count }) => {
+        verifiedCountRef.current = count ?? 0;
+      });
     supabase
       .from("user_preferences")
       .select("last_sos_at")
@@ -177,6 +187,16 @@ function SosPage() {
       toast.error(`Please wait ${left}s before sending another SOS`);
       return;
     }
+    if (verifiedCountRef.current === 0) {
+      setNoVerifiedWarn(true);
+      return;
+    }
+    setConfirmOpen(true);
+  }
+
+  // No verified contacts — user chose to continue anyway
+  function continueWithoutVerified() {
+    setNoVerifiedWarn(false);
     setConfirmOpen(true);
   }
 
@@ -359,6 +379,37 @@ function SosPage() {
           </div>
         </div>
       </div>
+
+      {/* No verified contacts warning */}
+      <Drawer open={noVerifiedWarn} onOpenChange={(o) => !o && setNoVerifiedWarn(false)}>
+        <DrawerContent>
+          <DrawerHeader>
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-warning/15 text-warning">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+            <DrawerTitle className="text-center text-xl">No verified contacts</DrawerTitle>
+            <DrawerDescription className="text-center">
+              No verified contacts — SMS may not reach anyone. Continue anyway?
+            </DrawerDescription>
+          </DrawerHeader>
+          <DrawerFooter>
+            <button
+              onClick={continueWithoutVerified}
+              className="w-full rounded-xl bg-primary py-3.5 text-base font-bold uppercase tracking-wide text-primary-foreground shadow-[var(--shadow-glow-red)]"
+            >
+              Continue anyway
+            </button>
+            <button
+              onClick={() => setNoVerifiedWarn(false)}
+              className="w-full rounded-xl bg-secondary py-3 text-sm font-semibold text-secondary-foreground"
+            >
+              Cancel
+            </button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+
+
 
       {/* Confirmation bottom sheet with 5s auto-confirm */}
       <Drawer open={confirmOpen} onOpenChange={(o) => !o && setConfirmOpen(false)}>
