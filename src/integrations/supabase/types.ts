@@ -187,28 +187,37 @@ export type Database = {
           created_at: string
           id: string
           is_primary: boolean
+          last_sms_status: string | null
           name: string
           phone: string
           relation: string | null
           user_id: string
+          verified: boolean
+          verified_at: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           is_primary?: boolean
+          last_sms_status?: string | null
           name: string
           phone: string
           relation?: string | null
           user_id: string
+          verified?: boolean
+          verified_at?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           is_primary?: boolean
+          last_sms_status?: string | null
           name?: string
           phone?: string
           relation?: string | null
           user_id?: string
+          verified?: boolean
+          verified_at?: string | null
         }
         Relationships: []
       }
