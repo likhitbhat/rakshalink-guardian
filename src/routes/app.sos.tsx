@@ -187,6 +187,16 @@ function SosPage() {
       toast.error(`Please wait ${left}s before sending another SOS`);
       return;
     }
+    if (verifiedCountRef.current === 0) {
+      setNoVerifiedWarn(true);
+      return;
+    }
+    setConfirmOpen(true);
+  }
+
+  // No verified contacts — user chose to continue anyway
+  function continueWithoutVerified() {
+    setNoVerifiedWarn(false);
     setConfirmOpen(true);
   }
 
