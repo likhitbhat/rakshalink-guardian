@@ -44,7 +44,9 @@ function SosPage() {
   const [autoConfirm, setAutoConfirm] = useState(AUTO_CONFIRM_SECONDS);
   const [falseAlarmFor, setFalseAlarmFor] = useState<string | null>(null);
   const [falseAlarmWarning, setFalseAlarmWarning] = useState(false);
+  const [noVerifiedWarn, setNoVerifiedWarn] = useState(false);
   const lastSosAtRef = useRef<number | null>(null);
+  const verifiedCountRef = useRef<number>(0);
   const holdRef = useRef<number | null>(null);
   const triggeringRef = useRef(false);
 
