@@ -12,6 +12,11 @@ export type Preferences = {
   notifyFall: boolean;
   notifyZone: boolean;
   notifyBattery: boolean;
+  alertSounds: boolean;
+  vibration: boolean;
+  alertVolume: number;
+  quietHoursStart: string;
+  quietHoursEnd: string;
 };
 
 const KEY = "raksha:prefs:v1";
@@ -25,6 +30,11 @@ const DEFAULTS: Preferences = {
   notifyFall: true,
   notifyZone: true,
   notifyBattery: true,
+  alertSounds: true,
+  vibration: true,
+  alertVolume: 80,
+  quietHoursStart: "22:00",
+  quietHoursEnd: "07:00",
 };
 
 export const LANGUAGES: { value: LanguagePref; label: string }[] = [
