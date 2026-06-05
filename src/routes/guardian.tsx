@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { AppShell } from "@/components/AppShell";
 import { SessionTimeout } from "@/components/SessionTimeout";
+import { GuardianAlertSound } from "@/components/GuardianAlertSound";
 import { Shield } from "lucide-react";
 
 export const Route = createFileRoute("/guardian")({
