@@ -502,6 +502,7 @@ function SettingsPage() {
             </select>
         </div>
       </div>
+      </div>
 
       {/* Alerts & feedback */}
       <div className="mt-6">
