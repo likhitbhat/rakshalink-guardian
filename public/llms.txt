@@ -1,0 +1,9 @@
+# RakshaLink
+
+> IoT-enabled wearable safety pendant and app for women and children, providing instant SOS, live GPS tracking, guardian alerts, and safe zones.
+
+RakshaLink pairs a Bluetooth safety pendant with a mobile app so a single tap sends an emergency alert with live location to trusted guardians.
+
+## Pages
+
+- [Home](/): Overview of RakshaLink's wearable safety pendant and app features.
