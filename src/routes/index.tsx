@@ -121,6 +121,12 @@ function Landing() {
       <p className="mt-6 text-center text-[11px] text-muted-foreground">
         Demo build — pendant hardware & SMS gateway are simulated.
       </p>
+      <p className="mt-2 text-center text-[11px] text-muted-foreground">
+        New here?{" "}
+        <Link to="/guide/wearables-vs-apps" className="text-accent underline-offset-2 hover:underline">
+          Safety wearables vs apps →
+        </Link>
+      </p>
     </div>
   );
 }

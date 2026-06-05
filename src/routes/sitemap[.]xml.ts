@@ -16,6 +16,7 @@ export const Route = createFileRoute("/sitemap.xml")({
         // Only public, indexable routes. App/guardian routes are auth-gated.
         const entries: SitemapEntry[] = [
           { path: "/", changefreq: "weekly", priority: "1.0" },
+          { path: "/guide/wearables-vs-apps", changefreq: "monthly", priority: "0.7" },
         ];
 
         const urls = entries.map((e) =>

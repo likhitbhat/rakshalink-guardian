@@ -1,53 +1,31 @@
-# Web Push Notifications (no Firebase)
+# Add "Wearables vs Safety Apps" Comparison Guide
 
-Push notifications built entirely on Lovable Cloud using the browser-native **Web Push API + VAPID**. No Firebase project, no SDK, no external credentials. Because RakshaLink already has a service worker (`public/sw.js`) and an installable manifest, these notifications **also pop on the device when the app is installed** as a PWA (Android/Chrome/Edge/Firefox, and iOS 16.4+ when added to Home Screen).
+This resolves the last open SEO finding (Semrush content suggestion) by adding a real, indexable comparison guide page — the one piece of marketing content the scanner flagged as missing.
 
-## How it works
+## What gets built
 
-```text
-Guardian's browser ──subscribe──▶ saved to push_subscriptions table
-                                          │
-Wearer SOS / fall / zone / low battery    │
-   writes row to existing tables          ▼
-        ──▶ DB trigger ──▶ pg_net call ──▶ /api/public/push-dispatch
-                                          │ looks up guardians' subscriptions
-                                          │ signs VAPID JWT (Web Crypto)
-                                          ▼ sends Web Push to each endpoint
-                              Service worker 'push' event ──▶ showNotification()
-                                          │ tap ──▶ opens /guardian/alerts (highlighted)
-```
+A new public route `/guide/wearables-vs-apps` (file: `src/routes/guide.wearables-vs-apps.tsx`) — a single, self-contained content page styled with the existing RakshaLink design system (glass cards, `font-display`, semantic tokens like `text-gradient-cyan`, `primary`/`accent`). No new design tokens.
 
-## 1. Database (one migration)
+### Page content
+- **Hero**: H1 "Safety Wearables vs Safety Apps: Which Protects You Faster?" + intro paragraph.
+- **Comparison table**: side-by-side rows comparing a dedicated wearable pendant (RakshaLink) vs phone-only safety apps across: one-tap trigger speed, accessibility when phone is locked/in bag, fall detection, battery independence, discreet activation, GPS accuracy, guardian alerting.
+- **3–4 short sections** ("When an app is enough", "Where wearables win", "How RakshaLink combines both") for keyword depth.
+- **FAQ section** (3–4 Q&As) targeting long-tail queries.
+- **CTA** linking back to `/auth/register`.
+- **Back link** to home (`/`).
 
-- New table `push_subscriptions`: `id`, `user_id`, `endpoint` (unique), `p256dh`, `auth`, `user_agent`, `created_at`. RLS so users manage only their own rows; guardians' tokens are read server-side via service role. Includes GRANTs (authenticated + service_role).
-- Reuse existing `user_preferences` for notification on/off; add per-type toggle columns (`notify_sos`, `notify_fall`, `notify_zone`, `notify_battery`, all default true).
-- Triggers on `emergency_alerts` (insert → SOS/fall by `type`), `zone_events` (insert), and a low-battery condition on `live_locations`/`devices` update. Each trigger calls the dispatch endpoint via `pg_net` with the alert id + type.
+### SEO wiring (in the route's `head()`)
+- Unique `<title>` (<60 chars) and meta description (<160 chars).
+- `og:title`, `og:description`, `og:url`, canonical link for the new path.
+- JSON-LD: `Article` + `FAQPage` schema.
 
-## 2. Subscribe flow
+### Supporting changes
+- `src/routes/sitemap[.]xml.ts`: add `{ path: "/guide/wearables-vs-apps", changefreq: "monthly", priority: "0.7" }` to the entries array.
+- Add a small text link to the guide from the landing page footer area in `src/routes/index.tsx` (near the demo-build note) so the page is internally linked and crawlable.
 
-- New `src/lib/web-push.ts`: `subscribeToPush()` (registers SW if needed, calls `pushManager.subscribe` with the public VAPID key, saves subscription to Supabase) and `unsubscribeFromPush()`.
-- Hook the permission request into **onboarding Step 1** and keep the existing toggle in `/app/settings` working — it will now create/remove a real push subscription instead of only a local Notification check.
-- Add per-type notification toggles in `/app/settings` (SOS, fall, zone, low battery), persisted to `user_preferences`.
+## Out of scope
+No database, auth, or existing-UI changes. App/guardian functionality untouched.
 
-## 3. Service worker
-
-- Extend `public/sw.js` with `push` and `notificationclick` handlers. On `push`, show the notification (title/body/icon/data). On click, focus or open `/guardian/alerts?focus=<alertId>` so the specific new alert is highlighted.
-- `/guardian/alerts` reads the `focus` param and scrolls to / highlights that alert.
-
-## 4. Server dispatch endpoint
-
-- New `src/routes/api/public/push-dispatch.ts` (public route, shared-secret header check). It:
-  - Validates input with Zod (alert id, type).
-  - Loads the wearer's linked active guardians and their `push_subscriptions`, respecting each guardian's per-type toggle.
-  - Sends a Web Push to each endpoint.
-
-## 5. Secrets
-
-- Generate a VAPID key pair once. Store `VAPID_PRIVATE_KEY` and a `PUSH_DISPATCH_SECRET` as Lovable Cloud secrets; the public VAPID key is publishable and lives in code/env. I'll request these via the secure secret form during build.
-
-## Technical notes / caveats
-
-- **Worker runtime:** the popular `web-push` npm package is Node-only and will not run on the Cloudflare Worker backend. The dispatch endpoint will sign the VAPID JWT (ECDSA P-256) and build the request using **Web Crypto**, which is fully supported. To stay simple and Worker-safe, pushes will be sent **without an encrypted payload** (a "tickle"); the service worker shows a notification from the small `data` we pass and/or fetches the latest alert. This avoids the heavy aes128gcm payload-encryption path while still delivering real, instant notifications.
-- **iOS:** web push only works on iOS 16.4+ and only after the user installs the PWA to the Home Screen — expected platform behavior, not a bug.
-- **Preview:** push/SW features only run in the published app, not inside the Lovable editor preview iframe (registration is already guarded in `src/lib/pwa.ts`).
-- No existing UI design, unrelated features, or current schema columns are changed — only additive tables/columns.
+## Technical notes
+- Route is fully public/static (no `beforeLoad` auth, no loader) so it prerenders cleanly and is safe for crawlers.
+- After building, mark the SEO finding fixed via the SEO findings tool and offer a re-scan.
