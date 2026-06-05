@@ -256,6 +256,7 @@ function SosPage() {
     setSeconds(0);
     logAttempt("triggered", data.id);
     toast.success("Emergency activated · guardians notified");
+    sosConfirmBeep();
     if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate?.([200, 100, 200, 100, 400]);
     sendSms({ data: { alertId: data.id, alertType: "sos", lat: loc.lat, lng: loc.lng } })
       .then((res) => {
