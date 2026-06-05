@@ -500,9 +500,114 @@ function SettingsPage() {
                 <option key={l.value} value={l.value}>{l.label}</option>
               ))}
             </select>
+        </div>
+      </div>
+
+      {/* Alerts & feedback */}
+      <div className="mt-6">
+        <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Alerts &amp; feedback</p>
+        <div className="glass divide-y divide-border/40 overflow-hidden rounded-2xl">
+          {/* Alert sounds */}
+          <div className="flex items-center gap-3 px-4 py-3.5">
+            <Volume2 className="h-4 w-4 text-accent" />
+            <div className="flex-1">
+              <p className="text-sm">Alert sounds</p>
+              <p className="text-[11px] text-muted-foreground">Play tones for SOS, zone &amp; alerts</p>
+            </div>
+            <Toggle
+              on={prefs.alertSounds}
+              onChange={(v) => {
+                update("alertSounds", v);
+                toast.success(v ? "Alert sounds on" : "Alert sounds off");
+              }}
+            />
+          </div>
+
+          {/* Vibration */}
+          <div className="flex items-center gap-3 px-4 py-3.5">
+            <Vibrate className="h-4 w-4 text-accent" />
+            <div className="flex-1">
+              <p className="text-sm">Vibration</p>
+              <p className="text-[11px] text-muted-foreground">Haptic feedback for taps &amp; alerts</p>
+            </div>
+            <Toggle
+              on={prefs.vibration}
+              onChange={(v) => {
+                update("vibration", v);
+                toast.success(v ? "Vibration on" : "Vibration off");
+              }}
+            />
+          </div>
+
+          {/* Volume */}
+          <div className="px-4 py-3.5">
+            <div className="flex items-center gap-3">
+              <Volume2 className="h-4 w-4 text-accent" />
+              <div className="flex-1">
+                <p className="text-sm">Volume</p>
+                <p className="text-[11px] text-muted-foreground">Loudness of alert sounds</p>
+              </div>
+              <span className="text-xs tabular-nums text-muted-foreground">{prefs.alertVolume}%</span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={5}
+              value={prefs.alertVolume}
+              onChange={(e) => update("alertVolume", Number(e.target.value))}
+              className="mt-3 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted accent-accent"
+              aria-label="Alert volume"
+            />
+          </div>
+
+          {/* Quiet hours range */}
+          <div className="px-4 py-3.5">
+            <div className="flex items-center gap-3">
+              <Clock className="h-4 w-4 text-accent" />
+              <div className="flex-1">
+                <p className="text-sm">Quiet hours</p>
+                <p className="text-[11px] text-muted-foreground">Silence alert sounds during this window</p>
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-2">
+              <label className="flex-1">
+                <span className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">From</span>
+                <input
+                  type="time"
+                  value={prefs.quietHoursStart}
+                  onChange={(e) => update("quietHoursStart", e.target.value)}
+                  className="w-full rounded-lg border border-border/50 bg-background/60 px-2.5 py-1.5 text-xs"
+                />
+              </label>
+              <label className="flex-1">
+                <span className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">To</span>
+                <input
+                  type="time"
+                  value={prefs.quietHoursEnd}
+                  onChange={(e) => update("quietHoursEnd", e.target.value)}
+                  className="w-full rounded-lg border border-border/50 bg-background/60 px-2.5 py-1.5 text-xs"
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* Preview */}
+          <div className="px-4 py-3.5">
+            <button
+              onClick={() => {
+                previewSettings();
+                toast.success("Playing preview");
+              }}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-border/50 bg-background/40 px-3 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+            >
+              <Play className="h-3.5 w-3.5" /> Preview sound &amp; vibration
+            </button>
           </div>
         </div>
       </div>
+
+
 
 
       <button
