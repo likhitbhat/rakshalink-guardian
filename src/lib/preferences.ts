@@ -133,6 +133,11 @@ async function pullFromCloud(userId: string) {
       notify_fall: cur.notifyFall,
       notify_zone: cur.notifyZone,
       notify_battery: cur.notifyBattery,
+      alert_sounds: cur.alertSounds,
+      vibration: cur.vibration,
+      alert_volume: cur.alertVolume,
+      quiet_hours_start: cur.quietHoursStart,
+      quiet_hours_end: cur.quietHoursEnd,
       theme,
     });
   }
