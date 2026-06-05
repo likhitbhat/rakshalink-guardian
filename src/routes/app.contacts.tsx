@@ -23,6 +23,16 @@ import { toast } from "sonner";
 
 
 export const Route = createFileRoute("/app/contacts")({
+  head: () => ({
+    meta: [
+      { title: "Emergency Contacts — RakshaLink" },
+      { name: "description", content: "Manage your emergency contacts, verify their phone numbers, and choose who gets alerted when you trigger SOS." },
+      { property: "og:title", content: "Emergency Contacts — RakshaLink" },
+      { property: "og:description", content: "Add and verify the people alerted during an emergency." },
+      { property: "og:url", content: "https://rakshalink.lovable.app/app/contacts" },
+    ],
+    links: [{ rel: "canonical", href: "https://rakshalink.lovable.app/app/contacts" }],
+  }),
   component: ContactsPage,
 });
 

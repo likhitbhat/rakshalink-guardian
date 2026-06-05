@@ -141,6 +141,16 @@ function SmsDeliveryPanel({ notes }: { notes: string | null | undefined }) {
 }
 
 export const Route = createFileRoute("/app/history")({
+  head: () => ({
+    meta: [
+      { title: "Alert History — RakshaLink" },
+      { name: "description", content: "Review your past emergency alerts, SOS events, fall detections, and their resolution status." },
+      { property: "og:title", content: "Alert History — RakshaLink" },
+      { property: "og:description", content: "Your timeline of past SOS and safety events." },
+      { property: "og:url", content: "https://rakshalink.lovable.app/app/history" },
+    ],
+    links: [{ rel: "canonical", href: "https://rakshalink.lovable.app/app/history" }],
+  }),
   component: HistoryPage,
 });
 
