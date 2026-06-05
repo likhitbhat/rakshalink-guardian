@@ -18,6 +18,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GuardianIndexRouteImport } from './routes/guardian.index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as GuideWearablesVsAppsRouteImport } from './routes/guide.wearables-vs-apps'
 import { Route as GuardianMapRouteImport } from './routes/guardian.map'
 import { Route as GuardianAlertsRouteImport } from './routes/guardian.alerts'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
@@ -83,6 +84,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
+} as any)
+const GuideWearablesVsAppsRoute = GuideWearablesVsAppsRouteImport.update({
+  id: '/guide/wearables-vs-apps',
+  path: '/guide/wearables-vs-apps',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const GuardianMapRoute = GuardianMapRouteImport.update({
   id: '/map',
@@ -210,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/guardian/alerts': typeof GuardianAlertsRoute
   '/guardian/map': typeof GuardianMapRoute
+  '/guide/wearables-vs-apps': typeof GuideWearablesVsAppsRoute
   '/app/': typeof AppIndexRoute
   '/guardian/': typeof GuardianIndexRoute
   '/guardian/wearer/$userId': typeof GuardianWearerUserIdRoute
@@ -239,6 +246,7 @@ export interface FileRoutesByTo {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/guardian/alerts': typeof GuardianAlertsRoute
   '/guardian/map': typeof GuardianMapRoute
+  '/guide/wearables-vs-apps': typeof GuideWearablesVsAppsRoute
   '/app': typeof AppIndexRoute
   '/guardian': typeof GuardianIndexRoute
   '/guardian/wearer/$userId': typeof GuardianWearerUserIdRoute
@@ -271,6 +279,7 @@ export interface FileRoutesById {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/guardian/alerts': typeof GuardianAlertsRoute
   '/guardian/map': typeof GuardianMapRoute
+  '/guide/wearables-vs-apps': typeof GuideWearablesVsAppsRoute
   '/app/': typeof AppIndexRoute
   '/guardian/': typeof GuardianIndexRoute
   '/guardian/wearer/$userId': typeof GuardianWearerUserIdRoute
@@ -304,6 +313,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/guardian/alerts'
     | '/guardian/map'
+    | '/guide/wearables-vs-apps'
     | '/app/'
     | '/guardian/'
     | '/guardian/wearer/$userId'
@@ -333,6 +343,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/guardian/alerts'
     | '/guardian/map'
+    | '/guide/wearables-vs-apps'
     | '/app'
     | '/guardian'
     | '/guardian/wearer/$userId'
@@ -364,6 +375,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/guardian/alerts'
     | '/guardian/map'
+    | '/guide/wearables-vs-apps'
     | '/app/'
     | '/guardian/'
     | '/guardian/wearer/$userId'
@@ -383,6 +395,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  GuideWearablesVsAppsRoute: typeof GuideWearablesVsAppsRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -453,6 +466,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/guide/wearables-vs-apps': {
+      id: '/guide/wearables-vs-apps'
+      path: '/guide/wearables-vs-apps'
+      fullPath: '/guide/wearables-vs-apps'
+      preLoaderRoute: typeof GuideWearablesVsAppsRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/guardian/map': {
       id: '/guardian/map'
@@ -666,6 +686,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  GuideWearablesVsAppsRoute: GuideWearablesVsAppsRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
@@ -674,13 +695,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
