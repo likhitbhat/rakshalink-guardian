@@ -39,6 +39,7 @@ function Landing() {
         </span>
         <h1 className="mt-4 font-display text-4xl font-bold leading-tight">
           Raksha<span className="text-gradient-cyan">Link</span>
+          <span className="sr-only"> — Instant SOS & Safety Network</span>
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
           The wearable pendant that turns one tap into a guardian alert,
