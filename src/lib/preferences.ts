@@ -103,7 +103,7 @@ async function pullFromCloud(userId: string) {
   const { data, error } = await supabase
     .from("user_preferences")
     .select(
-      "language, notifications, quiet_hours, share_location, notify_sos, notify_fall, notify_zone, notify_battery, theme",
+      "language, notifications, quiet_hours, share_location, notify_sos, notify_fall, notify_zone, notify_battery, alert_sounds, vibration, alert_volume, quiet_hours_start, quiet_hours_end, theme",
     )
     .eq("user_id", userId)
     .maybeSingle();
