@@ -168,6 +168,11 @@ export async function syncThemeToCloud(theme: "light" | "dark") {
   await pushField(cloudSyncedUserId, { theme });
 }
 
+/** Non-reactive snapshot of current preferences (safe outside React). */
+export function getPreferences(): Preferences {
+  return read();
+}
+
 export function usePreferences() {
   const [prefs, setPrefs] = useState<Preferences>(() => read());
 
