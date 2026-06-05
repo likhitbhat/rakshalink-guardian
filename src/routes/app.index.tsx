@@ -12,6 +12,16 @@ import { useMinLoading } from "@/lib/use-min-loading";
 import { SystemStatusPanel, ConnectionBadge } from "@/components/SystemStatusPanel";
 
 export const Route = createFileRoute("/app/")({
+  head: () => ({
+    meta: [
+      { title: "Safety Dashboard — RakshaLink" },
+      { name: "description", content: "Your live safety status, device battery, recent alerts, and one-tap access to SOS and tracking." },
+      { property: "og:title", content: "Safety Dashboard — RakshaLink" },
+      { property: "og:description", content: "Live safety status, device battery, and quick SOS access." },
+      { property: "og:url", content: "https://rakshalink.lovable.app/app" },
+    ],
+    links: [{ rel: "canonical", href: "https://rakshalink.lovable.app/app" }],
+  }),
   component: Dashboard,
 });
 
@@ -73,8 +83,9 @@ function Dashboard() {
     <div className="px-5 pt-8">
       <div className="flex items-start justify-between">
         <div>
+          <h1 className="sr-only">Safety Dashboard</h1>
           <p className="text-xs uppercase tracking-widest text-muted-foreground">{greeting}</p>
-          <h1 className="mt-1 text-2xl font-bold">{profile?.full_name ?? "You"}</h1>
+          <p className="mt-1 text-2xl font-bold">{profile?.full_name ?? "You"}</p>
         </div>
         <div className="flex items-center gap-3">
           <ConnectionBadge />

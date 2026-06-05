@@ -6,6 +6,38 @@ import { ThemeToggle } from "@/lib/theme";
 import { useInstallPrompt } from "@/lib/pwa";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "RakshaLink — Instant SOS & Safety Network" },
+      { name: "description", content: "Wearable safety pendant + app for women & children: one-tap SOS, live GPS tracking, guardian alerts, and safe zones." },
+      { property: "og:title", content: "RakshaLink — Instant SOS & Safety Network" },
+      { property: "og:description", content: "One-tap SOS, live tracking, guardian alerts, and safe zones from a smart wearable pendant." },
+      { property: "og:url", content: "https://rakshalink.lovable.app/" },
+    ],
+    links: [{ rel: "canonical", href: "https://rakshalink.lovable.app/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "RakshaLink",
+          url: "https://rakshalink.lovable.app/",
+          logo: "https://rakshalink.lovable.app/icon-192.png",
+          description: "IoT-enabled wearable safety pendant and app providing instant SOS, live tracking, and guardian alerts.",
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "RakshaLink",
+          url: "https://rakshalink.lovable.app/",
+        }),
+      },
+    ],
+  }),
   beforeLoad: async () => {
     if (typeof window === "undefined") return;
     const { data } = await supabase.auth.getSession();
@@ -39,6 +71,7 @@ function Landing() {
         </span>
         <h1 className="mt-4 font-display text-4xl font-bold leading-tight">
           Raksha<span className="text-gradient-cyan">Link</span>
+          <span className="sr-only"> — Instant SOS & Safety Network</span>
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
           The wearable pendant that turns one tap into a guardian alert,

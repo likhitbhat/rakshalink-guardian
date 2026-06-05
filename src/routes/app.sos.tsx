@@ -20,6 +20,16 @@ import {
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/sos")({
+  head: () => ({
+    meta: [
+      { title: "SOS Emergency — RakshaLink" },
+      { name: "description", content: "Trigger an emergency SOS to instantly alert your guardians with your live location and start audio capture." },
+      { property: "og:title", content: "SOS Emergency — RakshaLink" },
+      { property: "og:description", content: "One tap to alert guardians with your live location in an emergency." },
+      { property: "og:url", content: "https://rakshalink.lovable.app/app/sos" },
+    ],
+    links: [{ rel: "canonical", href: "https://rakshalink.lovable.app/app/sos" }],
+  }),
   component: SosPage,
 });
 

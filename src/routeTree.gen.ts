@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as GuardianRouteImport } from './routes/guardian'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -41,6 +42,11 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
   path: '/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -188,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRouteWithChildren
   '/guardian': typeof GuardianRouteWithChildren
   '/onboarding': typeof OnboardingRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/app/contacts': typeof AppContactsRoute
   '/app/device': typeof AppDeviceRoute
@@ -216,6 +223,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
   '/onboarding': typeof OnboardingRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/app/contacts': typeof AppContactsRoute
   '/app/device': typeof AppDeviceRoute
@@ -247,6 +255,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRouteWithChildren
   '/guardian': typeof GuardianRouteWithChildren
   '/onboarding': typeof OnboardingRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/app/contacts': typeof AppContactsRoute
   '/app/device': typeof AppDeviceRoute
@@ -279,6 +288,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/guardian'
     | '/onboarding'
+    | '/sitemap.xml'
     | '/unsubscribe'
     | '/app/contacts'
     | '/app/device'
@@ -307,6 +317,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/onboarding'
+    | '/sitemap.xml'
     | '/unsubscribe'
     | '/app/contacts'
     | '/app/device'
@@ -337,6 +348,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/guardian'
     | '/onboarding'
+    | '/sitemap.xml'
     | '/unsubscribe'
     | '/app/contacts'
     | '/app/device'
@@ -368,6 +380,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   GuardianRoute: typeof GuardianRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -383,6 +396,13 @@ declare module '@tanstack/react-router' {
       path: '/unsubscribe'
       fullPath: '/unsubscribe'
       preLoaderRoute: typeof UnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -643,6 +663,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   GuardianRoute: GuardianRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
