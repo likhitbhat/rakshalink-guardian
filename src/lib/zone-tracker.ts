@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLiveLocation } from "@/lib/use-live-location";
 import { useSafeZones, findContainingZone, type SafeZone } from "@/lib/safe-zone";
+import { zoneEntryTone, zoneExitTone } from "@/lib/feedback";
 
 /**
  * Tracks the wearer's safe-zone membership and inserts zone_events rows when
