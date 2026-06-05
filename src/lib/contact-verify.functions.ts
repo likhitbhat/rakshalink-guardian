@@ -4,7 +4,7 @@ import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-const FAST2SMS_URL = "https://www.fast2sms.com/dev/bulkV2";
+const GATEWAY_URL = "https://connector-gateway.lovable.dev/twilio";
 
 const InputSchema = z.object({
   contactId: z.string().uuid(),
@@ -15,16 +15,30 @@ type VerifySmsResult = {
   error?: string;
 };
 
+function normalizePhone(raw: string): { e164: string } | null {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  const parsed = trimmed.startsWith("+")
+    ? parsePhoneNumberFromString(trimmed)
+    : parsePhoneNumberFromString(trimmed, "IN");
+  if (!parsed || !parsed.isValid()) return null;
+  return { e164: parsed.number };
+}
+
 /**
- * Sends a verification/test SMS to an emergency contact via Fast2SMS.
+ * Sends a verification/test SMS to an emergency contact via Twilio.
  * Records the delivery status on the contact's `last_sms_status`.
  */
 export const sendContactVerificationSms = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => InputSchema.parse(input))
   .handler(async ({ data, context }): Promise<VerifySmsResult> => {
-    const FAST2SMS_API_KEY = process.env.FAST2SMS_API_KEY;
-    if (!FAST2SMS_API_KEY) throw new Error("FAST2SMS_API_KEY is not configured");
+    const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const TWILIO_API_KEY = process.env.TWILIO_API_KEY;
+    if (!TWILIO_API_KEY) throw new Error("TWILIO_API_KEY is not configured");
+    const TWILIO_FROM_NUMBER = process.env.TWILIO_FROM_NUMBER;
+    if (!TWILIO_FROM_NUMBER) throw new Error("TWILIO_FROM_NUMBER is not configured");
 
     const { userId } = context;
 
@@ -43,38 +57,34 @@ export const sendContactVerificationSms = createServerFn({ method: "POST" })
       .maybeSingle();
     const wearerName = profile?.full_name ?? "A RakshaLink user";
 
-    // Fast2SMS "q" route expects a 10-digit Indian number without the country code.
-    const parsed = contact.phone.startsWith("+")
-      ? parsePhoneNumberFromString(contact.phone)
-      : parsePhoneNumberFromString(contact.phone, "IN");
-    if (!parsed || !parsed.isValid()) {
+    const normalized = normalizePhone(contact.phone || "");
+    if (!normalized) {
       await supabaseAdmin
         .from("emergency_contacts")
         .update({ last_sms_status: "failed: invalid phone" })
         .eq("id", contact.id);
       return { status: "failed", error: "Invalid phone number format" };
     }
-    const numbers = parsed.nationalNumber.toString();
 
     const message = `Hi ${contact.name}, ${wearerName} added you as an emergency contact on RakshaLink. Reply YES to confirm. You will be notified if they need help.`;
 
     try {
       const body = new URLSearchParams({
-        route: "q",
-        message,
-        numbers,
-        flash: "0",
+        To: normalized.e164,
+        From: TWILIO_FROM_NUMBER,
+        Body: message,
       });
-      const res = await fetch(FAST2SMS_URL, {
+      const res = await fetch(`${GATEWAY_URL}/Messages.json`, {
         method: "POST",
         headers: {
-          authorization: FAST2SMS_API_KEY,
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "X-Connection-Api-Key": TWILIO_API_KEY,
           "Content-Type": "application/x-www-form-urlencoded",
         },
         body,
       });
       const json: any = await res.json().catch(() => ({}));
-      const ok = res.ok && json?.return === true;
+      const ok = res.ok && json?.sid;
       const statusText = ok
         ? `sent ${new Date().toISOString()}`
         : `failed: ${json?.message ? String(json.message) : `HTTP ${res.status}`}`;
