@@ -44,6 +44,7 @@ export function useZoneTransitionTracker(userId: string | undefined) {
       if (currentId === prevZoneId.current) return;
 
       if (prevZoneId.current) {
+        zoneExitTone();
         await supabase.from("zone_events").insert({
           user_id: userId,
           zone_id: prevZoneId.current,
@@ -54,6 +55,7 @@ export function useZoneTransitionTracker(userId: string | undefined) {
         });
       }
       if (current) {
+        zoneEntryTone();
         await supabase.from("zone_events").insert({
           user_id: userId,
           zone_id: current.id,
