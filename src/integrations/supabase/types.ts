@@ -430,6 +430,8 @@ export type Database = {
       }
       user_preferences: {
         Row: {
+          alert_sounds: boolean
+          alert_volume: number
           created_at: string
           language: string
           last_sos_at: string | null
@@ -439,12 +441,17 @@ export type Database = {
           notify_sos: boolean
           notify_zone: boolean
           quiet_hours: boolean
+          quiet_hours_end: string
+          quiet_hours_start: string
           share_location: boolean
           theme: string
           updated_at: string
           user_id: string
+          vibration: boolean
         }
         Insert: {
+          alert_sounds?: boolean
+          alert_volume?: number
           created_at?: string
           language?: string
           last_sos_at?: string | null
@@ -454,12 +461,17 @@ export type Database = {
           notify_sos?: boolean
           notify_zone?: boolean
           quiet_hours?: boolean
+          quiet_hours_end?: string
+          quiet_hours_start?: string
           share_location?: boolean
           theme?: string
           updated_at?: string
           user_id: string
+          vibration?: boolean
         }
         Update: {
+          alert_sounds?: boolean
+          alert_volume?: number
           created_at?: string
           language?: string
           last_sos_at?: string | null
@@ -469,10 +481,13 @@ export type Database = {
           notify_sos?: boolean
           notify_zone?: boolean
           quiet_hours?: boolean
+          quiet_hours_end?: string
+          quiet_hours_start?: string
           share_location?: boolean
           theme?: string
           updated_at?: string
           user_id?: string
+          vibration?: boolean
         }
         Relationships: []
       }
