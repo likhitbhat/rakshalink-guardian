@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLiveLocation } from "@/lib/use-live-location";
 import { useSafeZones, findContainingZone, type SafeZone } from "@/lib/safe-zone";
+import { zoneEntryTone, zoneExitTone } from "@/lib/feedback";
 
 /**
  * Tracks the wearer's safe-zone membership and inserts zone_events rows when
@@ -43,6 +44,7 @@ export function useZoneTransitionTracker(userId: string | undefined) {
       if (currentId === prevZoneId.current) return;
 
       if (prevZoneId.current) {
+        zoneExitTone();
         await supabase.from("zone_events").insert({
           user_id: userId,
           zone_id: prevZoneId.current,
@@ -53,6 +55,7 @@ export function useZoneTransitionTracker(userId: string | undefined) {
         });
       }
       if (current) {
+        zoneEntryTone();
         await supabase.from("zone_events").insert({
           user_id: userId,
           zone_id: current.id,

@@ -8,6 +8,7 @@ import { useLiveLocation } from "@/lib/use-live-location";
 import { sendEmergencySms } from "@/lib/sms.functions";
 import { notifyGuardians } from "@/lib/push.functions";
 import { useOnlineStatus, queueOfflineAlert, cacheLastLocation } from "@/lib/offline";
+import { sosConfirmBeep, sosButtonTap } from "@/lib/feedback";
 import { SosActiveScreen } from "@/components/SosActiveScreen";
 import {
   Drawer,
@@ -237,6 +238,7 @@ function SosPage() {
       setSeconds(0);
       logAttempt("triggered");
       toast.success("Emergency queued offline · will send when connection restores");
+      sosConfirmBeep();
       if ("vibrate" in navigator) navigator.vibrate?.([200, 100, 200, 100, 400]);
       return;
     }
@@ -254,6 +256,7 @@ function SosPage() {
     setSeconds(0);
     logAttempt("triggered", data.id);
     toast.success("Emergency activated · guardians notified");
+    sosConfirmBeep();
     if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate?.([200, 100, 200, 100, 400]);
     sendSms({ data: { alertId: data.id, alertType: "sos", lat: loc.lat, lng: loc.lng } })
       .then((res) => {
@@ -353,7 +356,11 @@ function SosPage() {
         {!holding && !onCooldown && <div className="pulse-ring absolute inset-16 rounded-full" />}
         <button
           disabled={onCooldown}
-          onPointerDown={() => !onCooldown && setHolding(true)}
+          onPointerDown={() => {
+            if (onCooldown) return;
+            sosButtonTap();
+            setHolding(true);
+          }}
           onPointerUp={() => setHolding(false)}
           onPointerLeave={() => setHolding(false)}
           className={`relative flex h-44 w-44 select-none items-center justify-center rounded-full text-primary-foreground transition active:scale-95 ${

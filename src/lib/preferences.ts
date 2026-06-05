@@ -12,6 +12,11 @@ export type Preferences = {
   notifyFall: boolean;
   notifyZone: boolean;
   notifyBattery: boolean;
+  alertSounds: boolean;
+  vibration: boolean;
+  alertVolume: number;
+  quietHoursStart: string;
+  quietHoursEnd: string;
 };
 
 const KEY = "raksha:prefs:v1";
@@ -25,6 +30,11 @@ const DEFAULTS: Preferences = {
   notifyFall: true,
   notifyZone: true,
   notifyBattery: true,
+  alertSounds: true,
+  vibration: true,
+  alertVolume: 80,
+  quietHoursStart: "22:00",
+  quietHoursEnd: "07:00",
 };
 
 export const LANGUAGES: { value: LanguagePref; label: string }[] = [
@@ -61,6 +71,11 @@ type Row = {
   notify_fall?: boolean;
   notify_zone?: boolean;
   notify_battery?: boolean;
+  alert_sounds?: boolean;
+  vibration?: boolean;
+  alert_volume?: number;
+  quiet_hours_start?: string;
+  quiet_hours_end?: string;
   theme?: string | null;
 };
 
@@ -74,6 +89,11 @@ function rowToPrefs(r: Row): Preferences {
     notifyFall: r.notify_fall !== false,
     notifyZone: r.notify_zone !== false,
     notifyBattery: r.notify_battery !== false,
+    alertSounds: r.alert_sounds !== false,
+    vibration: r.vibration !== false,
+    alertVolume: typeof r.alert_volume === "number" ? r.alert_volume : 80,
+    quietHoursStart: r.quiet_hours_start ?? "22:00",
+    quietHoursEnd: r.quiet_hours_end ?? "07:00",
   };
 }
 
@@ -83,7 +103,7 @@ async function pullFromCloud(userId: string) {
   const { data, error } = await supabase
     .from("user_preferences")
     .select(
-      "language, notifications, quiet_hours, share_location, notify_sos, notify_fall, notify_zone, notify_battery, theme",
+      "language, notifications, quiet_hours, share_location, notify_sos, notify_fall, notify_zone, notify_battery, alert_sounds, vibration, alert_volume, quiet_hours_start, quiet_hours_end, theme",
     )
     .eq("user_id", userId)
     .maybeSingle();
@@ -113,6 +133,11 @@ async function pullFromCloud(userId: string) {
       notify_fall: cur.notifyFall,
       notify_zone: cur.notifyZone,
       notify_battery: cur.notifyBattery,
+      alert_sounds: cur.alertSounds,
+      vibration: cur.vibration,
+      alert_volume: cur.alertVolume,
+      quiet_hours_start: cur.quietHoursStart,
+      quiet_hours_end: cur.quietHoursEnd,
       theme,
     });
   }
@@ -143,6 +168,11 @@ export async function syncThemeToCloud(theme: "light" | "dark") {
   await pushField(cloudSyncedUserId, { theme });
 }
 
+/** Non-reactive snapshot of current preferences (safe outside React). */
+export function getPreferences(): Preferences {
+  return read();
+}
+
 export function usePreferences() {
   const [prefs, setPrefs] = useState<Preferences>(() => read());
 
@@ -167,6 +197,11 @@ export function usePreferences() {
         notifyFall: "notify_fall",
         notifyZone: "notify_zone",
         notifyBattery: "notify_battery",
+        alertSounds: "alert_sounds",
+        vibration: "vibration",
+        alertVolume: "alert_volume",
+        quietHoursStart: "quiet_hours_start",
+        quietHoursEnd: "quiet_hours_end",
       };
       const col = COLS[key] ?? (key as string);
       pushField(cloudSyncedUserId, { [col]: value });
