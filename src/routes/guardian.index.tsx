@@ -156,10 +156,11 @@ function GuardianHome() {
     <div className="px-5 pt-8">
       <div className="flex items-start justify-between">
         <div>
+          <h1 className="sr-only">Guardian Overview</h1>
           <p className="text-xs uppercase tracking-widest text-muted-foreground">Guardian</p>
-          <h1 className="mt-1 text-2xl font-bold">{profile?.full_name ?? "You"}</h1>
+          <p className="mt-1 text-2xl font-bold">{profile?.full_name ?? "You"}</p>
         </div>
-        <button onClick={() => setAdding(true)} className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-accent-foreground">
+        <button onClick={() => setAdding(true)} aria-label="Add wearer" className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-accent-foreground">
           <Plus className="h-4 w-4" />
         </button>
       </div>

@@ -73,8 +73,9 @@ function Dashboard() {
     <div className="px-5 pt-8">
       <div className="flex items-start justify-between">
         <div>
+          <h1 className="sr-only">Safety Dashboard</h1>
           <p className="text-xs uppercase tracking-widest text-muted-foreground">{greeting}</p>
-          <h1 className="mt-1 text-2xl font-bold">{profile?.full_name ?? "You"}</h1>
+          <p className="mt-1 text-2xl font-bold">{profile?.full_name ?? "You"}</p>
         </div>
         <div className="flex items-center gap-3">
           <ConnectionBadge />
