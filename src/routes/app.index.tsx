@@ -12,6 +12,16 @@ import { useMinLoading } from "@/lib/use-min-loading";
 import { SystemStatusPanel, ConnectionBadge } from "@/components/SystemStatusPanel";
 
 export const Route = createFileRoute("/app/")({
+  head: () => ({
+    meta: [
+      { title: "Safety Dashboard — RakshaLink" },
+      { name: "description", content: "Your live safety status, device battery, recent alerts, and one-tap access to SOS and tracking." },
+      { property: "og:title", content: "Safety Dashboard — RakshaLink" },
+      { property: "og:description", content: "Live safety status, device battery, and quick SOS access." },
+      { property: "og:url", content: "https://rakshalink.lovable.app/app" },
+    ],
+    links: [{ rel: "canonical", href: "https://rakshalink.lovable.app/app" }],
+  }),
   component: Dashboard,
 });
 
