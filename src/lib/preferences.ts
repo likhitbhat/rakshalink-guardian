@@ -197,6 +197,11 @@ export function usePreferences() {
         notifyFall: "notify_fall",
         notifyZone: "notify_zone",
         notifyBattery: "notify_battery",
+        alertSounds: "alert_sounds",
+        vibration: "vibration",
+        alertVolume: "alert_volume",
+        quietHoursStart: "quiet_hours_start",
+        quietHoursEnd: "quiet_hours_end",
       };
       const col = COLS[key] ?? (key as string);
       pushField(cloudSyncedUserId, { [col]: value });
