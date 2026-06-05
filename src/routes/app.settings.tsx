@@ -500,9 +500,10 @@ function SettingsPage() {
                 <option key={l.value} value={l.value}>{l.label}</option>
               ))}
             </select>
+          </div>
         </div>
       </div>
-      </div>
+
 
       {/* Alerts & feedback */}
       <div className="mt-6">
