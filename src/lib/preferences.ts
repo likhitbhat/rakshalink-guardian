@@ -71,6 +71,11 @@ type Row = {
   notify_fall?: boolean;
   notify_zone?: boolean;
   notify_battery?: boolean;
+  alert_sounds?: boolean;
+  vibration?: boolean;
+  alert_volume?: number;
+  quiet_hours_start?: string;
+  quiet_hours_end?: string;
   theme?: string | null;
 };
 
@@ -84,6 +89,11 @@ function rowToPrefs(r: Row): Preferences {
     notifyFall: r.notify_fall !== false,
     notifyZone: r.notify_zone !== false,
     notifyBattery: r.notify_battery !== false,
+    alertSounds: r.alert_sounds !== false,
+    vibration: r.vibration !== false,
+    alertVolume: typeof r.alert_volume === "number" ? r.alert_volume : 80,
+    quietHoursStart: r.quiet_hours_start ?? "22:00",
+    quietHoursEnd: r.quiet_hours_end ?? "07:00",
   };
 }
 
