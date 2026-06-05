@@ -238,6 +238,7 @@ function SosPage() {
       setSeconds(0);
       logAttempt("triggered");
       toast.success("Emergency queued offline · will send when connection restores");
+      sosConfirmBeep();
       if ("vibrate" in navigator) navigator.vibrate?.([200, 100, 200, 100, 400]);
       return;
     }
