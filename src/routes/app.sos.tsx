@@ -356,7 +356,11 @@ function SosPage() {
         {!holding && !onCooldown && <div className="pulse-ring absolute inset-16 rounded-full" />}
         <button
           disabled={onCooldown}
-          onPointerDown={() => !onCooldown && setHolding(true)}
+          onPointerDown={() => {
+            if (onCooldown) return;
+            sosButtonTap();
+            setHolding(true);
+          }}
           onPointerUp={() => setHolding(false)}
           onPointerLeave={() => setHolding(false)}
           className={`relative flex h-44 w-44 select-none items-center justify-center rounded-full text-primary-foreground transition active:scale-95 ${
