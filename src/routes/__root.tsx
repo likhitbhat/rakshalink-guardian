@@ -10,6 +10,7 @@ import {
 import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TopProgressBar } from "@/components/TopProgressBar";
+import { SplashScreen } from "@/components/SplashScreen";
 import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
 import { registerServiceWorker } from "@/lib/pwa";
@@ -131,6 +132,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
+          <SplashScreen />
           <TopProgressBar />
           <Outlet />
           <Toaster position="top-center" />
