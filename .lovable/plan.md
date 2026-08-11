@@ -1,31 +1,54 @@
-# Add "Wearables vs Safety Apps" Comparison Guide
+# Restore Supabase connection (fix login "Failed to fetch")
 
-This resolves the last open SEO finding (Semrush content suggestion) by adding a real, indexable comparison guide page — the one piece of marketing content the scanner flagged as missing.
+## What's wrong
 
-## What gets built
+Login in the preview fails with `TypeError: Failed to fetch`. The network tab
+shows auth requests going to `https://placeholder-project.supabase.co/...` —
+a **non-existent fallback host** that the Supabase client only uses when the
+real env vars are missing.
 
-A new public route `/guide/wearables-vs-apps` (file: `src/routes/guide.wearables-vs-apps.tsx`) — a single, self-contained content page styled with the existing RakshaLink design system (glass cards, `font-display`, semantic tokens like `text-gradient-cyan`, `primary`/`accent`). No new design tokens.
+Root cause (confirmed by reading `.env`):
+- `.env` contains only the two Google Maps connector keys.
+- All Supabase variables are gone:
+  - `VITE_SUPABASE_URL`
+  - `VITE_SUPABASE_PUBLISHABLE_KEY`
+  - `VITE_SUPABASE_PROJECT_ID`
+  - `SUPABASE_URL` (server-side fallback)
+  - `SUPABASE_PUBLISHABLE_KEY` (server-side fallback)
 
-### Page content
-- **Hero**: H1 "Safety Wearables vs Safety Apps: Which Protects You Faster?" + intro paragraph.
-- **Comparison table**: side-by-side rows comparing a dedicated wearable pendant (RakshaLink) vs phone-only safety apps across: one-tap trigger speed, accessibility when phone is locked/in bag, fall detection, battery independence, discreet activation, GPS accuracy, guardian alerting.
-- **3–4 short sections** ("When an app is enough", "Where wearables win", "How RakshaLink combines both") for keyword depth.
-- **FAQ section** (3–4 Q&As) targeting long-tail queries.
-- **CTA** linking back to `/auth/register`.
-- **Back link** to home (`/`).
+The Lovable Cloud backend itself is healthy — this is purely a missing-`.env`
+problem, not a backend outage.
 
-### SEO wiring (in the route's `head()`)
-- Unique `<title>` (<60 chars) and meta description (<160 chars).
-- `og:title`, `og:description`, `og:url`, canonical link for the new path.
-- JSON-LD: `Article` + `FAQPage` schema.
+## The fix
 
-### Supporting changes
-- `src/routes/sitemap[.]xml.ts`: add `{ path: "/guide/wearables-vs-apps", changefreq: "monthly", priority: "0.7" }` to the entries array.
-- Add a small text link to the guide from the landing page footer area in `src/routes/index.tsx` (near the demo-build note) so the page is internally linked and crawlable.
+1. **Restore the Supabase variables to `.env`** using the project's managed
+   values (project ref `xxkioqjbpbvrntnwxjyl`):
+   ```
+   VITE_SUPABASE_URL=https://xxkioqjbpbvrntnwxjyl.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_zrh6y6UEsKrJrb0zAhZkyg_h1fbcQ_R
+   VITE_SUPABASE_PROJECT_ID=xxkioqjbpbvrntnwxjyl
+   SUPABASE_URL=https://xxkioqjbpbvrntnwxjyl.supabase.co
+   SUPABASE_PUBLISHABLE_KEY=sb_publishable_zrh6y6UEsKrJrb0zAhZkyg_h1fbcQ_R
+   ```
+   (Keep the existing Google Maps keys untouched.)
 
-## Out of scope
-No database, auth, or existing-UI changes. App/guardian functionality untouched.
+2. **Restart the dev server** so the Vite build picks up the new env vars
+   (Vite inlines `VITE_*` at build time).
 
-## Technical notes
-- Route is fully public/static (no `beforeLoad` auth, no loader) so it prerenders cleanly and is safe for crawlers.
-- After building, mark the SEO finding fixed via the SEO findings tool and offer a re-scan.
+3. **Verify** the login page can reach the real backend:
+   - Confirm the preview no longer targets `placeholder-project.supabase.co`.
+   - Confirm a password sign-in attempt returns a Supabase auth response (not
+     a network `Failed to fetch`).
+
+## Why this keeps happening
+
+The `.env` has lost its Supabase keys several times this session. `.env` is
+auto-managed by Lovable Cloud and normally shouldn't be edited by hand, but
+it appears the Supabase block keeps getting dropped (possibly overwritten
+during a re-sync). After restoring, I'll leave `.env` alone unless a later
+cloud re-sync strips the keys again — at which point re-adding them is the
+only remedy, since the app cannot run without them.
+
+## Scope
+
+No code changes. Only `.env` is touched, plus a dev-server restart.
