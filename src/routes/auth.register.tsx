@@ -3,6 +3,12 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { resolvePostAuthPath } from "@/lib/post-auth";
+import {
+  isBackendConfigured,
+  isBackendFailure,
+  mockPostAuthPath,
+  signInMock,
+} from "@/lib/mock-auth";
 import { toast } from "sonner";
 import { Shield, Mail, Lock, User, Phone, Loader2, Users, MailCheck } from "lucide-react";
 
@@ -29,10 +35,20 @@ function RegisterPage() {
     return message;
   }
 
+  function fallbackToMock(reason: string) {
+    const s = signInMock(form.email || "demo@rakshalink.app", role);
+    toast.success(`Preview mode — signed in as ${role === "guardian" ? "guardian" : "wearer"} (${reason})`);
+    nav({ to: mockPostAuthPath(s) });
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     try {
+      if (!isBackendConfigured()) {
+        fallbackToMock("backend not configured");
+        return;
+      }
       const { data, error } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
@@ -42,6 +58,10 @@ function RegisterPage() {
         },
       });
       if (error) {
+        if (isBackendFailure(error.message)) {
+          fallbackToMock("backend unavailable");
+          return;
+        }
         toast.error(describeError(error.message));
         return;
       }
@@ -54,11 +74,12 @@ function RegisterPage() {
       const path = data.user ? await resolvePostAuthPath(data.user.id) : "/app";
       nav({ to: path });
     } catch {
-      toast.error("Network error — check your connection and try again.");
+      fallbackToMock("backend unavailable");
     } finally {
       setBusy(false);
     }
   }
+
 
   async function onGoogle() {
     setGoogleBusy(true);
