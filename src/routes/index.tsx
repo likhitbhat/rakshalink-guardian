@@ -1,4 +1,4 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, isRedirect } from "@tanstack/react-router";
 import { Shield, MapPin, Bell, Bluetooth, Zap, Heart, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { resolvePostAuthPath } from "@/lib/post-auth";
@@ -40,12 +40,21 @@ export const Route = createFileRoute("/")({
   }),
   beforeLoad: async () => {
     if (typeof window === "undefined") return;
-    const { data } = await supabase.auth.getSession();
-    if (data.session) {
-      const path = await resolvePostAuthPath(data.session.user.id);
-      throw redirect({ to: path });
+    const { getMockSession, mockPostAuthPath } = await import("@/lib/mock-auth");
+    const mock = getMockSession();
+    if (mock) throw redirect({ to: mockPostAuthPath(mock) });
+    try {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        const path = await resolvePostAuthPath(data.session.user.id);
+        throw redirect({ to: path });
+      }
+    } catch (err) {
+      if (isRedirect(err)) throw err;
+      // Backend unreachable — stay on the landing page; login falls back to mock mode.
     }
   },
+
   component: Landing,
 });
 
