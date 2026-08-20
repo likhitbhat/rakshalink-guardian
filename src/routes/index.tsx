@@ -1,4 +1,4 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, isRedirect } from "@tanstack/react-router";
 import { Shield, MapPin, Bell, Bluetooth, Zap, Heart, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { resolvePostAuthPath } from "@/lib/post-auth";
