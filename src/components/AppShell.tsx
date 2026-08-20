@@ -20,15 +20,21 @@ const guardianNav = [
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { profile } = useAuth();
+  const { profile, isMock } = useAuth();
   const loc = useLocation();
   const nav = profile?.role === "guardian" ? guardianNav : userNav;
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-md flex-col">
       <OfflineBanner />
+      {isMock && (
+        <div className="sticky top-0 z-50 bg-warning/15 px-4 py-1.5 text-center text-[11px] font-semibold text-warning">
+          Preview mode — demo session, backend not connected
+        </div>
+      )}
       <div className="fixed right-3 top-3 z-50"><ThemeToggle /></div>
       <main className="flex-1 pb-24">{children}</main>
+
       <nav className="fixed bottom-0 left-1/2 z-40 w-full max-w-md -translate-x-1/2 px-3 pb-3">
         <div className="glass-strong flex items-center justify-around rounded-2xl px-2 py-2 shadow-[var(--shadow-elevated)]">
           {nav.map((item) => {
